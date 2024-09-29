@@ -8,8 +8,4 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
     $ php artisan route:list
 */
 
-Route::get('/home', function () {
-    return view("welcome");
-});
-
 Route::get('/getTrucDuServeur', [\App\Http\Controllers\Example::class, 'exampleFunction']);
