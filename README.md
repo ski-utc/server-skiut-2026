@@ -1,66 +1,86 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bienvenue sur le serveur de Ski'UT 2025 en Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Pour commencer :
+### 1. Installer PHP
 
-## About Laravel
+Il y a 1 milliard de façon d'installer PHP : homebrew sur MAC/Linux, avec chocolatey ou un executable sur Windows...
+Comme la bière c'est la vie, je vais faire le tuto pour homebrew.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Installer Homebrew :
+``` bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
+brew install php
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Executable Windows
+[Lien vers la page de download](https://windows.php.net/download/)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 2. Installer composer
 
-## Learning Laravel
+- Mac/Linux : (avec homebrew)
+``` bash
+brew install composer
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Windows :
+``` bash
+  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer     verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+  php composer-setup.php
+  php -r "unlink('composer-setup.php');"
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 3. Cloner les packages
+Pour installer les packages, il faut se placer dans la racine du projet et faire :
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+``` bash
+composer install
+```
 
-## Laravel Sponsors
+Si ça ne fonctionne pas, faites 
+``` bash
+composer install --ignore-platform-reqs
+composer update --ignore-platform-reqs
+composer install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Maintenant que ton projet est prêt, on va config Laravel
+### 1.Base de données
+Pour faire tourner ton serveur sur une base de données, il faut lui donner une base de données.
+Pour ça, créé une base de données sqlite dans ./database
+``` bash
+touch ./database/database.sqlite
+```
+Une fois ta BDD créé, copie le fichier .env.example en un .env (c'est le fichier qui te permettra de gérer les variables d'environnement du projet)
+``` bash
+cp ./.env.example ./.env
+```
+Modifie la ligne DB_DATABASE pour lui donner le chemin vers ta BDD
+Recopie le résultat de cette requête à côté de DB_DATABASE=
+``` bash
+ls ./database/database.sqlite
+```
+Enfin, remplis ta base de données avec les config de migration pré-définies : 
+``` bash
+php artisan migrate
+```
 
-### Premium Partners
+### 2. Lance le serveur
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Si tu veux tester des routes sur le serveur dans ton navigateur, fait
+```bash
+php artisan serve --port=8000
+```
+- Si tu veux faire des requêtes sur ton serveur depuis l'app, il faut que ton serveur soit accessible, et pas sur une adresse de bouclage localhost. 
+Du coup, récupère ton IP avec
+```bash
+ ifconfig
+```
+OU
+```
+ip a | grep inet 
+```
+Et entre la commande suivante en remplaçant <> par ton IP
+```bash
+php artisan serve --host=<> --port=8000
+```
