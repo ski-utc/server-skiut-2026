@@ -3,21 +3,20 @@
 ## Pour commencer :
 ### 1. Installer PHP
 
-Il y a 1 milliard de façon d'installer PHP : homebrew sur MAC/Linux, avec chocolatey ou un executable sur Windows...
-Comme la bière c'est la vie, je vais faire le tuto pour homebrew.
+Il y a 1 milliard de façon d'installer PHP : avec homebrew sur MAC/Linux, avec chocolatey ou un executable sur Windows...
 
-- Installer Homebrew :
+- Installer avec Homebrew :
 ``` bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 
 brew install php
 ```
 
-- Executable Windows
+- Installer avec un executable Windows
 [Lien vers la page de download](https://windows.php.net/download/)
 
 ### 2. Installer composer
 
-- Mac/Linux : (avec homebrew)
+- Mac/Linux (avec homebrew) :
 ``` bash
 brew install composer
 ```
