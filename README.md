@@ -83,3 +83,79 @@ Et entre la commande suivante en remplaçant <> par ton IP
 ```bash
 php artisan serve --host=<> --port=8000
 ```
+
+## Petit détail de la structure du projet 
+### Racine
+- .env.example : Fichier template à dupliquer en .env pour gérer toutes les variables d'environnement du projet
+- artisan : Outil en ligne de commande pour exécuter des tâches comme les migrations, les tests, les contrôleurs, ...
+- composer.json : Fichier qui gère les dépendances PHP du projet via Composer, ainsi que les informations sur l'autoloading et les scripts
+- composer.lock : Fichier généré automatiquement par Composer qui verrouille les versions des dépendances installées pour garantir que le projet utilise toujours les mêmes versions
+- package.json : Fichier qui gère les dépendances JavaScript (via npm ou yarn), les scripts de build et autres configurations front-end
+- phpunit.xml : Fichier de configuration pour PHPUnit, le framework de tests PHP utilisé pour écrire et exécuter des tests unitaires et fonctionnels
+- vite.config.js : Fichier de configuration pour Vite, utilisé pour compiler les ressources front-end (CSS, JS) de manière rapide et moderne
+
+### Dossiers
+- /app : C'est le dossier le plus important de l'app, celui qui contient les Models, les Controllers, le Middleware...
+  - /Console : Contient les commandes artisan personnalisées de l'application
+    - Kernel.php : Enregistre et gère les commandes artisan
+  - /Exceptions : Dossier de gestion des exceptions
+    - Handler.php : Gère toutes les exceptions non capturées et définit la façon dont elles sont rendues ou loguées.
+  - /Http :
+    - /Controllers : Contient tous les Controllers de ton app (les fonctions que tu vas utiliser avec tes requêtes HTTP, et qui vont traiter tes Models)
+    - /Middleware : Contient les fichiers qui vont contrôler les requêtes entrantes (notamment avec la gestion des JWT dans AuthApi)
+      - AuthApi.php : Gère les JWT (et le ByPass en dev)
+      - Authenticate.php : Redirige le user sur la route login (déclarée dans /route/web.php) si nécessaire
+      - EncryptCookies.php : Crypte les cookies bearerToken (C'est un type de JWT)
+      - RedirectIfAuthenticated.php : Redirige les requêtes des users identifiés en passant par le RouteServiceProvider (cf. Providers/)
+      - TrimStrings.php : Supprime les espaces en début et en fin de chaîne pour toutes les données entrantes
+      - TrustHosts.php : Spécifie les hôtes de confiance pour éviter les attaques de redirection
+      - TrustProxies.php : Gère les proxies de confiance pour la gestion correcte des adresses IP et du protocole
+    - Kernel.php : Enregistre les middlewares globaux et de groupe pour gérer les requêtes HTTP
+  - /Models : Contient tous les Models de ton serveur (un modèle décrit comment les entrées de ta BDD seront traités comme objets)
+  - /Providers : Contient les classes de service qui fournissent des fonctionnalités clés à l'application
+    - AppServiceProvider.php : Enregistre les services globaux utilisés dans l'application
+    - AuthServiceProvider : Gère les politiques d'autorisation et l'enregistrement des guards (guards = détermine comment les utilisateurs sont authentifiés à chaque requête)
+- /bootstrap : C'est le dossier qui gère le boot de ton serveur
+  - app.php : C'est le fichier qui va load tout ton projet et notamment les services et Kernel
+  - providers.php : Charge les services de configuration du serveur
+- /config : Contient tous les fichiers de config du serveur (en vrai c'est un peu redondant avec .env)
+  - app.php : Config général (nom de l'app, URL, timezone, ...)
+  - auth.php : Config de l'authentification (guards, gestion des mdp, ...)
+  - cache.php : Comment est géré le cache
+  - cors.php : Config des CORS (Cross-Origin Ressource Sharing) (nécessaire pour faire des requêtes entre différents domaines)
+  - database.php : Config BDD
+  - filesystem.php : Gère la configuration des systèmes de fichiers utilisés pour le stockage
+  - jwt : Config de la gestion des JWT (temps de vie, algo de chiffrement, ...)
+  - logging.php : Configuration du système de logs
+  - mail.php : Configuration pour l'envoi des emails via des services comme SMTP (out autre)
+  - queue.php : Configuration des queues de travail pour le traitement des tâches en arrière-plan
+  - sanctum.php : Gère la configuration de l'authentification API via Sanctum (alternative aux JWT)
+  - services.php : Gère la configuration des services externes (genre AWS)
+  - session.php : Configuration du système de gestion des sessions utilisateur
+- /database : Dossier de la BDD
+  - database.sqlite : Fichier à créer qui te servira de BDD local pour dév
+  - /factories : Contient les modèles de données fictives pour ta BDD
+  - /migrations : Contient les fichiers de création de ta BDD (1 fichier = 1 table)
+  - /seeders : Contient les scripts de remplissage de ta BDD
+- /public : 
+  - .htaccess : Fichier qui gère la redirection et l'accès à tes pages web
+  - index.php : Point d'entrée pour toutes les requêtes HTTP dans l'application Laravel
+  - robots.txt : Fichier utilisé pour gérer l'accès des robots de moteurs de recherche au site
+- /ressources : Contient les Views (pages), CSS et JS pour générer tes pages web
+  - /css : Contient le CSS de tes views
+  - /js : Contient le JS de tes views
+  - /views : Contient les views (fichier qui décrit la structure d'une page php, et qui peut appeler tes Controllers (genre pour faire du Back Office))
+- /routes : Contient les fichiers de config pour déclarer tes routes URL (web et API)
+  - api.php : Contient toutes tes routes API, leur nom et potentiellement le passage par le Middleware Auth
+  - console.php : Définit les commandes artisan personnalisées exécutables depuis la console
+  - web.php : Contient toutes tes routes web, leur nom et potentiellement le passage par le Middleware AuthBackOffice
+- /storage : Dossier de stockage de ton serveur (logs, stockage et ressources nécessaires à l'app)
+  - /app : Contient les fichiers nécessaires au fonctionnement de ton app
+    - /public/key.pub : C'est la clé publique pour chiffrer les JWT
+    - /private/private_key.pem : C'est la clé privée pour déchiffrer les JWT
+    - /framework : Stocke le cache, les sessions et les fichiers temporaires générés par Laravel
+    - /logs : Bah c'est les logs
+- /tests : Ce dossier contient les fichiers pour tester ton serveur 
+  - /Feature : Contient les tests qui vérifient les fonctionnalités complètes de l'application
+  - /Unit : Contient les tests unitaires qui vérifient des portions spécifiques du code (genre une fonction ou une méthode)
+  - TestCase.php : Classe de base pour les tests, gérant la configuration et l'environnement des tests
