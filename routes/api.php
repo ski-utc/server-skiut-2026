@@ -9,3 +9,5 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 */
 
 Route::get('/getTrucDuServeur', [\App\Http\Controllers\Example::class, 'exampleFunction']);
+
+Route::get('/getTrucPriveDuServeur', [\App\Http\Controllers\Example::class, 'exampleFunction'])->middleware(\App\Http\Middleware\AuthApi::class);

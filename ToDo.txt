@@ -1,0 +1,6 @@
+config -> cache, filamenent, hashing
+Vérifier les config et les inclure dans le Middleware/Controllers (genre le model User dans la config auth)
+
+Notification dans la BDD, app/Http/Notifications et config/exponent-push-notifications
+
+BroadCastServiceProvider, EventServiceProvider ?

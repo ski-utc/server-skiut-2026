@@ -12,4 +12,6 @@ Route::get('/home', function () {
     return view("welcome");
 });
 
+Route::get('https://cas.utc.fr/cas/login?service=')->name('login');
+
 Route::get('/getTrucDuServeur', [\App\Http\Controllers\Example::class, 'exampleFunction']);
