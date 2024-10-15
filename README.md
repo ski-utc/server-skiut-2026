@@ -102,25 +102,25 @@ php artisan serve --host=<> --port=8000
     - Handler.php : Gère toutes les exceptions non capturées et définit la façon dont elles sont rendues ou loguées.
   - /Http :
     - /Controllers : Contient tous les Controllers de ton app (les fonctions que tu vas utiliser avec tes requêtes HTTP, et qui vont traiter tes Models)
+      - Auth : C'est le controller qui s'occupe de rédiriger/contrôler les retours de oauth
     - /Middleware : Contient les fichiers qui vont contrôler les requêtes entrantes (notamment avec la gestion des JWT dans AuthApi)
-      - AuthApi.php : Gère les JWT (et le ByPass en dev)
       - Authenticate.php : Redirige le user sur la route login (déclarée dans /route/web.php) si nécessaire
-      - EncryptCookies.php : Crypte les cookies bearerToken (C'est un type de JWT)
       - RedirectIfAuthenticated.php : Redirige les requêtes des users identifiés en passant par le RouteServiceProvider (cf. Providers/)
       - TrimStrings.php : Supprime les espaces en début et en fin de chaîne pour toutes les données entrantes
       - TrustHosts.php : Spécifie les hôtes de confiance pour éviter les attaques de redirection
       - TrustProxies.php : Gère les proxies de confiance pour la gestion correcte des adresses IP et du protocole
     - Kernel.php : Enregistre les middlewares globaux et de groupe pour gérer les requêtes HTTP
   - /Models : Contient tous les Models de ton serveur (un modèle décrit comment les entrées de ta BDD seront traités comme objets)
+    - User : Notre modèle basique pour gérer les utilisateurs de la BDD
   - /Providers : Contient les classes de service qui fournissent des fonctionnalités clés à l'application
     - AppServiceProvider.php : Enregistre les services globaux utilisés dans l'application
     - AuthServiceProvider : Gère les politiques d'autorisation et l'enregistrement des guards (guards = détermine comment les utilisateurs sont authentifiés à chaque requête)
 - /bootstrap : C'est le dossier qui gère le boot de ton serveur
   - app.php : C'est le fichier qui va load tout ton projet et notamment les services et Kernel
   - providers.php : Charge les services de configuration du serveur
-- /config : Contient tous les fichiers de config du serveur (en vrai c'est un peu redondant avec .env)
+- /config : Contient tous les fichiers de config du serveur (en vrai c'est un peu redondant avec .env, mais ça permet une meilleure gestion du cache)
   - app.php : Config général (nom de l'app, URL, timezone, ...)
-  - auth.php : Config de l'authentification (guards, gestion des mdp, ...)
+  - auth.php : Config de l'authentification (guards, gestion des mdp, paramètres de oauth...)
   - cache.php : Comment est géré le cache
   - cors.php : Config des CORS (Cross-Origin Ressource Sharing) (nécessaire pour faire des requêtes entre différents domaines)
   - database.php : Config BDD
