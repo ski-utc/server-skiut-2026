@@ -2,6 +2,8 @@
 
 return [
 
+    'app_no_login' => env('APP_NO_LOGIN', false),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
