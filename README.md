@@ -64,7 +64,16 @@ Enfin, remplis ta base de données avec les config de migration pré-définies :
 php artisan migrate
 ```
 
-### 2. Lance le serveur
+### 2. Vérifie les config
+
+Pour éviter de constamment rentrer son CAS pour dev, j'ai mis un système de bypass dans le serveur.
+Pour utiliser ça : 
+
+1. Vérifie que APP_NO_LOGIN=true dans ton .env
+
+2. Créé un User d'id 1 dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 50)
+
+### 3. Lance le serveur
 
 - Si tu veux tester des routes sur le serveur dans ton navigateur, fait
 ```bash

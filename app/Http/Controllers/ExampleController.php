@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
-class Example extends Controller
+class ExampleController extends Controller
 {
     public function exampleFunction(Request $request)
     {

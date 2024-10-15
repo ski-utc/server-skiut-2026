@@ -29,8 +29,8 @@ return [
     ],
 
     'oauth' => [
-        'client_id' => env('OAUTH_PUBLIC_KEY',trim(file_get_contents(storage_path('public/key.pub')))),
-        'client_secret' => env('OAUTH_PRIVATE_KEY',trim(file_get_contents(storage_path('private/private_key.pem')))),
+        'client_id' => trim(file_get_contents(env('OAUTH_CLIENT_ID_PATH', storage_path('app/public/key.pub')))),
+        'client_secret' => trim(file_get_contents(env('OAUTH_CLIENT_SECRET_PATH', storage_path('app/private/private_key.pem')))),
         'redirect_uri' => env('OAUTH_REDIRECT_URI', 'https://shwet.assos.utc.fr/auth/callback'),
         'scopes' => env('OAUTH_SCOPES', 'users-infos read-assos'),
         'authorize_url' => env('OAUTH_AUTHORIZE_URL', 'https://auth.assos.utc.fr/oauth/authorize'),
