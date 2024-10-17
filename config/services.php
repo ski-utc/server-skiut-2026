@@ -31,19 +31,19 @@ return [
     'oauth' => [
         'client_id' => trim(file_get_contents(env('OAUTH_CLIENT_ID_PATH', storage_path('app/public/key.pub')))),
         'client_secret' => trim(file_get_contents(env('OAUTH_CLIENT_SECRET_PATH', storage_path('app/private/private_key.pem')))),
-        'redirect_uri' => env('OAUTH_REDIRECT_URI', 'https://shwet.assos.utc.fr/auth/callback'),
-        'scopes' => env('OAUTH_SCOPES', 'users-infos read-assos'),
+        'redirect_uri' => env('OAUTH_REDIRECT_URI', '[http://172.26.154.134:8000/skiutc/auth/callback'),
+        'scopes' => env('OAUTH_SCOPES', 'users-infos read-memberships'),
         'authorize_url' => env('OAUTH_AUTHORIZE_URL', 'https://auth.assos.utc.fr/oauth/authorize'),
         'access_token_url' => env('OAUTH_ACCESS_TOKEN_URL', 'https://auth.assos.utc.fr/oauth/token'),
         'owner_details_url' => env('OAUTH_RESOURCE_OWNER_DETAILS', 'https://auth.assos.utc.fr/api/user'),
         'logout_url' => env('OAUTH_LOGOUT_URL', 'https://auth.assos.utc.fr/logout'),
     ],
-
+/*
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+*/
 ];

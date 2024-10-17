@@ -57,6 +57,8 @@ class AuthController extends Controller
         $state = bin2hex(random_bytes(16));
         $request->session()->put('oauth2state', $state);
 
+        dd($this->provider);
+
         // Redirect the user to the OAuth2 authorization URL
         $authorizationUrl = $this->provider->getAuthorizationUrl([
             'state' => $state
