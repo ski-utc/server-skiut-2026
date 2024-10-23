@@ -19,27 +19,11 @@ class UserController extends Controller
         $user = User::firstOrCreate(
             [
                 'id' => $userDetails['uuid'],
-                'firstname' => $userDetails['firstName'],
-                'lastname' => $userDetails['lastName'],
+                'name' => $userDetails['firstName'],
                 'email' => $userDetails['email'],
             ]
         );
 
         return $user;
-    }
-
-    /**
-     * Update language preference of the authenticated user
-     *
-     * @param $language
-     */
-    public static function updateLanguagePreference($language)
-    {
-        // Find the user by ID
-        $user = User::find(Auth::user()->id);
-        $user->language = $language;
-        $user->save();
-
-        return response('', 200);
     }
 }

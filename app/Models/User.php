@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Model
+class User extends Authenticatable
 {
     use HasFactory;
     protected $table = 'users';
-    protected $fillable = ['id', 'firstname', 'lastname', 'email'];
+    protected $fillable = ['id', 'name', 'email'];
 
+
+    protected $keyType = 'string';
+    public $incrementing = false;
 }
