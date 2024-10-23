@@ -57,8 +57,6 @@ class AuthController extends Controller
         $state = bin2hex(random_bytes(16));
         $request->session()->put('oauth2state', $state);
 
-        dd($this->provider);
-
         // Redirect the user to the OAuth2 authorization URL
         $authorizationUrl = $this->provider->getAuthorizationUrl([
             'state' => $state
@@ -108,6 +106,12 @@ class AuthController extends Controller
 
             // Store the user in the session
             Auth::login($user);
+
+            if (Auth::check()) {
+                return redirect()->route('accueil');
+            } else {
+                abort(500, 'User authentication failed');
+            }
 
             return redirect()->intended(RouteServiceProvider::HOME);
         } catch (IdentityProviderException $e) {

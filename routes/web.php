@@ -10,7 +10,11 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 
 Route::get('/', function () {
     return view("welcome");
-})->middleware('auth');
+})->name('home');
+
+Route::get('/accueil', function () {
+    return view("accueil");
+})->name('accueil')->middleware('auth');
 
 Route::get('/getTrucDuServeur', [\App\Http\Controllers\ExampleController::class, 'exampleFunction']);
 
