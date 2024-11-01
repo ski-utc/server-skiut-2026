@@ -50,7 +50,7 @@ class AuthController extends Controller
         if (config('auth.app_no_login', false)) {
             $user=User::find(1);
             Auth::login($user);
-            return redirect()->intended(RouteServiceProvider::HOME);
+            return redirect()->route('accueil');
         }
 
         // Generate a random state parameter
