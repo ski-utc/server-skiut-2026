@@ -93,6 +93,12 @@ Et entre la commande suivante en remplaçant <> par ton IP
 php artisan serve --host=<> --port=8000
 ```
 
+### 4. Lance npm pour build le CSS
+Ouvre un nouvel onglet terminal, et lance :
+```bash
+npm run dev
+```
+
 ## Petit détail de la structure du projet 
 ### Racine
 - .env.example : Fichier template à dupliquer en .env pour gérer toutes les variables d'environnement du projet
