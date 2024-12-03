@@ -1,0 +1,108 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use App\Models\Room;
+
+class RoomsSeeder extends Seeder
+{
+    public function run()
+    {
+        $rooms = [
+            ['name' => 'GX15', 'roomNumber' => 'B001', 'capacity' => 2, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'After Ski', 'roomNumber' => 'B002', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Tout schuss', 'roomNumber' => 'B003', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les skibidis', 'roomNumber' => 'B004', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'les diplômés font du ski', 'roomNumber' => 'B101', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les crayons', 'roomNumber' => 'B102', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les Vieux Croutons', 'roomNumber' => 'B103', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Basse Cour', 'roomNumber' => 'B104', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les Manchots', 'roomNumber' => 'B105', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les marmottes', 'roomNumber' => 'B106', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Shoop shoop shoop', 'roomNumber' => 'B107', 'capacity' => 3, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Shoop shoop shoop 2', 'roomNumber' => 'B108', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => "L'Asile le retour", 'roomNumber' => 'B109', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Divalanche', 'roomNumber' => 'B110', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les Golmoncler', 'roomNumber' => 'B111', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Sapins en folie', 'roomNumber' => 'B112', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Skilebo', 'roomNumber' => 'B114', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => "UT'Culsec", 'roomNumber' => 'B116', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'WeSkiCoca', 'roomNumber' => 'B118', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Vodkavalanche', 'roomNumber' => 'B120', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les rois de la glisse', 'roomNumber' => 'B122', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'WiskyDefond', 'roomNumber' => 'B124', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Skipute 1', 'roomNumber' => 'B126', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Skipute 2', 'roomNumber' => 'B128', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Bretagne', 'roomNumber' => 'B130', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'El Primo', 'roomNumber' => 'B201', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les Pyrénénés', 'roomNumber' => 'B202', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'La Distillerie', 'roomNumber' => 'B204', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Igloo gloo gloo 🐧', 'roomNumber' => 'B205', 'capacity' => 6, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Soif\'erie', 'roomNumber' => 'B206', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Keski\'boit', 'roomNumber' => 'B207', 'capacity' => 3, 'mood' => '++', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Meribaize', 'roomNumber' => 'B208', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'respUser' => null],
+            ['name' => 'Les deux appels', 'roomNumber' => 'B209', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Candice Thovex', 'roomNumber' => 'B210', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'L\'igloo de luxe', 'roomNumber' => 'B211', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Les stresses', 'roomNumber' => 'B212', 'capacity' => 5, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Les Fromagnons', 'roomNumber' => 'B214', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Patatas bravas', 'roomNumber' => 'B216', 'capacity' => 6, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Skiute BRR BRR', 'roomNumber' => 'B218', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Bitouski', 'roomNumber' => 'B220', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Les floconnasses 1', 'roomNumber' => 'B222', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Les Floconnasses 2', 'roomNumber' => 'B224', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Mel Amoi', 'roomNumber' => 'B226', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Le fourrr', 'roomNumber' => 'B228', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Meau', 'roomNumber' => 'B230', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'L’abreuvoir & co', 'roomNumber' => 'B301', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Tente Ski', 'roomNumber' => 'B302', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Les gros nibards', 'roomNumber' => 'B303', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'The lucky one', 'roomNumber' => 'B304', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Les reconstitués', 'roomNumber' => 'B306', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Bonne descente', 'roomNumber' => 'B308', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Chambre asso 1', 'roomNumber' => 'B312', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0],
+            ['name' => 'Chambre asso 2', 'roomNumber' => 'B314', 'capacity' => 4, 'mood' => '', 'totalPoints' => 0],
+            ['name' => 'Chambre asso 3', 'roomNumber' => 'B316', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0],
+            ['name' => 'Chambre asso 4', 'roomNumber' => 'B318', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0],
+            ['name' => 'Prout', 'roomNumber' => 'B402', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'La Cabane A Pastis', 'roomNumber' => 'B404', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Slay loop', 'roomNumber' => 'A008', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0],
+            ['name' => 'Girlies', 'roomNumber' => 'A010', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0],
+            ['name' => 'OLAF 1', 'roomNumber' => 'A101', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Vroom', 'roomNumber' => 'A103', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Crâne crâne crâne', 'roomNumber' => 'A104', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0],
+            ['name' => 'Alvin et les chips molles', 'roomNumber' => 'A105', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Naughteam', 'roomNumber' => 'A106', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0],
+            ['name' => 'Les vins Chauds Givrés', 'roomNumber' => 'A107', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Teuse', 'roomNumber' => 'A108', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Kilapang LâchE la Chaussette', 'roomNumber' => 'A109', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'La Swannerie et les plaisantins', 'roomNumber' => 'A110', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Les 4 neurones', 'roomNumber' => 'A111', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Les disciples de Laura', 'roomNumber' => 'A112', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Sliding Woks', 'roomNumber' => 'A114', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0],
+            ['name' => 'ScotlandUnitedTourdefranceCompagny', 'roomNumber' => 'A116', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Skigloo', 'roomNumber' => 'A118', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'Les Touristes', 'roomNumber' => 'A201', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Les Cools Kids A La Neige', 'roomNumber' => 'A202', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Smokette', 'roomNumber' => 'A203', 'capacity' => 6, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Juraski park', 'roomNumber' => 'A204', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Les dégénérés', 'roomNumber' => 'A205', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Last Dance', 'roomNumber' => 'A206', 'capacity' => 6, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'The Brainrot Cavaliers', 'roomNumber' => 'A207', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Pap est riz', 'roomNumber' => 'A208', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Igloo Polyglotte', 'roomNumber' => 'A209', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'La grande descente', 'roomNumber' => 'A210', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'tire bouchon et tire fesses', 'roomNumber' => 'A211', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0],
+            ['name' => 'La montagne à la montagne', 'roomNumber' => 'A212', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'Basic Shit', 'roomNumber' => 'A213', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0],
+            ['name' => 'Dah\'ut', 'roomNumber' => 'A214', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+            ['name' => 'L\'avachambre', 'roomNumber' => 'A216', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0],
+        ];
+
+        foreach ($rooms as $room) {
+            Room::create($room);
+        }
+    }
+}

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('challenge_proofs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->string('file'); // will contain jpg, png, mp4, etc. file path 
             $table->unsignedInteger('nbLikes')->default(0);
             $table->boolean('valid')->default(false); 

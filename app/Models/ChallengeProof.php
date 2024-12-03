@@ -10,8 +10,6 @@ class ChallengeProof extends Model
     /** @use HasFactory<\Database\Factories\ChallengeProofFactory> */
     use HasFactory;
 
-    protected $keyType = 'string';
-    public $incrementing = false;
     
     protected $table = 'proofs';
     protected $fillable = ['id', 'file', 'nbLikes', 'valid', 'alert', 'delete', 'active']; 

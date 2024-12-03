@@ -3,11 +3,13 @@ namespace Database\Seeders;
 
 use App\Models\Challenge;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ChallengesSeeder extends Seeder
 {
     public function run()
     {
+        DB::table('challenges')->truncate(); // Attention ! supprime tout 
         $challenges = [
             ['title' => 'Tire fesse sans les skis', 'nbPoints' => 20],
             ['title' => 'Skier sur ses chaussures', 'nbPoints' => 20],

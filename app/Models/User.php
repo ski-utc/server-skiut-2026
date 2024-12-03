@@ -9,11 +9,8 @@ class User extends Authenticatable
 {
     use HasFactory;
 
-    protected $keyType = 'string';
-    public $incrementing = false;
-    
     protected $table = 'users';
-    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'password', 'location', 'admin'];
+    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'password', 'roomID', 'location', 'admin'];
 
 
     // Define the one-to-many relationship with Anecdote

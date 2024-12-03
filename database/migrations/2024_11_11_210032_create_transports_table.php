@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transports', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->string('departure'); // Paris / Compiègne / Les 2 Alpes 
             $table->string('arrival'); // Paris / Compiègne / Les 2 Alpes 
             $table->string('colour'); 

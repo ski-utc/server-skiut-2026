@@ -9,13 +9,16 @@ class Room extends Model
 {
     /** @use HasFactory<\Database\Factories\RoomFactory> */
     use HasFactory;
-
-    protected $keyType = 'string';
-    public $incrementing = false;
     
     protected $table = 'rooms';
-    protected $fillable = ['id', 'name', 'roomNumber', 'capacity', 'mood', 'totalPoints', 'respRoom'];
+    protected $fillable = ['id', 'name', 'roomNumber', 'capacity', 'mood', 'totalPoints', 'respUser'];
 
+    // Define the belongsTo relationship with User (responsible user)
+    public function respUser()
+    {
+        return $this->belongsTo(User::class, 'respUser');
+    }
+    
     // Define the one-to-many relationship with ChallengeProofs
     public function challengeProofs()
     {

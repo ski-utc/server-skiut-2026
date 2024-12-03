@@ -10,8 +10,6 @@ class Notification extends Model
     /** @use HasFactory<\Database\Factories\NotificationFactory> */
     use HasFactory;
 
-    protected $keyType = 'string';
-    public $incrementing = false;
     
     protected $table = 'notifications';
     protected $fillable = ['id', 'startsAt', 'expiresAt', 'description', 'active']; 

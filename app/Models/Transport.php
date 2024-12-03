@@ -10,9 +10,6 @@ class Transport extends Model
     /** @use HasFactory<\Database\Factories\TransportFactory> */
     use HasFactory;
 
-    protected $keyType = 'string';
-    public $incrementing = false;
-    
     protected $table = 'transport';
     protected $fillable = ['id', 'departure', 'arrival', 'colour', 'type']; 
 
