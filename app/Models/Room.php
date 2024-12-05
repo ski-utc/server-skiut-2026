@@ -11,12 +11,12 @@ class Room extends Model
     use HasFactory;
     
     protected $table = 'rooms';
-    protected $fillable = ['id', 'name', 'roomNumber', 'capacity', 'mood', 'totalPoints', 'respUser'];
+    protected $fillable = ['id', 'name', 'roomNumber', 'capacity', 'mood', 'totalPoints', 'userID'];
 
     // Define the belongsTo relationship with User (responsible user)
     public function respUser()
     {
-        return $this->belongsTo(User::class, 'respUser');
+        return $this->belongsTo(User::class, 'userID');
     }
     
     // Define the one-to-many relationship with ChallengeProofs

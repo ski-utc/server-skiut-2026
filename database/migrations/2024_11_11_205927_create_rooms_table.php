@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('capacity'); // 4 ou 6
             $table->string('mood'); 
             $table->unsignedTinyInteger('totalPoints')->default(0);
-            $table->foreignId('respUser')->nullable()->constrained('users')->onDelete('cascade'); // Foreign key to users table
+            $table->foreignId('userID')->nullable()->constrained('users', 'id')->onDelete('cascade'); // Foreign key to users table
             $table->timestamps();
         });
     }

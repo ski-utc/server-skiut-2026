@@ -1,0 +1,13 @@
+SELECT roomNumber FROM rooms WHERE id IN (1, 2, 3, 4, 62, 101);
+PRAGMA table_info(users);
+PRAGMA table_info(rooms);
+
+UPDATE users SET roomID = 2 WHERE id = 317864;
+SELECT * FROM users WHERE id = 317864; 
+
+UPDATE users SET roomID = 2 WHERE id = 316449;
+SELECT * FROM users WHERE id = 316449;
+
+DELETE FROM users;
+
+PRAGMA table_info(rooms);

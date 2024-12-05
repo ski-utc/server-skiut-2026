@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('delete')->default(false);
             $table->boolean('active')->default(false);
             $table->foreignId('challengeId')->constrained(); // Foreign key to challenges table
-            $table->foreignId('roomId')->constrained()->onDelete('cascade'); // Foreign key to room table (hésite avec users)
+            $table->foreignId('roomID')->constrained()->onDelete('cascade'); // Foreign key to room table (hésite avec users)
             $table->timestamps();
         });
     }

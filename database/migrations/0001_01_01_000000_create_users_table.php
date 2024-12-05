@@ -18,9 +18,11 @@ return new class extends Migration
             $table->string('lastName');
             $table->string('email')->unique();
             $table->string('password')->nullable();
-            $table->foreignId('roomId')->constrained()->onDelete('cascade'); // Foreign key to rooms table
+            //$table->foreignId('roomID')->constrained()->onDelete('cascade'); // Foreign key to rooms table
+            $table->foreignId('roomID')->constrained('rooms', 'id')->onDelete('cascade');
             $table->string('location')->nullable(); // pas encore sûre - pour la géolocalisation 
-            $table->boolean('admin')->default(false); // true if team info
+            $table->boolean('admin'); // true if team info
+            $table->boolean('alumniOrExte'); 
             $table->timestamps();
         });
     }
