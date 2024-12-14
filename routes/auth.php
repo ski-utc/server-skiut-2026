@@ -20,6 +20,11 @@ Route::prefix('/auth')->name('auth.')->group(function () {
     Route::get('/callback', [AuthController::class, 'callback'])
         ->name('callback');
 
+    Route::middleware('refresh')->group(function () {
+        Route::post('/logout', [AuthController::class, 'refresh'])
+            ->name('refresh');
+    });
+
     Route::middleware('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])
             ->name('logout');

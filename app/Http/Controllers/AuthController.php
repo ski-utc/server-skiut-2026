@@ -8,6 +8,10 @@ use League\OAuth2\Client\Provider\GenericProvider;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Facades\Log;
+use UnexpectedValueException;
+use LogicException;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 class AuthController extends Controller
 {
@@ -132,6 +136,40 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Authentication failed', "Callback error: " => $e->getMessage()], 400);
         }
+    }
+
+    public function refresh(Request $request)
+    {
+        $publicKey = config('services.crypt.public');
+        $token = $request->bearerToken();
+        if ($token === null) {
+            return response()->json(['message'=>'Missing Json Web Token For Validation','JWT_ERROR'=>true],400);
+        }
+        try{
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        }catch(ExpiredException){
+            return response()->json(['message'=>'Json Web Token Expired','JWT_ERROR'=>true],401);
+        }catch(SignatureInvalidException){
+            return response()->json(['message'=>'Invalid Signature In Sent Json Web Token','JWT_ERROR'=>true],401);
+        }catch (LogicException) {
+            return response()->json(['message'=>'Error having to do with environmental setup or malformed JWT Keys','JWT_ERROR'=>true],401);
+        } catch (UnexpectedValueException) {
+            return response()->json(['message'=>'Error having to do with JWT signature and claims','JWT_ERROR'=>true],401);
+        }
+        $uuid = $decoded->key;
+
+        $accessTokenPayload = [
+            'key' => $uuid,
+            'exp' => now()->addMinutes(60)->timestamp,
+        ];
+        $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
+
+        return response()->json([
+            'message'=>'Authentication Successfully Executed',
+            'data'=>[
+                'access_token'=>$accessToken,
+            ]
+        ]);
     }
 
     /**
