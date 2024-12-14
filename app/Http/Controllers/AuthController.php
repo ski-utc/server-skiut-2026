@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Providers\RouteServiceProvider;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Http\Request;
 use League\OAuth2\Client\Provider\GenericProvider;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -47,34 +45,68 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        if (config('auth.app_no_login', false)) {
-            $user=User::find(1);
-            Auth::login($user);
-            return redirect()->route('accueil');
+        $token = $request->bearerToken();
+        if ($token === null) {
+            if (config('auth.app_no_login', false)) {
+                $userId='896c4495-6145-412c-a928-5a93263a0459';
+                try {      
+                    $accessTokenPayload = [
+                        'key' => $userId,
+                        'exp' => now()->addMinutes(60)->timestamp,
+                    ];
+                    $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
+        
+                    $refreshTokenPayload = [
+                        'key' => $userId,
+                        'exp' => now()->addDays(30)->timestamp,
+                    ];
+                    $refreshToken = JWT::encode($refreshTokenPayload, env('APP_JWT_SECRET'), 'RS256');
+        
+                    return response()->json([
+                        'access_token' => $accessToken,
+                        'refresh_token' => $refreshToken,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Callback error: " . $e->getMessage());
+                    return response()->json(['error' => 'Authentication failed'], 400);
+                }
+            }
+
+            // Generate a random state parameter
+            $state = bin2hex(random_bytes(16));
+            $request->session()->put('oauth2state', $state);
+
+            // Redirect the user to the OAuth2 authorization URL
+            $authorizationUrl = $this->provider->getAuthorizationUrl([
+                'state' => $state
+            ]);
+
+            return redirect($authorizationUrl);
+        } else {
+            try {
+                $publicKey = config("services.crypt.public");
+                $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));            
+    
+                $uuid = $decoded->sub;
+                $user = User::where('id', $uuid)->first();
+    
+                if (!$user) {
+                    return response()->json(['error' => 'User not found'], 404);
+                } else {
+                    return redirect()->route('api-connected');
+                }
+            } catch (\Exception $e) {
+                Log::error("Token decoding error: " . $e->getMessage());
+                return response()->json(['error' => 'Invalid token'], 401);
+            }
         }
-
-        // Generate a random state parameter
-        $state = bin2hex(random_bytes(16));
-        $request->session()->put('oauth2state', $state);
-
-        // Redirect the user to the OAuth2 authorization URL
-        $authorizationUrl = $this->provider->getAuthorizationUrl([
-            'state' => $state
-        ]);
-
-        return redirect($authorizationUrl);
     }
 
     /**
      * Handle the OAuth2 callback.
-     *
-     * @param  Request $request The HTTP request object.
-     * @param  UserController $userController The user controller instance.
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function callback(Request $request, UserController $userController)
     {
-        // Retrieve the state parameter from the session
         $storedState = $request->session()->pull('oauth2state');
 
         // Check if the state parameter is present and valid
@@ -86,59 +118,74 @@ class AuthController extends Controller
         if (!$request->has('code')) {
             abort(400, 'No authorization code');
         }
-
         try {
-            // Exchange the authorization code for an access token
             $accessToken = $this->provider->getAccessToken('authorization_code', [
-                'code' => $request->get('code')
+                'code' => $request->get('code'),
             ]);
 
             $resourceOwner = $this->provider->getResourceOwner($accessToken);
             $userDetails = $resourceOwner->toArray();
 
-            // Check if user account has been deleted
-            if ($userDetails['deleted_at'] != null) {
-                abort(401, 'Account deleted');
+            if ($userDetails['deleted_at'] != null || $userDetails['active'] != 1) {
+                abort(401, 'Account deleted or deactivated');
             }
 
-            // Create or update the user in the database
             $user = $userController->createOrUpdateUser($userDetails);
 
-            // Store the user in the session
-            Auth::login($user);
+            $accessTokenPayload = [
+                'key' => $user->id,
+                'exp' => now()->addMinutes(60)->timestamp,
+            ];
+            $privateKey = config("services.crypt.private");
+            $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
-            if (Auth::check()) {
-                return redirect()->route('accueil');
-            } else {
-                abort(500, 'User authentication failed');
-            }
-
-            return redirect()->intended(RouteServiceProvider::HOME);
-        } catch (IdentityProviderException $e) {
-            abort(400, 'Authentication failed: ' . $e->getMessage());
+            $refreshTokenPayload = [
+                'key' => $user->id,
+                'exp' => now()->addDays(30)->timestamp,
+            ];
+            $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
+                        
+            return redirect()->route('api-connected',[
+                'access_token' => $accessToken,
+                'refresh_token' => $refreshToken,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Authentication failed', "Callback error: " => $e->getMessage()], 400);
         }
     }
 
     /**
-     * Log the user out of the application.
-     *
-     * @param  Request  $request  The HTTP request object.
-     * @return \Illuminate\Http\RedirectResponse
+     * Récupère les informations de l'utilisateur à partir d'un token.
      */
-    public function logout(Request $request)
+    public function getUserData(Request $request)
     {
-        // Clear the user's session data
-        $request->session()->forget('user');
+        Log::info("Bearer Token:", ['token' => $request->bearerToken()]);
 
-        // Log the user out
-        Auth::guard('web')->logout();
+        $token = $request->bearerToken();
 
-        // Invalidate the session
-        $request->session()->invalidate();
+        try {
+            $publicKey = config("services.crypt.public");
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));            
 
-        // Regenerate the CSRF token
-        $request->session()->regenerateToken();
+            $uuid = $decoded->sub;
 
-        return redirect(config('services.oauth.logout_url'));
+            $user = User::where('id', $uuid)->first();
+
+            if (!$user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            return response()->json([
+                'id'=> $user->id,
+                'name'=> $user->name,
+                'lastName'=> $user->lastName,
+                'room'=>$user->rooms->first() ? $user->rooms->first()->roomNumber : null,
+                'location'=> $user->location,
+                'admin'=> $user->admin
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Token decoding error: " . $e->getMessage());
+            return response()->json(['error' => 'Invalid token'], 401);
+        }
     }
 }
