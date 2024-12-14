@@ -38,6 +38,12 @@ return [
         'owner_details_url' => env('OAUTH_RESOURCE_OWNER_DETAILS', 'https://auth.assos.utc.fr/api/user'),
         'logout_url' => env('OAUTH_LOGOUT_URL', 'https://auth.assos.utc.fr/logout'),
     ],
+
+    'crypt' => [
+        'public' => trim(file_get_contents(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/public/public.pem')))),
+        'private' => trim(file_get_contents(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem')))),
+    ],
+
 /*
     'slack' => [
         'notifications' => [

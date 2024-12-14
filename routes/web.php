@@ -12,10 +12,6 @@ Route::get('/', function () {
     return view("welcome");
 })->name('home');
 
-Route::get('/accueil', function () {
-    return view("accueil");
-})->name('accueil')->middleware('auth');
 
-Route::get('/getTrucDuServeur', [\App\Http\Controllers\ExampleController::class, 'exampleFunction']);
 
 require __DIR__.'/auth.php';

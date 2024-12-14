@@ -45,61 +45,41 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $token = $request->bearerToken();
-        if ($token === null) {
-            if (config('auth.app_no_login', false)) {
-                $userId='896c4495-6145-412c-a928-5a93263a0459';
-                try {      
-                    $accessTokenPayload = [
-                        'key' => $userId,
-                        'exp' => now()->addMinutes(60)->timestamp,
-                    ];
-                    $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
-        
-                    $refreshTokenPayload = [
-                        'key' => $userId,
-                        'exp' => now()->addDays(30)->timestamp,
-                    ];
-                    $refreshToken = JWT::encode($refreshTokenPayload, env('APP_JWT_SECRET'), 'RS256');
-        
-                    return response()->json([
-                        'access_token' => $accessToken,
-                        'refresh_token' => $refreshToken,
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error("Callback error: " . $e->getMessage());
-                    return response()->json(['error' => 'Authentication failed'], 400);
-                }
-            }
-
-            // Generate a random state parameter
-            $state = bin2hex(random_bytes(16));
-            $request->session()->put('oauth2state', $state);
-
-            // Redirect the user to the OAuth2 authorization URL
-            $authorizationUrl = $this->provider->getAuthorizationUrl([
-                'state' => $state
-            ]);
-
-            return redirect($authorizationUrl);
-        } else {
-            try {
-                $publicKey = config("services.crypt.public");
-                $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));            
+        if (config('auth.app_no_login', false)) {
+            $userId='896c4495-6145-412c-a928-5a93263a0459';
+            try {      
+                $accessTokenPayload = [
+                    'key' => $userId,
+                    'exp' => now()->addMinutes(60)->timestamp,
+                ];
+                $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
     
-                $uuid = $decoded->sub;
-                $user = User::where('id', $uuid)->first();
+                $refreshTokenPayload = [
+                    'key' => $userId,
+                    'exp' => now()->addDays(30)->timestamp,
+                ];
+                $refreshToken = JWT::encode($refreshTokenPayload, env('APP_JWT_SECRET'), 'RS256');
     
-                if (!$user) {
-                    return response()->json(['error' => 'User not found'], 404);
-                } else {
-                    return redirect()->route('api-connected');
-                }
+                return response()->json([
+                    'access_token' => $accessToken,
+                    'refresh_token' => $refreshToken,
+                ]);
             } catch (\Exception $e) {
-                Log::error("Token decoding error: " . $e->getMessage());
-                return response()->json(['error' => 'Invalid token'], 401);
+                Log::error("Callback error: " . $e->getMessage());
+                return response()->json(['error' => 'Authentication failed'], 400);
             }
         }
+
+        // Generate a random state parameter
+        $state = bin2hex(random_bytes(16));
+        $request->session()->put('oauth2state', $state);
+
+        // Redirect the user to the OAuth2 authorization URL
+        $authorizationUrl = $this->provider->getAuthorizationUrl([
+            'state' => $state
+        ]);
+
+        return redirect($authorizationUrl);
     }
 
     /**
@@ -159,15 +139,13 @@ class AuthController extends Controller
      */
     public function getUserData(Request $request)
     {
-        Log::info("Bearer Token:", ['token' => $request->bearerToken()]);
-
         $token = $request->bearerToken();
 
         try {
             $publicKey = config("services.crypt.public");
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));            
 
-            $uuid = $decoded->sub;
+            $uuid = $decoded->key;
 
             $user = User::where('id', $uuid)->first();
 
@@ -177,9 +155,9 @@ class AuthController extends Controller
 
             return response()->json([
                 'id'=> $user->id,
-                'name'=> $user->name,
+                'name'=> $user->firstName,
                 'lastName'=> $user->lastName,
-                'room'=>$user->rooms->first() ? $user->rooms->first()->roomNumber : null,
+                'room'=>$user->room(),
                 'location'=> $user->location,
                 'admin'=> $user->admin
             ]);

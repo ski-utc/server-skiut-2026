@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('anecdotes', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('title');
-            $table->text('description');
+            $table->text('text');
+            $table->unsignedInteger('room');
             $table->foreignId('userId')->constrained()->onDelete('cascade'); // Foreign key to users table
-            $table->unsignedInteger('nbLikes')->default(0);
             $table->boolean('valid')->default(false);
             $table->unsignedTinyInteger('alert')->default(0);
             $table->boolean('delete')->default(false);

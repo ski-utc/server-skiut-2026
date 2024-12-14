@@ -13,7 +13,7 @@ class User extends Authenticatable
     public $incrementing = false;
     
     protected $table = 'users';
-    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'password', 'location', 'admin'];
+    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'password', 'location', 'admin'];  // cas et password à retirer ? ajouter type {utc-etu, exte} ? 
 
 
     // Define the one-to-many relationship with Anecdote
@@ -31,7 +31,7 @@ class User extends Authenticatable
     // Define the inverse relationship with Room 
     public function room()
     {
-        return $this->belongsTo(Room::class);
+        return $this->belongsTo(Room::class, 'rooms_user', 'userId', 'roomsId');
     }
 
     // Define the many-to-many relationship with Transport

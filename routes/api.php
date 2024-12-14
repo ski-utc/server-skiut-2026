@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 /* 
 Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas : 
@@ -8,8 +9,13 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
     php artisan route:list
 */
 
-Route::get('/getTrucDuServeur', [\App\Http\Controllers\ExampleController::class, 'exampleFunction']);
+Route::get('/connected', function () { return view("api-connected");})->middleware(\App\Http\Middleware\AuthApi::class)->name('api-connected');
+Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\AuthApi::class);
 
-Route::get('/getTrucPriveDuServeur', [\App\Http\Controllers\ExampleController::class, 'exampleFunction'])->middleware('auth');
+
+
+Route::get('/getAnecdotes', [\App\Http\Controllers\AnecdoteController::class, 'getAnecdotes']);
+
+
 
 require __DIR__.'/auth.php';
