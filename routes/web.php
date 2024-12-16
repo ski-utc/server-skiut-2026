@@ -8,6 +8,8 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
     php artisan route:list
 */
 
+
+
 Route::get('/', function () {
     return view("welcome");
 })->name('home');

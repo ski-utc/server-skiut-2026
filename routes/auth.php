@@ -21,7 +21,7 @@ Route::prefix('/auth')->name('auth.')->group(function () {
         ->name('callback');
 
     Route::middleware('refresh')->group(function () {
-        Route::post('/logout', [AuthController::class, 'refresh'])
+        Route::post('/refresh', [AuthController::class, 'refresh'])
             ->name('refresh');
     });
 

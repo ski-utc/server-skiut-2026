@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
 /* 
 Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas : 
@@ -9,8 +8,12 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
     php artisan route:list
 */
 
-Route::get('/connected', function () { return view("api-connected");})->middleware(\App\Http\Middleware\AuthApi::class)->name('api-connected');
-Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\AuthApi::class);
+
+
+/***************************************** Login *****************************************/
+Route::get('/connected', function () { return view("api-connected");})->middleware(\App\Http\Middleware\EnsureTokenIsValid::class)->name('api-connected');
+Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/*****************************************************************************************/
 
 
 

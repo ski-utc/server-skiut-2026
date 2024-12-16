@@ -142,21 +142,25 @@ class AuthController extends Controller
     {
         $publicKey = config('services.crypt.public');
         $token = $request->bearerToken();
-        if ($token === null) {
-            return response()->json(['message'=>'Missing Json Web Token For Validation','JWT_ERROR'=>true],400);
+        if (!$token) {
+            return response()->json(['message'=>"Refresh JWT absent pour l'authentification",'JWT_ERROR'=>true],400);
         }
         try{
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
         }catch(ExpiredException){
-            return response()->json(['message'=>'Json Web Token Expired','JWT_ERROR'=>true],401);
+            return response()->json(['message'=>'Refresh JWT expiré','JWT_ERROR'=>true],401);
         }catch(SignatureInvalidException){
-            return response()->json(['message'=>'Invalid Signature In Sent Json Web Token','JWT_ERROR'=>true],401);
-        }catch (LogicException) {
-            return response()->json(['message'=>'Error having to do with environmental setup or malformed JWT Keys','JWT_ERROR'=>true],401);
-        } catch (UnexpectedValueException) {
-            return response()->json(['message'=>'Error having to do with JWT signature and claims','JWT_ERROR'=>true],401);
-        }
+            return response()->json(['message'=>'Signature invalide pour le refresh JWT envoyé','JWT_ERROR'=>true],401);
+        } catch (LogicException $e) {
+            return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
+        } catch (UnexpectedValueException $e) {
+            return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
+        }        
         $uuid = $decoded->key;
+        $user = User::find($uuid);
+        if (!$user) {
+            return response()->json(['message' => "Utilisateur non trouvé pour le refresh token fourni", 'JWT_ERROR' => true], 404);
+        }
 
         $accessTokenPayload = [
             'key' => $uuid,
@@ -164,12 +168,7 @@ class AuthController extends Controller
         ];
         $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
 
-        return response()->json([
-            'message'=>'Authentication Successfully Executed',
-            'data'=>[
-                'access_token'=>$accessToken,
-            ]
-        ]);
+        return response()->json(['access_token'=>$accessToken]);
     }
 
     /**
@@ -188,7 +187,7 @@ class AuthController extends Controller
             $user = User::where('id', $uuid)->first();
 
             if (!$user) {
-                return response()->json(['error' => 'User not found'], 404);
+                return response()->json(['error' => 'User non trouvé'], 404);
             }
 
             return response()->json([
@@ -200,8 +199,8 @@ class AuthController extends Controller
                 'admin'=> $user->admin
             ]);
         } catch (\Exception $e) {
-            Log::error("Token decoding error: " . $e->getMessage());
-            return response()->json(['error' => 'Invalid token'], 401);
+            Log::error("Error du décodage JWT " . $e->getMessage());
+            return response()->json(['Erreur' => 'Invalid token'], 401);
         }
     }
 }
