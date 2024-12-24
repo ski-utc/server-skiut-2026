@@ -1,5 +1,8 @@
 <?php
 
+// fichier pour importer userImport (données des utilisateurs) dans la table users
+// doit d'abord lancer le RoomsSeeder avec les userID à null pour pouvoir importer les users (car foreign key vers rooms)
+
 namespace App\Console\Commands;
 
 use App\Imports\DataImport; // Import the DataImport class
