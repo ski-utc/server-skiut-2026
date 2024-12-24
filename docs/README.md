@@ -82,7 +82,7 @@ php artisan serve --port=8000
 - Si tu veux faire des requêtes sur ton serveur depuis l'app, il faut que ton serveur soit accessible, et pas sur une adresse de bouclage localhost. 
 Du coup, récupère ton IP avec
 ```bash
- ifconfig
+ ipconfig
 ```
 OU
 ```
