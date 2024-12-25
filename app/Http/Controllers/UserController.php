@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -17,9 +16,10 @@ class UserController extends Controller
     public function createOrUpdateUser($userDetails)
     {
         $user = User::firstOrCreate(
+            ['id' => $userDetails['uuid']],
             [
-                'id' => $userDetails['uuid'],
-                'name' => $userDetails['firstName'],
+                'firstName' => $userDetails['firstName'],
+                'lastName' => $userDetails['lastName'],
                 'email' => $userDetails['email'],
             ]
         );

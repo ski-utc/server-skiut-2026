@@ -12,11 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('anecdotes', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->text('description');
+            $table->uuid('id')->primary();
+            $table->text('text');
+            $table->unsignedInteger('room');
             $table->foreignId('userId')->constrained()->onDelete('cascade'); // Foreign key to users table
-            $table->unsignedInteger('nbLikes')->default(0);
             $table->boolean('valid')->default(false);
             $table->unsignedTinyInteger('alert')->default(0);
             $table->boolean('delete')->default(false);

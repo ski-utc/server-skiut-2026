@@ -1,10 +1,14 @@
 import sqlite3
 
-conn = sqlite3.connect('./database/database.sqlite')
-cursor = conn.cursor()
+# Chemin vers la base de données SQLite
+DB_PATH = "./database/database.sqlite"
 
-cursor.execute('''INSERT INTO users (id, name, email) VALUES (1, "Mathis", "mail")''')
+# Connexion à SQLite
 
-conn.commit()
+connection = sqlite3.connect(DB_PATH)
+cursor = connection.cursor()
+cursor.execute("INSERT INTO rooms (id, name, roomNumber, capacity, mood, respRoom) VALUES (1, 'nomChambre', 333, 4, 'cool', 'd2c8a030-1252-11ed-9136-379a47a07441')")
+cursor.execute("INSERT INTO rooms_user (id, userId, roomsId) VALUES (1, 'd2c8a030-1252-11ed-9136-379a47a07441', 1)")
 
-conn.close()
+connection.commit()
+connection.close()
