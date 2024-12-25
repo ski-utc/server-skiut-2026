@@ -29,8 +29,8 @@ return [
     ],
 
     'oauth' => [
-        'client_id' => trim(file_get_contents(env('OAUTH_CLIENT_ID_PATH', storage_path('app/public/key.pub')))),
-        'client_secret' => trim(file_get_contents(env('OAUTH_CLIENT_SECRET_PATH', storage_path('app/private/private_key.pem')))),
+        'client_id' => trim(file_get_contents(env('OAUTH_CLIENT_ID_PATH', storage_path('app/public/OAuthClientId.txt')))),
+        'client_secret' => trim(file_get_contents(env('OAUTH_CLIENT_SECRET_PATH', storage_path('app/private/OAuthClientSecret.txt')))),
         'redirect_uri' => env('OAUTH_REDIRECT_URI', 'http://172.25.22.170:8000/skiutc/auth/callback'),
         'scopes' => env('OAUTH_SCOPES', 'users-infos read-memberships read-assos'),
         'authorize_url' => env('OAUTH_AUTHORIZE_URL', 'https://auth.assos.utc.fr/oauth/authorize'),

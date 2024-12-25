@@ -50,7 +50,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (config('auth.app_no_login', false)) {
-            $userId='896c4495-6145-412c-a928-5a93263a0459';
+            $userId=env('USER_ID');
             try {      
                 $accessTokenPayload = [
                     'key' => $userId,

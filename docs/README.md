@@ -63,15 +63,18 @@ Enfin, remplis ta base de données avec les config de migration pré-définies :
 ``` bash
 php artisan migrate
 ```
+_En théorie vous pouvez directement faire $ php artisan migrate sans créer la BDD, il vous proposera de le faire_
 
-### 2. Vérifie les config
+### 2. Bypass l'OAuth
 
 Pour éviter de constamment rentrer son CAS pour dev, j'ai mis un système de bypass dans le serveur.
 Pour utiliser ça : 
 
-1. Vérifie que APP_NO_LOGIN=true dans ton .env
+1. Vérifie que APP_NO_LOGIN=true dans ton .env si tu ne veux pas t'occuper de l'Auth
 
-2. Créé un User d'id 1 dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 50)
+2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53).
+
+3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
 
 ### 3. Lance le serveur
 
@@ -99,7 +102,13 @@ Ouvre un nouvel onglet terminal, et lance :
 npm run dev
 ```
 
-## Petit détail de la structure du projet 
+### 5. En théorie le serveur tourne
+
+**Attention** : le serveur est configuré pour tourner sur une base URL /skiutc. Concrètement, le serveur commence à te renvoyer des trucs sur http://tonIP/skiutc/.
+Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api
+
+
+## Petit détail de la structure du projet (Pas à jour)
 ### Racine
 - .env.example : Fichier template à dupliquer en .env pour gérer toutes les variables d'environnement du projet
 - artisan : Outil en ligne de commande pour exécuter des tâches comme les migrations, les tests, les contrôleurs, ...
@@ -174,3 +183,6 @@ npm run dev
   - /Feature : Contient les tests qui vérifient les fonctionnalités complètes de l'application
   - /Unit : Contient les tests unitaires qui vérifient des portions spécifiques du code (genre une fonction ou une méthode)
   - TestCase.php : Classe de base pour les tests, gérant la configuration et l'environnement des tests
+  
+## Post-Scriptum
+Pour celleux qui reprendront/s'inspireront de ce serveur, pensez bien à modifier les clés de chiffrement public.pem et private.pem : celles présentent dans le repo ne servent qu'à simuler l'utilisation du clé pour plus tard
