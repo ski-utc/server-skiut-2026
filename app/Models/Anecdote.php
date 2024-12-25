@@ -9,9 +9,6 @@ class Anecdote extends Model
 {
     /** @use HasFactory<\Database\Factories\AnecdoteFactory> */
     use HasFactory;
-
-    protected $keyType = 'string';
-    public $incrementing = false;
     
     protected $table = 'anecdotes';
     protected $fillable = ['id', 'text', 'room', 'valid', 'alert', 'delete', 'active'];

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transport_user', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignId('userId')->constrained()->onDelete('cascade');
             $table->foreignId('transportId')->constrained()->onDelete('cascade');
             $table->timestamps();

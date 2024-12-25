@@ -9,11 +9,9 @@ class User extends Authenticatable
 {
     use HasFactory;
 
-    protected $keyType = 'string';
-    public $incrementing = false;
-    
     protected $table = 'users';
-    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'password', 'location', 'admin'];  // cas et password à retirer ? ajouter type {utc-etu, exte} ? 
+
+    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'password', 'roomID', 'location', 'admin', 'alumniOrExte'];
 
 
     public function anecdotes()

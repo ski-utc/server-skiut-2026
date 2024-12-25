@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('statistics', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->unsignedInteger('maximumSpeed');
             $table->dateTime('startTime');
             $table->dateTime('endTime')->nullable(); // null au départ

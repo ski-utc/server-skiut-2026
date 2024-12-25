@@ -12,14 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('cas')->unique()->nullable();
-            $table->string('firstName')->nullable();
-            $table->string('lastName')->nullable();
-            $table->string('email');
+            $table->id();
+            $table->string('cas')->unique();
+            $table->string('firstName');
+            $table->string('lastName');
+            $table->string('email')->unique();
             $table->string('password')->nullable();
+            //$table->foreignId('roomID')->constrained()->onDelete('cascade'); // Foreign key to rooms table
+            $table->foreignId('roomID')->constrained('rooms', 'id')->onDelete('cascade');
             $table->string('location')->nullable(); // pas encore sûre - pour la géolocalisation 
-            $table->boolean('admin')->default(false)->nullable(); // true if team info
+            $table->boolean('admin'); // true if team info
+            $table->boolean('alumniOrExte'); 
             $table->timestamps();
         });
     }

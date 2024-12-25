@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('challenge_proofs', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->string('file'); // will contain jpg, png, mp4, etc. file path 
             $table->unsignedInteger('nbLikes')->default(0);
             $table->boolean('valid')->default(false); 
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('delete')->default(false);
             $table->boolean('active')->default(false);
             $table->foreignId('challengeId')->constrained(); // Foreign key to challenges table
-            $table->foreignId('roomId')->constrained()->onDelete('cascade'); // Foreign key to room table (hésite avec users)
+            $table->foreignId('roomID')->constrained()->onDelete('cascade'); // Foreign key to room table (hésite avec users)
             $table->timestamps();
         });
     }

@@ -10,3 +10,12 @@ Faire un slack BOT avec les config:services et un Controller
 Si on est chaud on fait un app/Http request pour mieux filtrer les requets, les erreurs et tout
 
 BroadCastServiceProvider, EventServiceProvider ?
+
+
+Pour lancer la bdd : 
+1. php artisan migrate:refresh 
+2. php artisan db:seed --class=RoomsSeeder 
+Avec dans RoomsSeeder : create décommenté, updateOrInsert commenté, userID => null décommenté
+3. php artisan import:data userImport.xlsx
+4. php artisan db:seed --class=RoomsSeeder 
+Avec dans RoomsSeeder : create commenté, updateOrInsert décommenté, userID => null commenté

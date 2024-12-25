@@ -9,9 +9,6 @@ class Activity extends Model
 {
     /** @use HasFactory<\Database\Factories\ActivityFactory> */
     use HasFactory;
-
-    protected $keyType = 'string';
-    public $incrementing = false;
     
     protected $table = 'activities';
     protected $fillable = ['id', 'date', 'title', 'meetingPoint', 'startTime', 'endTime']; 
