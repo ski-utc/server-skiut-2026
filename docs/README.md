@@ -72,9 +72,11 @@ Pour utiliser ça :
 
 1. Vérifie que APP_NO_LOGIN=true dans ton .env si tu ne veux pas t'occuper de l'Auth
 
-2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53).
+2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53). Par défaut j'ai mis '1' partout
 
 3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
+
+4. Faudra penser à modifier cet id dans l'app (dans _layout, au début, il y a une fonction de bypass) de sorte à ce que tu sois bien considéré comme le user que t'as choisi
 
 ### 3. Lance le serveur
 
