@@ -191,6 +191,8 @@ class AuthController extends Controller
                 return response()->json(['error' => 'User non trouvé'], 404);
             }
 
+            redirect(route('api-connected'));
+
             return response()->json([
                 'id'=> $user->id,
                 'name'=> $user->firstName,
@@ -206,6 +208,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        return redirect('https://auth.assos.utc.fr/logout');
+        $cookie = cookie('auth_session', null, -1);
+        return redirect('https://auth.assos.utc.fr/logout')->withCookie($cookie);
     }
 }
