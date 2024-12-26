@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('cas')->unique();
             $table->string('firstName');
             $table->string('lastName');
             $table->string('email')->unique();
-            $table->string('password')->nullable();
-            //$table->foreignId('roomID')->constrained()->onDelete('cascade'); // Foreign key to rooms table
-            $table->foreignId('roomID')->constrained('rooms', 'id')->onDelete('cascade');
+            $table->foreignId('roomID'); //->constrained('rooms', 'id')->onDelete('cascade');
             $table->string('location')->nullable(); // pas encore sûre - pour la géolocalisation 
             $table->boolean('admin'); // true if team info
             $table->boolean('alumniOrExte'); 

@@ -24,8 +24,9 @@ class EnsureTokenIsValid
     {
         $publicKey = config('services.crypt.public');
         $token = $request->bearerToken();
+
         if (!$token) {
-            return response()->json(['message'=>"JWT absent pour l'authentification",'JWT_ERROR'=>true],400);
+            return response()->json(['message'=>"JWT absent pour l'authentification",'JWT_ERROR'=>true],400);     
         }
         try{
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
@@ -38,12 +39,13 @@ class EnsureTokenIsValid
         } catch (UnexpectedValueException $e) {
             return response()->json(['message' => 'Le JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
         }        
-        $uuid = $decoded->key;
-        $user = User::find($uuid);
+        $id = $decoded->key;
+        $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => "Utilisateur non trouvé pour le token fourni", 'JWT_ERROR' => true], 404);
         }
-        $request->merge(['user' => $user->toArray()]);        
+        $request->merge(['user' => $user->toArray()]);
+
         return $next($request);
     }
 }

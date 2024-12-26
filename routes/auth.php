@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 | the logicfor each action.
 |
 */
+
 Route::prefix('/auth')->name('auth.')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])
         ->name('login');
@@ -20,13 +21,9 @@ Route::prefix('/auth')->name('auth.')->group(function () {
     Route::get('/callback', [AuthController::class, 'callback'])
         ->name('callback');
 
-    Route::middleware('refresh')->group(function () {
-        Route::post('/refresh', [AuthController::class, 'refresh'])
-            ->name('refresh');
-    });
+    Route::get('/refresh', [AuthController::class, 'refresh'])
+         ->name('refresh');
 
-    Route::middleware('auth')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])
-            ->name('logout');
-    });
+    Route::get('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
 });

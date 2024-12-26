@@ -156,17 +156,18 @@ class AuthController extends Controller
         } catch (UnexpectedValueException $e) {
             return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
         }        
-        $uuid = $decoded->key;
-        $user = User::find($uuid);
+        $id = $decoded->key;
+        $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => "Utilisateur non trouvé pour le refresh token fourni", 'JWT_ERROR' => true], 404);
         }
 
         $accessTokenPayload = [
-            'key' => $uuid,
+            'key' => $id,
             'exp' => now()->addMinutes(60)->timestamp,
         ];
-        $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
+        $privateKey = config("services.crypt.private");
+        $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
         return response()->json(['access_token'=>$accessToken]);
     }
@@ -182,9 +183,9 @@ class AuthController extends Controller
             $publicKey = config("services.crypt.public");
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));            
 
-            $uuid = $decoded->key;
+            $id = $decoded->key;
 
-            $user = User::where('id', $uuid)->first();
+            $user = User::where('id', $id)->first();
 
             if (!$user) {
                 return response()->json(['error' => 'User non trouvé'], 404);
@@ -194,13 +195,17 @@ class AuthController extends Controller
                 'id'=> $user->id,
                 'name'=> $user->firstName,
                 'lastName'=> $user->lastName,
-                'room'=>$user->room(),
-                'location'=> $user->location,
+                'room'=>$user->roomID,
                 'admin'=> $user->admin
             ]);
         } catch (\Exception $e) {
             Log::error("Error du décodage JWT " . $e->getMessage());
             return response()->json(['Erreur' => 'Invalid token'], 401);
         }
+    }
+
+    public function logout(Request $request)
+    {
+        return redirect('https://auth.assos.utc.fr/logout');
     }
 }
