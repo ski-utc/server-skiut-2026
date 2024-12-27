@@ -3,32 +3,62 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anecdote;
-use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\AnecdotesLike;
+use App\Models\AnecdotesWarn;
+use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class AnecdoteController extends Controller
 {
-    public function getAnecdotes()
+    public function getAnecdotes(Request $request)
     {
-        $userId = Auth::id();
-
-        $anecdotes = Anecdote::select('id', 'text', 'room', 'user_id')
-            ->with('user:id,name')
-            ->inRandomOrder()
-            ->limit(15)
+        $anecdotes = Anecdote::withCount('likes')  // Suppose que vous avez une relation avec `anecdotes_likes`
+            ->orderBy('likes_count', 'desc')  // Trier par le nombre de likes
+            ->take(10)
             ->get();
+    
+        return response()->json(['success' => true, 'data' => $anecdotes]);
+    }
 
-            $anecdotes->each(function ($anecdote) use ($userId) {
-                $anecdote->nbLikes = $anecdote->nbLikes();
-            });
-        
-            $anecdotes->each(function ($anecdote) use ($userId) {
-            $anecdote->liked = $anecdote->isLikedBy($userId) ? 1 : 0;
-        });
+    public function likeAnecdote(Request $request)
+    {
+        $userId = $request->user()->id;
+        $anecdoteId = $request->input('anecdoteId');
 
-        $anecdotes->each(function ($anecdote) use ($userId) {
-            $anecdote->warn = $anecdote->isWarnedBy($userId) ? 1 : 0;
-        });
+        // Ajouter un like à l'anecdote
+        AnecdotesLike::create(['userId' => $userId, 'anecdoteId' => $anecdoteId]);
 
-        return response()->json($anecdotes);
+        return response()->json(['success' => true]);
+    }
+
+    public function warnAnecdote(Request $request)
+    {
+        $userId = $request->user()->id;
+        $anecdoteId = $request->input('anecdoteId');
+
+        // Ajouter une alerte à l'anecdote
+        AnecdotesWarn::create(['userId' => $userId, 'anecdoteId' => $anecdoteId]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function sendAnecdote(Request $request){
+        try{
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $userId = $decoded->key;
+    
+            $text = $request->input('texte');
+
+            $room = User::where('id', $userId)->first()->roomID;
+    
+            Anecdote::create(["text"=>$text, 'room'=>$room, 'userId'=>$userId]);
+            return response()->json(['success' =>true, "message"=>"Anecdote postée avec succès !"]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, "message"=>"Erreur".$e]);
+        }    
     }
 }

@@ -11,7 +11,7 @@ class Anecdote extends Model
     use HasFactory;
     
     protected $table = 'anecdotes';
-    protected $fillable = ['id', 'text', 'room', 'valid', 'alert', 'delete', 'active'];
+    protected $fillable = ['id', 'text', 'room', 'userId', 'valid', 'alert', 'delete', 'active'];
 
     // Define the inverse relationship with User
     public function user()
