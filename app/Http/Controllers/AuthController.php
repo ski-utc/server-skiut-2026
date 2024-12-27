@@ -56,15 +56,16 @@ class AuthController extends Controller
                     'key' => $userId,
                     'exp' => now()->addMinutes(60)->timestamp,
                 ];
-                $accessToken = JWT::encode($accessTokenPayload, env('APP_JWT_SECRET'), 'RS256');
+                $privateKey = config("services.crypt.private");
+                $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
     
                 $refreshTokenPayload = [
                     'key' => $userId,
                     'exp' => now()->addDays(30)->timestamp,
                 ];
-                $refreshToken = JWT::encode($refreshTokenPayload, env('APP_JWT_SECRET'), 'RS256');
+                $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
     
-                return response()->json([
+                return redirect()->route('api-connected',[
                     'access_token' => $accessToken,
                     'refresh_token' => $refreshToken,
                 ]);
