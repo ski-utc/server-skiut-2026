@@ -51,20 +51,20 @@ class AuthController extends Controller
     {
         if (config('auth.app_no_login', false)) {
             $userId=env('USER_ID');
-            try {      
+            try {
                 $accessTokenPayload = [
                     'key' => $userId,
                     'exp' => now()->addMinutes(60)->timestamp,
                 ];
                 $privateKey = config("services.crypt.private");
                 $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
-    
+
                 $refreshTokenPayload = [
                     'key' => $userId,
                     'exp' => now()->addDays(30)->timestamp,
                 ];
                 $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
-    
+
                 return redirect()->route('api-connected',[
                     'access_token' => $accessToken,
                     'refresh_token' => $refreshToken,
@@ -129,7 +129,7 @@ class AuthController extends Controller
                 'exp' => now()->addDays(30)->timestamp,
             ];
             $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
-                        
+
             return redirect()->route('api-connected',[
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
@@ -156,7 +156,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
         } catch (UnexpectedValueException $e) {
             return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
-        }        
+        }
         $id = $decoded->key;
         $user = User::find($id);
         if (!$user) {
@@ -182,12 +182,12 @@ class AuthController extends Controller
 
         try {
             $publicKey = config("services.crypt.public");
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));            
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
 
             $id = $decoded->key;
 
             $user = User::where('id', $id)->first();
-
+            Log::error($user);
             if (!$user) {
                 return response()->json(['error' => 'User non trouvé'], 404);
             }
