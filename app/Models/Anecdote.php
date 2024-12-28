@@ -7,39 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Anecdote extends Model
 {
-    /** @use HasFactory<\Database\Factories\AnecdoteFactory> */
     use HasFactory;
-    
+
     protected $table = 'anecdotes';
     protected $fillable = ['id', 'text', 'room', 'userId', 'valid', 'alert', 'delete', 'active'];
 
-    // Define the inverse relationship with User
     public function user()
     {
-        return $this->belongsTo(User::class);   
+        return $this->belongsTo(User::class);
     }
 
-    // Nombre de likes
-    public function nbLikes()
+    public function likes()
     {
-        return $this->hasMany(AnecdotesLike::class);
+        return $this->hasMany(AnecdotesLike::class, 'anecdote_id');
     }
 
-    // Nombre de warn
-    public function nbWarn()
+    public function warns()
     {
-        return $this->hasMany(AnecdotesWarn::class);
-    }
-
-    // Vérifie si un utilisateur a liké cette anecdote
-    public function isLikedBy($userId)
-    {
-        return $this->nbLikes()->where('user_id', $userId)->exists();
-    }
-
-    // Vérifie si un utilisateur a signalé cette anecdote
-    public function isWarnedBy($userId)
-    {
-        return $this->nbWarn()->where('user_id', $userId)->exists();
+        return $this->hasMany(AnecdotesWarn::class, 'anecdote_id');
     }
 }

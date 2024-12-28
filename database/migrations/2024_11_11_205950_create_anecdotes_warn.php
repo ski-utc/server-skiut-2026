@@ -10,16 +10,16 @@ return new class extends Migration
     {
         Schema::create('anecdotes_warn', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('userId')->references('id')->on('users')->onDelete('cascade');
-            $table->foreignId('anecdoteId')->references('id')->on('anecdotes')->onDelete('cascade');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('anecdote_id')->references('id')->on('anecdotes')->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['userId', 'anecdoteId']);
+            $table->unique(['user_id', 'anecdote_id']);
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('anecdotesWarn');
+        Schema::dropIfExists('anecdotes_warn');
     }
 };
