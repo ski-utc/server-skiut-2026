@@ -40,6 +40,7 @@ class AnecdoteController extends Controller
                     'liked' => $anecdote->likes()->where('user_id', $userId)->exists(),
                     'nbLikes' => $anecdote->likes_count,
                     'warned' => $anecdote->warns()->where('user_id', $userId)->exists(),
+                    'authorId' => $anecdote->userId,
                 ];
             });
     
@@ -121,4 +122,33 @@ class AnecdoteController extends Controller
             return response()->json(['success' => false, "message"=>"Erreur".$e]);
         }    
     }
+
+    public function deleteAnecdote(Request $request)
+    {
+        try {
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $userId = $decoded->key;
+    
+            $anecdoteId = $request->input('anecdoteId');
+    
+            $anecdote = Anecdote::find($anecdoteId);
+    
+            if (!$anecdote) {
+                return response()->json(['success' => false, 'message' => 'Anecdote introuvable.']);
+            }
+    
+            if ($anecdote->userId !== $userId) {
+                return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas autorisé à supprimer cette anecdote.']);
+            }
+    
+            $anecdote->delete();
+    
+            return response()->json(['success' => true, 'message' => 'Anecdote supprimée avec succès.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+        }
+    }
+    
 }

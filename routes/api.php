@@ -21,6 +21,7 @@ Route::post('/getAnecdotes', [\App\Http\Controllers\AnecdoteController::class, '
 Route::post('/likeAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'likeAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/warnAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'warnAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/sendAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'sendAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'deleteAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 
