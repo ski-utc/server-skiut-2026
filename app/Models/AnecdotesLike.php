@@ -9,6 +9,7 @@ class AnecdotesLike extends Model
 {
     use HasFactory;
 
+    protected $table = 'anecdotes_likes';
     protected $fillable = ['user_id', 'anecdote_id'];
 
     public function user()
