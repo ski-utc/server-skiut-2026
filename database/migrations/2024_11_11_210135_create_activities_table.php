@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->date('date');
-            $table->string('title');
-            $table->string('meetingPoint');
+            $table->string('text');
             $table->time('startTime');
             $table->time('endTime');
             $table->timestamps();
