@@ -49,7 +49,7 @@ class ChallengesSeeder extends Seeder
             ['title' => 'Dépasser les 100km/h de vitesse max sur Strava', 'nbPoints' => 30],
             ['title' => 'Prendre une photo avec le charlie des pistes', 'nbPoints' => 25],
             ['title' => 'Faire un petit dej au lit à la team anim et à la team info', 'nbPoints' => 10],
-            ['title' => 'Aller se plaindre que ça bug à la team info', 'nbPoints' => 10],
+            ['title' => 'Aller se plaindre que ça bug à la team info', 'nbPoints' => -5],
             ['title' => 'Faire un dessin à la team anim', 'nbPoints' => 10],
             ['title' => 'Faire une chanson à la team anim', 'nbPoints' => 10],
             ['title' => 'Faire un virement à la team anim', 'nbPoints' => 10],
@@ -64,6 +64,7 @@ class ChallengesSeeder extends Seeder
             ['title' => 'Faire sa meilleure figure sur l\'air bag', 'nbPoints' => 15],
             ['title' => 'Faire un tour en hélico', 'nbPoints' => 100],
             ['title' => 'Rentrer dans un bar avec les skis au pieds', 'nbPoints' => 20],
+            ['title' => 'Payer la tournée à la team info', 'nbPoints' => 20], 
         ];
 
         foreach ($challenges as $challenge) {

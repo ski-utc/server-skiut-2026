@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function createOrUpdateUser($userDetails)
     {
-        $user = User::updateOrCreate(
+        $user = User::updateOrCreate( // va être un find User pour s'assurer que c'est un participant
             ['uuid' => $userDetails['uuid']],
             [
                 'cas' => $userDetails['provider_data']['username'] ?? 'undefined',
