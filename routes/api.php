@@ -13,7 +13,6 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 /************************************************************** Login *************************************************************/
 Route::get('/connected', function () { return view("api-connected")->name('api-connected');});
 Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-
 /**********************************************************************************************************************************/
 
 
@@ -35,5 +34,8 @@ Route::post('/sendAnecdote', [\App\Http\Controllers\AnecdoteController::class, '
 Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'deleteAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
+/************************************************************** Administration *************************************************************/
+Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'getAdmin'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+/**************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';

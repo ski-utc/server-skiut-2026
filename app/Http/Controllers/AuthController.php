@@ -49,6 +49,8 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        console.log("AuthController: login");
+        Log::error('AuthController: login');
         if (config('auth.app_no_login', false)) {
             Log::notice("No login needed, using default user id");
             $userId=env('USER_ID');

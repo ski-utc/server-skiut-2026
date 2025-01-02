@@ -99,8 +99,8 @@ class RoomsSeeder extends Seeder
             ['name' => 'La montagne à la montagne', 'roomNumber' => 'A212', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 317791],
             ['name' => 'Basic Shit', 'roomNumber' => 'A213', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => 317857],
             ['name' => 'Dah\'ut', 'roomNumber' => 'A214', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 317105],
-            ['name' => 'L\'avachambre', 'roomNumber' => 'A216', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 316631], /*
-            ['name' => 'GX15', 'roomNumber' => 'B001', 'capacity' => 2, 'mood' => '+', 'totalPoints' => 0, 'userID' => null],
+            ['name' => 'L\'avachambre', 'roomNumber' => 'A216', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 316631], 
+            /*['name' => 'GX15', 'roomNumber' => 'B001', 'capacity' => 2, 'mood' => '+', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'After Ski', 'roomNumber' => 'B002', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Tout schuss', 'roomNumber' => 'B003', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Les skibidis', 'roomNumber' => 'B004', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0, 'userID' => null],
