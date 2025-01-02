@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('createdAt');
-            $table->dateTime('expiresAt')->nullable(); 
+            $table->text('title');
             $table->text('description');
-            $table->boolean('active')->default(false); // if between createdAt and expiresAt: true
             $table->timestamps();
         });
     }

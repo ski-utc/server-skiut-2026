@@ -17,6 +17,16 @@ Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUse
 /**********************************************************************************************************************************/
 
 
+/************************************************************** Notifications *************************************************************/
+Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/**************************************************************************************************************************************/
+
+
+/************************************************************** Planning *************************************************************/
+Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/**************************************************************************************************************************************/
+
+
 /************************************************************** Anecdotes *************************************************************/
 Route::post('/getAnecdotes', [\App\Http\Controllers\AnecdoteController::class, 'getAnecdotes'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/likeAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'likeAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
