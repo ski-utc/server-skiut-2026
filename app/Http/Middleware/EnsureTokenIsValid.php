@@ -12,6 +12,7 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class EnsureTokenIsValid
 {
@@ -46,7 +47,8 @@ class EnsureTokenIsValid
         }
         $request->merge(['user' => $user->toArray()]);
 
+        log::notice("ensure token validity MW : ", [$request, $user]); 
+
         return $next($request);
     }
 }
-

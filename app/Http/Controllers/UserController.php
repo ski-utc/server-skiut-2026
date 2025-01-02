@@ -22,7 +22,7 @@ class UserController extends Controller
                 'firstName' => $userDetails['firstName'],
                 'lastName' => $userDetails['lastName'],
                 'email' => $userDetails['email'],
-                'roomID' => $userDetails['roomID'] ?? 0,
+                'roomID' => $userDetails['roomID'] ?? 1,
                 'location' => $userDetails['location'] ?? null,
                 'admin' => $userDetails['admin'] ?? false,
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false
