@@ -11,19 +11,24 @@ class ChallengeProof extends Model
     use HasFactory;
 
     
-    protected $table = 'proofs';
-    protected $fillable = ['id', 'file', 'nbLikes', 'valid', 'alert', 'delete', 'active']; 
+    protected $table = 'challenge_proofs';
+    protected $fillable = ['id', 'file', 'nbLikes', 'valid', 'alert', 'delete', 'active', 'room_id', 'user_id', 'challenge_id'];
 
     // Define the inverse relationship with Room
     public function room()
     {
-        return $this->belongsTo(Room::class);
+        return $this->belongsTo(Room::class, 'room_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Define the inverse relationship with Challenge
     public function challenge()
     {
-        return $this->belongsTo(Challenge::class);
+        return $this->belongsTo(Challenge::class, 'challenge_id');
     }
 
 }
