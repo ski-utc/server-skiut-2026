@@ -10,8 +10,8 @@ return [
     |
     */
     'keys' => [
-        'public' => env('JWT_PUBLIC_KEY_PATH', storage_path('public/key.pub')),
-        'private' => env('JWT_PRIVATE_KEY_PATH', storage_path('private/private_key.pem')),
+        'public' => env('JWT_PUBLIC_KEY_PATH', storage_path('app/public/public.pem')),
+        'private' => env('JWT_PRIVATE_KEY_PATH', storage_path('app/private/private.pem')),
     ],
 
     /*

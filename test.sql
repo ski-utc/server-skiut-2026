@@ -10,4 +10,10 @@ SELECT * FROM users WHERE id = 316449;
 
 DELETE FROM users;
 
+DROP TABLE personal_access_tokens;
+
+DELETE FROM users WHERE id = 334859;
+
 PRAGMA table_info(rooms);
+
+INSERT INTO activities (id, name, description) VALUES (1, 'Test Activity', 'This is a test activity.');

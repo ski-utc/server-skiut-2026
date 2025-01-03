@@ -11,8 +11,9 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 
 
 /************************************************************** Login *************************************************************/
-Route::get('/connected', function () { return view("api-connected");})->name('api-connected');
+Route::get('/connected', function () { return view("api-connected")->name('api-connected');});
 Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+
 /**********************************************************************************************************************************/
 
 

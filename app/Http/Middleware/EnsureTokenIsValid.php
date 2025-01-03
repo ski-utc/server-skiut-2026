@@ -12,6 +12,7 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 
 class EnsureTokenIsValid
 {
@@ -49,4 +50,3 @@ class EnsureTokenIsValid
         return $next($request);
     }
 }
-

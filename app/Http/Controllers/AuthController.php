@@ -49,6 +49,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (config('auth.app_no_login', false)) {
+            Log::notice("No login needed, using default user id");
             $userId=env('USER_ID');
             try {
                 $accessTokenPayload = [
@@ -73,6 +74,7 @@ class AuthController extends Controller
             }
         }
 
+        Log::notice("Login needed, redirecting to OAuth2 provider");
         // Generate a random state parameter
         $state = bin2hex(random_bytes(16));
         $request->session()->put('oauth2state', $state);
@@ -81,6 +83,8 @@ class AuthController extends Controller
         $authorizationUrl = $this->provider->getAuthorizationUrl([
             'state' => $state
         ]);
+
+        Log::notice("Redirecting to OAuth2 provider: " . $authorizationUrl);
 
         return redirect($authorizationUrl);
     }
