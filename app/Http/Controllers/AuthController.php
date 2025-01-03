@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Illuminate\Support\Facades\Log;
 use UnexpectedValueException;
 use LogicException;
 use Firebase\JWT\ExpiredException;
@@ -52,7 +51,6 @@ class AuthController extends Controller
         console.log("AuthController: login");
         Log::error('AuthController: login');
         if (config('auth.app_no_login', false)) {
-            Log::notice("No login needed, using default user id");
             $userId=env('USER_ID');
             try {
                 $accessTokenPayload = [
@@ -73,12 +71,10 @@ class AuthController extends Controller
                     'refresh_token' => $refreshToken,
                 ]);
             } catch (\Exception $e) {
-                Log::error("Callback error: " . $e->getMessage());
-                return response()->json(['error' => 'Authentication failed'], 400);
+                return response()->json(['message' => 'Login error :'. $e->getMessage()], 400);
             }
         }
 
-        Log::notice("Login needed, redirecting to OAuth2 provider");
         // Generate a random state parameter
         $state = bin2hex(random_bytes(16));
         $request->session()->put('oauth2state', $state);
@@ -88,15 +84,13 @@ class AuthController extends Controller
             'state' => $state
         ]);
 
-        Log::notice("Redirecting to OAuth2 provider: " . $authorizationUrl);
-
         return redirect($authorizationUrl);
     }
 
     /**
      * Handle the OAuth2 callback.
      */
-    public function callback(Request $request, UserController $userController)
+    public function callback(Request $request)
     {
         $storedState = $request->session()->pull('oauth2state');
 
@@ -118,10 +112,17 @@ class AuthController extends Controller
             $userDetails = $resourceOwner->toArray();
 
             if ($userDetails['deleted_at'] != null || $userDetails['active'] != 1) {
-                abort(401, 'Account deleted or deactivated');
+                abort(401, 'Compte supprimé ou désactivé');
             }
 
-            $user = $userController->createOrUpdateUser($userDetails);
+            $user=User::where('email',$userDetails['email'])->first();
+            if (!$user) {
+                abort(401,"Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée");
+            }
+
+            if ($userDetails['provider'] != 'cas') {
+                $user::update('alumniOrExte', true);
+            }
 
             $accessTokenPayload = [
                 'key' => $user->id,
@@ -141,7 +142,7 @@ class AuthController extends Controller
                 'refresh_token' => $refreshToken,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Authentication failed', "Callback error: " => $e->getMessage()], 400);
+            return response()->json(['message' => "Callback error: " . $e->getMessage()], 400);
         }
     }
 
@@ -193,14 +194,12 @@ class AuthController extends Controller
             $id = $decoded->key;
 
             $user = User::where('id', $id)->first();
-            Log::error($user);
             if (!$user) {
-                return response()->json(['error' => 'User non trouvé'], 404);
+                return response()->json(['success' => 'false', 'message'=>'utilisateur non trouvé'], 404);
             }
 
-            redirect(route('api-connected'));
-
             return response()->json([
+                'success'=>true,
                 'id'=> $user->id,
                 'name'=> $user->firstName,
                 'lastName'=> $user->lastName,
@@ -208,12 +207,11 @@ class AuthController extends Controller
                 'admin'=> $user->admin
             ]);
         } catch (\Exception $e) {
-            Log::error("Error du décodage JWT " . $e->getMessage());
-            return response()->json(['Erreur' => 'Invalid token'], 401);
+            return response()->json(['success' => 'false', 'message'=>'Invalid Token'], 401);
         }
     }
 
-    public function logout(Request $request)
+    public function logout()
     {
         $cookie = cookie('auth_session', null, -1);
         return redirect('https://auth.assos.utc.fr/logout')->withCookie($cookie);

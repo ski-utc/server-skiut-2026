@@ -15,14 +15,13 @@ class UserController extends Controller
      */
     public function createOrUpdateUser($userDetails)
     {
-        $user = User::updateOrCreate( // va être un find User pour s'assurer que c'est un participant
-            ['uuid' => $userDetails['uuid']],
+        $user = User::updateOrCreate(
+            ['email' => $userDetails['email']],
             [
                 'cas' => $userDetails['provider_data']['username'] ?? 'undefined',
                 'firstName' => $userDetails['firstName'],
                 'lastName' => $userDetails['lastName'],
-                'email' => $userDetails['email'],
-                'roomID' => $userDetails['roomID'] ?? 1,
+                'roomID' => $userDetails['roomID'] ?? 0,
                 'location' => $userDetails['location'] ?? null,
                 'admin' => $userDetails['admin'] ?? false,
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false
