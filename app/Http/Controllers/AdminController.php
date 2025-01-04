@@ -155,14 +155,17 @@ class AdminController extends Controller
       
               // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
               $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
- 
-              Log::info($anecdote->toArray());
+              $nbLikes = $anecdote->likes()->count();
+              $nbWarns = $anecdote->warns()->count();
 
       
               return response()->json([
                   'success' => true,
-                  'data' => $anecdote
+                  'data' => $anecdote, 
+                  'nbLikes' => $nbLikes,
+                  'nbWarns' => $nbWarns
               ]);
+              Log::notice('response: ' . $response);
           } catch (\Exception $e) {
               return response()->json([
                   'success' => false,
@@ -175,35 +178,40 @@ class AdminController extends Controller
      /**
       * Met à jour le statut de validation d'une anecdote (valider ou invalider)
       */
-     public function updateAnecdoteStatus(Request $request, $id, $status)
-     {
-         try {
-             $anecdote = Anecdote::findOrFail($id);
- 
-             $valid = $request->input('valid', null); // 1 pour valider, 0 pour invalider
- 
-             if ($valid === null) {
-                 return response()->json([
-                     'success' => false,
-                     'message' => 'Le paramètre "valid" est requis (1 pour valider, 0 pour invalider).',
-                 ]);
-             }
- 
-             // Mise à jour du statut de validation
-             $anecdote->valid = $valid;
-             $anecdote->save();
- 
-             return response()->json([
-                 'success' => true,
-                 'message' => $valid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
-             ]);
-         } catch (\Exception $e) {
-             return response()->json([
-                 'success' => false,
-                 'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
-             ], 500);
-         }
-     }
+      public function updateAnecdoteStatus(Request $request, $id)
+      {
+          try {
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $userId = $decoded->key;
+              $anecdote = Anecdote::findOrFail($id);      
+              // Récupérer la valeur "valid" du corps de la requête
+              $valid = $request->input('valid'); // 1 pour valider, 0 pour invalider
+      
+              if ($valid === null) {
+                  return response()->json([
+                      'success' => false,
+                      'message' => 'Le paramètre "valid" est requis (1 pour valider, 0 pour invalider).',
+                  ]);
+              }
+      
+              // Mise à jour du statut de validation
+              $anecdote->valid = $valid;
+              $anecdote->save();
+      
+              return response()->json([
+                  'success' => true,
+                  'message' => $valid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
+              ]);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
+              ], 500);
+          }
+      }
+      
      /**
       * Gestion des notifications
       */
