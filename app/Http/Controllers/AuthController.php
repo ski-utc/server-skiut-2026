@@ -184,32 +184,42 @@ class AuthController extends Controller
      * Récupère les informations de l'utilisateur à partir d'un token.
      */
     public function getUserData(Request $request)
-    {
-        $token = $request->bearerToken();
+{
+    $token = $request->bearerToken();
 
-        try {
-            $publicKey = config("services.crypt.public");
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+    try {
+        $publicKey = config("services.crypt.public");
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
 
-            $id = $decoded->key;
+        $id = $decoded->key;
 
-            $user = User::where('id', $id)->first();
-            if (!$user) {
-                return response()->json(['success' => 'false', 'message'=>'utilisateur non trouvé'], 404);
-            }
+        // Load the user along with the associated room data
+        $user = User::with('room')->where('id', $id)->first();
 
-            return response()->json([
-                'success'=>true,
-                'id'=> $user->id,
-                'name'=> $user->firstName,
-                'lastName'=> $user->lastName,
-                'room'=>$user->roomID,
-                'admin'=> $user->admin
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => 'false', 'message'=>'Invalid Token'], 401);
+        if (!$user) {
+            return response()->json(['success' => 'false', 'message' => 'Utilisateur non trouvé'], 404);
         }
+
+        // Get the room name if the room is found
+        $roomName = $user->room ? $user->room->name : null;
+
+        Log::notice('room' . $user->room );
+        Log::notice('room name: ' . $roomName);
+
+        return response()->json([
+            'success' => true,
+            'id' => $user->id,
+            'name' => $user->firstName,
+            'lastName' => $user->lastName,
+            'room' => $user->roomID,
+            'roomName' => $roomName,  // Add room name to the response
+            'admin' => $user->admin
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => 'false', 'message' => 'Invalid Token'], 401);
     }
+}
+
 
     public function logout()
     {

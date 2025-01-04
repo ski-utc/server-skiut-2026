@@ -26,7 +26,7 @@ class User extends Authenticatable
 
     public function room()
     {
-        return $this->belongsTo(Room::class, 'rooms_user', 'userId', 'roomsId');
+        return $this->belongsTo(Room::class, 'roomID');
     }
 
     public function transports()
