@@ -178,31 +178,32 @@ class AdminController extends Controller
      /**
       * Met à jour le statut de validation d'une anecdote (valider ou invalider)
       */
-      public function updateAnecdoteStatus(Request $request, $id)
+      public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
       {
+        Log::notice('updateAnecdoteStatus/' . $anecdoteId);
+        Log::notice('isValid: ' . $isValid);    
           try {
             $publicKey = config('services.crypt.public');
             $token = $request->bearerToken();
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
             $userId = $decoded->key;
-              $anecdote = Anecdote::findOrFail($id);      
-              // Récupérer la valeur "valid" du corps de la requête
-              $valid = $request->input('valid'); // 1 pour valider, 0 pour invalider
+
+              $anecdote = Anecdote::findOrFail($anecdoteId);    
       
-              if ($valid === null) {
+              if ($isValid === null) {
                   return response()->json([
                       'success' => false,
-                      'message' => 'Le paramètre "valid" est requis (1 pour valider, 0 pour invalider).',
+                      'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
                   ]);
               }
       
               // Mise à jour du statut de validation
-              $anecdote->valid = $valid;
+              $anecdote->valid = $isValid;
               $anecdote->save();
       
               return response()->json([
                   'success' => true,
-                  'message' => $valid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
+                  'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
               ]);
           } catch (\Exception $e) {
               return response()->json([
