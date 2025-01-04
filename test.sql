@@ -18,3 +18,4 @@ PRAGMA table_info(rooms);
 
 UPDATE users SET admin = true WHERE id = 316050;
 
+SELECT * FROM anecdotes WHERE id = 12;

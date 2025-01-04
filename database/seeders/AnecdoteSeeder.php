@@ -12,7 +12,7 @@ class AnecdoteSeeder extends Seeder
         Anecdote::truncate();
         $anecdotes = [
             [ # en attente
-                'text' => 'Anecdote 1',
+                'text' => 'louise a mangé une pomme hier soir !',
                 'room' => '52',
                 'userId' => 316050,
                 'valid' => false,
@@ -94,6 +94,15 @@ class AnecdoteSeeder extends Seeder
             ],
             [ # toutes
                 'text' => 'Anecdote 10',
+                'room' => '53',
+                'userId' => 316366,
+                'valid' => true,
+                'alert' => 0,
+                'delete' => false,
+                'active' => true
+            ],
+            [ # toutes
+                'text' => 'Anecdote 11',
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => true,
