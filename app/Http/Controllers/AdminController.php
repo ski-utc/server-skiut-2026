@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\User;
 use App\Models\ChallengeProof;
+use App\Models\Anecdote; 
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -46,7 +47,7 @@ class AdminController extends Controller
      * Gestion des défis 
      */
 
-     public function getAllChallenges(Request $request)
+     public function getAdminChallenges(Request $request)
      {
          try {
              $publicKey = config('services.crypt.public');
@@ -76,8 +77,8 @@ class AdminController extends Controller
              $data = $challenges->map(function ($challenge) {
                  return [
                      'id' => $challenge->id,
-                     'text' => $challenge->file,
-                     'nbLikes' => $challenge->nbLikes,
+                     'file' => $challenge->file,
+                     'nbLikes' => $challenge->nb_likes,
                      'valid' => $challenge->valid,
                      'alert' => $challenge->alert,
                      'delete' => $challenge->delete,
@@ -99,6 +100,48 @@ class AdminController extends Controller
     /**
      * Gestion des anecdotes 
      */
+
+     public function getAdminAnecdotes(Request $request)
+    {
+        try {
+            // Récupération des paramètres de filtre (facultatifs)
+            $filter = $request->query('filter', 'all');
+
+            // Construire la requête de base
+            $query = Anecdote::with(['user', 'likes', 'warns']);
+
+            // Appliquer les filtres
+            switch ($filter) {
+                case 'pending':
+                    $query->where('valid', false);
+                    break;
+
+                case 'reported':
+                    $query->where('alert', '>', 0);
+                    break;
+
+                case 'all':
+                default:
+                    // Pas de filtre spécifique
+                    break;
+            }
+
+            // Récupérer les anecdotes
+            $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
+                ->orderBy('created_at', 'desc') // Trier par date de création
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $anecdotes,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des anecdotes : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 
 
      /**

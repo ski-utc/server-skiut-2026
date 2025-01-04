@@ -17,3 +17,4 @@ DELETE FROM users WHERE id = 334859;
 PRAGMA table_info(rooms);
 
 UPDATE users SET admin = true WHERE id = 316050;
+

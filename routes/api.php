@@ -36,6 +36,8 @@ Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class,
 
 /************************************************************** Administration *************************************************************/
 Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'getAdmin'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::get('/getAdminChallenges', [\App\Http\Controllers\AdminController::class, 'getAdminChallenges']);
+Route::get('/getAdminAnecdotes', [\App\Http\Controllers\AdminController::class, 'getAdminAnecdotes']);
 /**************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';
