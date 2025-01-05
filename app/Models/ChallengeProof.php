@@ -12,8 +12,8 @@ class ChallengeProof extends Model
 
     
     protected $table = 'challenge_proofs';
-    protected $fillable = ['id', 'file', 'nbLikes', 'valid', 'alert', 'delete', 'active', 'room_id', 'user_id', 'challenge_id'];
-
+    protected $fillable = ['id', 'file', 'nb_likes', 'valid', 'alert', 'delete', 'active', 'room_id', 'user_id', 'challenge_id'];
+    
     // Define the inverse relationship with Room
     public function room()
     {

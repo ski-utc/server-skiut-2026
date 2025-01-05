@@ -48,52 +48,45 @@ class AdminController extends Controller
      */
 
      public function getAdminChallenges(Request $request)
-     {
-         try {
-             $publicKey = config('services.crypt.public');
-             $token = $request->bearerToken();
-             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-             $userId = $decoded->key;
-      
-             $user = User::find($userId);
-      
-             if (!$user || !$user->admin) {
-                 Log::notice('AdminController: L\'utilisateur n\'est pas un admin');
-                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
-             }
-     
-             $quantity = $request->input('quantity', 10);
-      
-             if (!is_numeric($quantity) || (int)$quantity <= 0) {
-                 return response()->json(['success' => false, 'message' => 'Le paramètre quantity doit être un entier positif.']);
-             }
-      
-             $challenges = Challenge::with(['room', 'user'])
-                 ->withCount('likes')
-                 ->orderBy('id', 'desc')
-                 ->take((int)$quantity)
-                 ->get();
-      
-             $data = $challenges->map(function ($challenge) {
-                 return [
-                     'id' => $challenge->id,
-                     'file' => $challenge->file,
-                     'nbLikes' => $challenge->nb_likes,
-                     'valid' => $challenge->valid,
-                     'alert' => $challenge->alert,
-                     'delete' => $challenge->delete,
-                     'active' => $challenge->active,
-                     'authorId' => $challenge->user_id, // Récupère l'ID de l'auteur
-                     'roomId' => $challenge->room_id, // Récupère l'ID de la room
-                     'challengeId' => $challenge->challenge_id, // Récupère le nom de la room
-                 ];
-             });
-      
-             return response()->json(['success' => true, 'data' => $data]);
-         } catch (\Exception $e) {
-             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
-         }
-     }
+{
+    try {
+        // Retrieve filter parameter (optional)
+        $filter = $request->query('filter', 'all');
+
+        // Build the base query
+        $query = ChallengeProof::with(['room', 'user', 'challenge']); // Assuming these are the related models
+
+        // Apply filters
+        switch ($filter) {
+            case 'pending':
+                $query->where('delete', false)->where('valid', false);
+                break;
+
+            case 'deleted':
+                $query->where('delete', true);
+                break;
+
+            case 'all':
+            default:
+                break;
+        }
+
+        // Fetch challenges
+        $challenges = $query->orderBy('id', 'desc') // Sort by creation date
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $challenges,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
      
 
 

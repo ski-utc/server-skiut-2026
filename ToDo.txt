@@ -21,3 +21,4 @@ Avec dans RoomsSeeder : create décommenté, updateOrInsert commenté, userID =>
 Avec dans RoomsSeeder : create commenté, updateOrInsert décommenté, userID => null commenté
 5. php artisan db:seed --class=ChallengesSeeder
 6. php artisan db:seed --class=AnecdoteSeeder
+7. php artisan db:seed --class=ChallengeProofsSeeder
