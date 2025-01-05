@@ -279,7 +279,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 {
     try {
         // Fetch notifications sorted by creation date
-        $notifications = Notification::orderBy('created_at', 'desc')->where('delete', false)->get();
+        $notifications = Notification::orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'success' => true,
