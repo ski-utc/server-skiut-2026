@@ -232,43 +232,6 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       }
       
  
-      /**
-       * Delete notification
-       */
-      public function deleteNotification(Request $request, $notificationId, $delete)
-      {
-          Log::notice('delete: ' . $delete);
-          try {
-              $publicKey = config('services.crypt.public');
-              $token = $request->bearerToken();
-              $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-              $userId = $decoded->key;
-      
-              $notification = Notification::findOrFail($notificationId); // Assuming you have a Notification model
-              Log::notice('notification: ' . $notification);
-      
-              if ($delete === null) {
-                  return response()->json([
-                      'success' => false,
-                      'message' => 'Le paramètre "delete" est requis (1 pour supprimer, 0 pour annuler).',
-                  ]);
-              }
-      
-              // Mise à jour du statut de suppression
-              $notification->delete = $delete; // Assuming there is a 'deleted' field in the Notification model
-              $notification->save();
-      
-              return response()->json([
-                  'success' => true,
-                  'message' => $delete ? 'Notification supprimée avec succès.' : 'Suppression annulée avec succès.',
-              ]);
-          } catch (\Exception $e) {
-              return response()->json([
-                  'success' => false,
-                  'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
-              ], 500);
-          }
-      }
       
       
      /**
@@ -352,5 +315,42 @@ public function sendIndividualNotification(Request $request, $userId)
     return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
 }
 
+      /**
+       * Delete notification
+       */
+      public function deleteNotification(Request $request, $notificationId, $delete)
+      {
+          Log::notice('delete: ' . $delete);
+          try {
+              $publicKey = config('services.crypt.public');
+              $token = $request->bearerToken();
+              $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+              $userId = $decoded->key;
+      
+              $notification = Notification::findOrFail($notificationId); // Assuming you have a Notification model
+              Log::notice('notification: ' . $notification);
+      
+              if ($delete === null) {
+                  return response()->json([
+                      'success' => false,
+                      'message' => 'Le paramètre "delete" est requis (1 pour supprimer, 0 pour annuler).',
+                  ]);
+              }
+      
+              // Mise à jour du statut de suppression
+              $notification->delete = $delete; // Assuming there is a 'deleted' field in the Notification model
+              $notification->save();
+      
+              return response()->json([
+                  'success' => true,
+                  'message' => $delete ? 'Notification supprimée avec succès.' : 'Suppression annulée avec succès.',
+              ]);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
+              ], 500);
+          }
+      }
 
  }

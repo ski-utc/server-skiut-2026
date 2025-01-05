@@ -3,21 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class NotificationController extends Controller
 {
     public function getNotifications()
     {
         try {
-            $notifications = Notification::all();
+            $notifications = Notification::where('delete', false)->get();
     
             $data = $notifications->map(function($notification) {
                 return [
                     'id' => $notification->id,
                     'title' => $notification->title,
                     'description' => $notification->description,
+                    'created_at' => $notification->created_at,
                 ];
             });
+            Log::notice('getNotifications: ' . $data);
     
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
