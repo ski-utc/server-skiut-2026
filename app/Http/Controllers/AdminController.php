@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\User;
 use App\Models\ChallengeProof;
+use App\Models\Challenge;
 use App\Models\Anecdote; 
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
@@ -83,6 +84,30 @@ class AdminController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Récupère les détails d'un défi spécifique par son ID
+ */
+public function getChallengeDetails(Request $request, $id)
+{
+    try {
+        Log::notice('getChallengeDetails/' . $id);
+
+        // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
+        $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'data' => $challenge
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
         ], 500);
     }
 }
