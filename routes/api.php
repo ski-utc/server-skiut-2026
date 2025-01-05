@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-/* 
-Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas : 
+/*
+Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
     php artisan route:clear
     php artisan route:list
 */
@@ -15,6 +15,9 @@ Route::get('/connected', function () { return view("api-connected");})->name('ap
 Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
+/************************************************************** Home *************************************************************/
+Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
 Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
@@ -32,6 +35,10 @@ Route::post('/likeAnecdote', [\App\Http\Controllers\AnecdoteController::class, '
 Route::post('/warnAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'warnAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/sendAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'sendAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'deleteAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/**************************************************************************************************************************************/
+
+/************************************************************** Navettes *************************************************************/
+Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'index'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Administration *************************************************************/
