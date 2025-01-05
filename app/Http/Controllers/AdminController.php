@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ChallengeProof;
 use App\Models\Challenge;
 use App\Models\Anecdote; 
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -91,13 +92,13 @@ class AdminController extends Controller
 /**
  * Récupère les détails d'un défi spécifique par son ID
  */
-public function getChallengeDetails(Request $request, $id)
+public function getChallengeDetails(Request $request, $challengeId)
 {
     try {
-        Log::notice('getChallengeDetails/' . $id);
+        Log::notice('getChallengeDetails/' . $challengeId);
 
         // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
-        $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($id);
+        $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
 
         return response()->json([
             'success' => true,
@@ -272,4 +273,84 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
      /**
       * Gestion des notifications
       */
+
+      public function getAdminNotifications(Request $request)
+{
+    try {
+        // Fetch notifications sorted by creation date
+        $notifications = Notification::orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $notifications,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error retrieving notifications: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Récupère les détails d'un défi spécifique par son ID
+ */
+public function getNotificationDetails(Request $request, $notificationId)
+{
+    try {
+        Log::notice('getNotificationDetails/' . $notificationId);
+
+        // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
+        $notification = Notification::findOrFail($notificationId);
+        Log::notice('Notification : ' . $notification); 
+
+        return response()->json([
+            'success' => true,
+            'data' => $notification
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
+      /**
+       * Envoie une notification générale à tous les utilisateurs
+       */
+      public function sendGeneralNotification(Request $request)
+{
+    // Logic to send a general notification to all users
+    $notification = new Notification([
+        'title' => $request->title,
+        'text' => $request->text,
+        'is_general' => true, // Flag to indicate it's a general notification
+    ]);
+    $notification->save();
+
+    // You can implement broadcasting logic here (like using Firebase Cloud Messaging or Pusher)
+    return response()->json(['success' => true, 'message' => 'Notification sent to all users.']);
+}
+
+/**
+ * Envoie une notification individuelle à un utilisateur spécifique
+ */
+public function sendIndividualNotification(Request $request, $userId)
+{
+    // Logic to send a notification to a specific user
+    $notification = new Notification([
+        'title' => $request->title,
+        'text' => $request->text,
+        'user_id' => $userId, // Link notification to a specific user
+    ]);
+    $notification->save();
+
+    return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+}
+
+
  }
