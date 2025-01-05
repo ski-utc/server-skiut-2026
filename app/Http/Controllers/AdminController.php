@@ -112,6 +112,44 @@ public function getChallengeDetails(Request $request, $id)
     }
 }
 
+/**
+ * Met à jour le statut de validation d'un challenge (valider ou invalider)
+ */
+public function updateChallengeStatus(Request $request, $challengeId, $isValid)
+{
+    Log::notice('isValid: ' . $isValid);
+    try {
+        $publicKey = config('services.crypt.public');
+        $token = $request->bearerToken();
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        $userId = $decoded->key;
+
+        $challenge = ChallengeProof::findOrFail($challengeId);
+        Log::notice('challenge: ' . $challenge);
+
+        if ($isValid === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+            ]);
+        }
+
+        // Mise à jour du statut de validation
+        $challenge->valid = $isValid;
+        $challenge->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $isValid ? 'Challenge validé avec succès.' : 'Challenge invalidé avec succès.',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la mise à jour du statut du challenge : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
      
 
 

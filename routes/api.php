@@ -38,6 +38,7 @@ Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class,
 Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'getAdmin'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getAdminChallenges', [\App\Http\Controllers\AdminController::class, 'getAdminChallenges'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getChallengeDetails/{anecdoteId}', [\App\Http\Controllers\AdminController::class, 'getChallengeDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::post('/updateChallengeStatus/{anecdoteId}/{isValid}', [\App\Http\Controllers\AdminController::class, 'updateChallengeStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getAdminAnecdotes', [\App\Http\Controllers\AdminController::class, 'getAdminAnecdotes'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getAnecdoteDetails/{anecdoteId}', [\App\Http\Controllers\AdminController::class, 'getAnecdoteDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [\App\Http\Controllers\AdminController::class, 'updateAnecdoteStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
