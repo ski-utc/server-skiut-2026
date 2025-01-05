@@ -232,43 +232,44 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       }
       
  
-     /**
-      * Met à jour le statut de validation d'une anecdote (valider ou invalider)
-      */
-      public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
+      /**
+       * Delete notification
+       */
+      public function deleteNotification(Request $request, $notificationId, $delete)
       {
-        Log::notice('updateAnecdoteStatus/' . $anecdoteId);
-        Log::notice('isValid: ' . $isValid);    
+          Log::notice('delete: ' . $delete);
           try {
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
-
-              $anecdote = Anecdote::findOrFail($anecdoteId);    
+              $publicKey = config('services.crypt.public');
+              $token = $request->bearerToken();
+              $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+              $userId = $decoded->key;
       
-              if ($isValid === null) {
+              $notification = Notification::findOrFail($notificationId); // Assuming you have a Notification model
+              Log::notice('notification: ' . $notification);
+      
+              if ($delete === null) {
                   return response()->json([
                       'success' => false,
-                      'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+                      'message' => 'Le paramètre "delete" est requis (1 pour supprimer, 0 pour annuler).',
                   ]);
               }
       
-              // Mise à jour du statut de validation
-              $anecdote->valid = $isValid;
-              $anecdote->save();
+              // Mise à jour du statut de suppression
+              $notification->delete = $delete; // Assuming there is a 'deleted' field in the Notification model
+              $notification->save();
       
               return response()->json([
                   'success' => true,
-                  'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
+                  'message' => $delete ? 'Notification supprimée avec succès.' : 'Suppression annulée avec succès.',
               ]);
           } catch (\Exception $e) {
               return response()->json([
                   'success' => false,
-                  'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
+                  'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
               ], 500);
           }
       }
+      
       
      /**
       * Gestion des notifications
@@ -278,7 +279,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 {
     try {
         // Fetch notifications sorted by creation date
-        $notifications = Notification::orderBy('created_at', 'desc')->get();
+        $notifications = Notification::orderBy('created_at', 'desc')->where('delete', false)->get();
 
         return response()->json([
             'success' => true,
@@ -316,7 +317,6 @@ public function getNotificationDetails(Request $request, $notificationId)
         ], 500);
     }
 }
-
 
 
       /**
