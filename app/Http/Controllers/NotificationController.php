@@ -13,7 +13,9 @@ class NotificationController extends Controller
     public function getNotifications()
     {
         try {
-            $notifications = Notification::where('delete', false)->get();
+            $notifications = Notification::where('delete', false)
+            ->orderBy('created_at', 'desc') // Trie par ordre décroissant
+            ->get();
     
             $data = $notifications->map(function($notification) {
                 return [

@@ -281,6 +281,26 @@ public function getNotificationDetails(Request $request, $notificationId)
     }
 }
 
+/**
+ * Publier une nouvelle notification
+ */
+
+ public function sendNotification(Request $request){
+    try{
+        $publicKey = config('services.crypt.public');
+        $token = $request->bearerToken();
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+        $userId = $decoded->key;
+
+        $title = $request->input('titre');
+        $text = $request->input('texte');
+
+        Notification::create(['title'=>$title, 'description'=>$text, 'general'=>true, 'delete'=>false]);
+        return response()->json(['success' =>true, "message"=>"Anecdote postée avec succès ! Elle sera visible une fois validée par le bureau"]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, "message"=>"Erreur".$e]);
+    }    
+}
 
       /**
        * Envoie une notification générale à tous les utilisateurs
