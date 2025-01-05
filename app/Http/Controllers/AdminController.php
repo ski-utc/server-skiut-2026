@@ -231,7 +231,44 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
           }
       }
       
- 
+   /**
+      * Met à jour le statut de validation d'une anecdote (valider ou invalider)
+      */
+      public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
+      {
+        Log::notice('updateAnecdoteStatus/' . $anecdoteId);
+        Log::notice('isValid: ' . $isValid);    
+          try {
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $userId = $decoded->key;
+
+              $anecdote = Anecdote::findOrFail($anecdoteId);    
+
+              if ($isValid === null) {
+                  return response()->json([
+                      'success' => false,
+                      'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+                  ]);
+              }
+
+              // Mise à jour du statut de validation
+              $anecdote->valid = $isValid;
+              $anecdote->save();
+
+              return response()->json([
+                  'success' => true,
+                  'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
+              ]);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
+              ], 500);
+          }
+      }
+
       
       
      /**
@@ -296,7 +333,7 @@ public function getNotificationDetails(Request $request, $notificationId)
         $text = $request->input('texte');
 
         Notification::create(['title'=>$title, 'description'=>$text, 'general'=>true, 'delete'=>false]);
-        return response()->json(['success' =>true, "message"=>"Anecdote postée avec succès ! Elle sera visible une fois validée par le bureau"]);
+        return response()->json(['success' =>true, "message"=>"Notification postée avec succès !"]);
     } catch (\Exception $e) {
         return response()->json(['success' => false, "message"=>"Erreur".$e]);
     }    
