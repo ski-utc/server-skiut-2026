@@ -12,7 +12,7 @@ Si on est chaud on fait un app/Http request pour mieux filtrer les requets, les 
 BroadCastServiceProvider, EventServiceProvider ?
 
 
-Pour lancer la bdd : 
+Pour insérer dans la bdd : 
 1. php artisan migrate:refresh 
 2. php artisan db:seed --class=RoomsSeeder 
 Avec dans RoomsSeeder : create décommenté, updateOrInsert commenté, userID => null décommenté
@@ -21,3 +21,5 @@ Avec dans RoomsSeeder : create décommenté, updateOrInsert commenté, userID =>
 Avec dans RoomsSeeder : create commenté, updateOrInsert décommenté, userID => null commenté
 5. php artisan db:seed --class=ChallengesSeeder
 6. php artisan db:seed --class=AnecdoteSeeder
+7. php artisan db:seed --class=ChallengeProofsSeeder
+8. php artisan db:seed --class=NotificationSeeder

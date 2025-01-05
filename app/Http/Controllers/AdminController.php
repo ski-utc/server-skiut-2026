@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\User;
 use App\Models\ChallengeProof;
+use App\Models\Challenge;
 use App\Models\Anecdote; 
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -48,52 +50,107 @@ class AdminController extends Controller
      */
 
      public function getAdminChallenges(Request $request)
-     {
-         try {
-             $publicKey = config('services.crypt.public');
-             $token = $request->bearerToken();
-             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-             $userId = $decoded->key;
-      
-             $user = User::find($userId);
-      
-             if (!$user || !$user->admin) {
-                 Log::notice('AdminController: L\'utilisateur n\'est pas un admin');
-                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
-             }
-     
-             $quantity = $request->input('quantity', 10);
-      
-             if (!is_numeric($quantity) || (int)$quantity <= 0) {
-                 return response()->json(['success' => false, 'message' => 'Le paramètre quantity doit être un entier positif.']);
-             }
-      
-             $challenges = Challenge::with(['room', 'user'])
-                 ->withCount('likes')
-                 ->orderBy('id', 'desc')
-                 ->take((int)$quantity)
-                 ->get();
-      
-             $data = $challenges->map(function ($challenge) {
-                 return [
-                     'id' => $challenge->id,
-                     'file' => $challenge->file,
-                     'nbLikes' => $challenge->nb_likes,
-                     'valid' => $challenge->valid,
-                     'alert' => $challenge->alert,
-                     'delete' => $challenge->delete,
-                     'active' => $challenge->active,
-                     'authorId' => $challenge->user_id, // Récupère l'ID de l'auteur
-                     'roomId' => $challenge->room_id, // Récupère l'ID de la room
-                     'challengeId' => $challenge->challenge_id, // Récupère le nom de la room
-                 ];
-             });
-      
-             return response()->json(['success' => true, 'data' => $data]);
-         } catch (\Exception $e) {
-             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
-         }
-     }
+{
+    try {
+        // Retrieve filter parameter (optional)
+        $filter = $request->query('filter', 'all');
+
+        // Build the base query
+        $query = ChallengeProof::with(['room', 'user', 'challenge']); // Assuming these are the related models
+
+        // Apply filters
+        switch ($filter) {
+            case 'pending':
+                $query->where('delete', false)->where('valid', false);
+                break;
+
+            case 'deleted':
+                $query->where('delete', true);
+                break;
+
+            case 'all':
+            default:
+                break;
+        }
+
+        // Fetch challenges
+        $challenges = $query->orderBy('id', 'desc') // Sort by creation date
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $challenges,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Récupère les détails d'un défi spécifique par son ID
+ */
+public function getChallengeDetails(Request $request, $challengeId)
+{
+    try {
+        Log::notice('getChallengeDetails/' . $challengeId);
+
+        // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
+        $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
+
+        return response()->json([
+            'success' => true,
+            'data' => $challenge
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Met à jour le statut de validation d'un challenge (valider ou invalider)
+ */
+public function updateChallengeStatus(Request $request, $challengeId, $isValid)
+{
+    Log::notice('isValid: ' . $isValid);
+    try {
+        $publicKey = config('services.crypt.public');
+        $token = $request->bearerToken();
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        $userId = $decoded->key;
+
+        $challenge = ChallengeProof::findOrFail($challengeId);
+        Log::notice('challenge: ' . $challenge);
+
+        if ($isValid === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+            ]);
+        }
+
+        // Mise à jour du statut de validation
+        $challenge->valid = $isValid;
+        $challenge->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $isValid ? 'Challenge validé avec succès.' : 'Challenge invalidé avec succès.',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la mise à jour du statut du challenge : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
      
 
 
@@ -216,4 +273,84 @@ class AdminController extends Controller
      /**
       * Gestion des notifications
       */
+
+      public function getAdminNotifications(Request $request)
+{
+    try {
+        // Fetch notifications sorted by creation date
+        $notifications = Notification::orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $notifications,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error retrieving notifications: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Récupère les détails d'un défi spécifique par son ID
+ */
+public function getNotificationDetails(Request $request, $notificationId)
+{
+    try {
+        Log::notice('getNotificationDetails/' . $notificationId);
+
+        // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
+        $notification = Notification::findOrFail($notificationId);
+        Log::notice('Notification : ' . $notification); 
+
+        return response()->json([
+            'success' => true,
+            'data' => $notification
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
+      /**
+       * Envoie une notification générale à tous les utilisateurs
+       */
+      public function sendGeneralNotification(Request $request)
+{
+    // Logic to send a general notification to all users
+    $notification = new Notification([
+        'title' => $request->title,
+        'text' => $request->text,
+        'is_general' => true, // Flag to indicate it's a general notification
+    ]);
+    $notification->save();
+
+    // You can implement broadcasting logic here (like using Firebase Cloud Messaging or Pusher)
+    return response()->json(['success' => true, 'message' => 'Notification sent to all users.']);
+}
+
+/**
+ * Envoie une notification individuelle à un utilisateur spécifique
+ */
+public function sendIndividualNotification(Request $request, $userId)
+{
+    // Logic to send a notification to a specific user
+    $notification = new Notification([
+        'title' => $request->title,
+        'text' => $request->text,
+        'user_id' => $userId, // Link notification to a specific user
+    ]);
+    $notification->save();
+
+    return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+}
+
+
  }
