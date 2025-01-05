@@ -15,6 +15,9 @@ Route::get('/connected', function () { return view("api-connected");})->name('ap
 Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
+/************************************************************** Home *************************************************************/
+Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
 Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
