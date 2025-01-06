@@ -16,4 +16,6 @@ DELETE FROM users WHERE id = 334859;
 
 PRAGMA table_info(rooms);
 
-INSERT INTO activities (id, name, description) VALUES (1, 'Test Activity', 'This is a test activity.');
+UPDATE users SET admin = true WHERE id = 316050;
+
+SELECT * FROM anecdotes WHERE id = 12;

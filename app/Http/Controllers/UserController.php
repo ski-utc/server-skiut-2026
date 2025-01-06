@@ -26,9 +26,8 @@ class UserController extends Controller
                 'admin' => $userDetails['admin'] ?? false,
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false
             ]
-        );
+        ); // si se connecte avec email, utiliser comme clé primaire (et cas sinon)
     
         return $user;
     }
-    
 }

@@ -13,14 +13,21 @@ return new class extends Migration
     {
         Schema::create('challenge_proofs', function (Blueprint $table) {
             $table->id();
-            $table->string('file'); // will contain jpg, png, mp4, etc. file path 
-            $table->unsignedInteger('nbLikes')->default(0);
-            $table->boolean('valid')->default(false); 
-            $table->unsignedTinyInteger('alert')->default(0);
-            $table->boolean('delete')->default(false);
-            $table->boolean('active')->default(false);
-            $table->foreignId('challengeId')->constrained(); // Foreign key to challenges table
-            $table->foreignId('roomID')->constrained()->onDelete('cascade'); // Foreign key to room table (hésite avec users)
+            $table->string('file'); // File path for jpg, png, mp4, etc.
+            $table->unsignedInteger('nb_likes')->default(0);
+            $table->boolean('valid')->default(false);
+            $table->unsignedTinyInteger('alert')->default(0); // Number of alerts
+            $table->boolean('delete')->default(false); // Mark for deletion
+            $table->boolean('active')->default(false); // Active/inactive status
+
+            // Foreign keys
+            $table->foreignId('challenge_id')->constrained('challenges')->onDelete('cascade'); // Ensure cascading delete with challenges
+
+            $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade'); // Ensure cascading delete with rooms
+
+            // Optionally, include user_id if proofs are tied to users
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

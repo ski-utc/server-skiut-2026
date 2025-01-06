@@ -12,6 +12,7 @@ use UnexpectedValueException;
 use LogicException;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -49,6 +50,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        Log::error('AuthController: login');
         if (config('auth.app_no_login', false)) {
             $userId=env('USER_ID');
             try {
@@ -185,37 +187,39 @@ class AuthController extends Controller
      * Récupère les informations de l'utilisateur à partir d'un token.
      */
     public function getUserData(Request $request)
-    {
-        $token = $request->bearerToken();
+{
+    $token = $request->bearerToken();
 
-        try {
-            $publicKey = config("services.crypt.public");
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+    try {
+        $publicKey = config("services.crypt.public");
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
 
-            $id = $decoded->key;
+        $id = $decoded->key;
 
-            $user = User::where('id', $id)->first();
-            if (!$user) {
-                return response()->json(['success' => 'false', 'message'=>'Utilisateur non trouvé'], 404);
-            }
-
-            $room = Room::where('id', $user->roomID)->first();
-            if (!$room) {
-                return response()->json(['success' => 'false', 'message'=>'Chambre non trouvée'], 404);
-            }
-
-            return response()->json([
-                'success'=>true,
-                'id'=> $user->id,
-                'name'=> $user->firstName,
-                'lastName'=> $user->lastName,
-                'room'=>$room->roomNumber,
-                'admin'=> $user->admin
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => 'false', 'message'=>'Erreur lors de la récupération des users infos : '.$e], 401);
+        $user = User::where('id', $id)->first();
+        if (!$user) {
+            return response()->json(['success' => 'false', 'message'=>'Utilisateur non trouvé'], 404);
         }
+
+        $room = Room::where('id', $user->roomID)->first();
+        if (!$room) {
+            return response()->json(['success' => 'false', 'message'=>'Chambre non trouvée'], 404);
+        }
+
+        return response()->json([
+            'success'=>true,
+            'id'=> $user->id,
+            'name'=> $user->firstName,
+            'lastName'=> $user->lastName,
+            'room'=>$room->roomNumber,
+            'roomName' =>$room->name ? $room->name : null,
+            'admin'=> $user->admin
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => 'false', 'message'=>'Erreur lors de la récupération des users infos : '.$e], 401);
     }
+}
+
 
     public function logout()
     {

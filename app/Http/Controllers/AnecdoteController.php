@@ -15,7 +15,6 @@ class AnecdoteController extends Controller
     public function getAnecdotes(Request $request)
     {
         try {
-            // en-tête chiffrée 
             $publicKey = config('services.crypt.public');
             $token = $request->bearerToken();
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     

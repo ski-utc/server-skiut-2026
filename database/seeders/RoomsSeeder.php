@@ -63,10 +63,10 @@ class RoomsSeeder extends Seeder
             ['name' => 'The lucky one', 'roomNumber' => 'B304', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => 317056],
             ['name' => 'Les reconstitués', 'roomNumber' => 'B306', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => 317338],
             ['name' => 'Bonne descente', 'roomNumber' => 'B308', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => 316629],
-            ['name' => 'Chambre asso 1', 'roomNumber' => 'B312', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => 317057],
-            ['name' => 'Chambre asso 2', 'roomNumber' => 'B314', 'capacity' => 4, 'mood' => '', 'totalPoints' => 0, 'userID' => 316366],
-            ['name' => 'Chambre asso 3', 'roomNumber' => 'B316', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => 317285],
-            ['name' => 'Chambre asso 4', 'roomNumber' => 'B318', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => 317225],
+            ['name' => 'Asso 1', 'roomNumber' => 'B312', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => 317057],
+            ['name' => 'Asso 2', 'roomNumber' => 'B314', 'capacity' => 4, 'mood' => '', 'totalPoints' => 0, 'userID' => 316366],
+            ['name' => 'Asso 3', 'roomNumber' => 'B316', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => 317285],
+            ['name' => 'Asso 4', 'roomNumber' => 'B318', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => 317225],
             ['name' => 'Prout', 'roomNumber' => 'B402', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0, 'userID' => 317122],
             ['name' => 'La Cabane A Pastis', 'roomNumber' => 'B404', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0, 'userID' => 317370],
             ['name' => 'Slay loop', 'roomNumber' => 'A008', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0, 'userID' => 317016],
@@ -99,8 +99,8 @@ class RoomsSeeder extends Seeder
             ['name' => 'La montagne à la montagne', 'roomNumber' => 'A212', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 317791],
             ['name' => 'Basic Shit', 'roomNumber' => 'A213', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => 317857],
             ['name' => 'Dah\'ut', 'roomNumber' => 'A214', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 317105],
-            ['name' => 'L\'avachambre', 'roomNumber' => 'A216', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 316631], /*
-            ['name' => 'GX15', 'roomNumber' => 'B001', 'capacity' => 2, 'mood' => '+', 'totalPoints' => 0, 'userID' => null],
+            ['name' => 'L\'avachambre', 'roomNumber' => 'A216', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => 316631], 
+            /*['name' => 'GX15', 'roomNumber' => 'B001', 'capacity' => 2, 'mood' => '+', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'After Ski', 'roomNumber' => 'B002', 'capacity' => 4, 'mood' => '+', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Tout schuss', 'roomNumber' => 'B003', 'capacity' => 4, 'mood' => '-', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Les skibidis', 'roomNumber' => 'B004', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0, 'userID' => null],
@@ -151,10 +151,10 @@ class RoomsSeeder extends Seeder
             ['name' => 'The lucky one', 'roomNumber' => 'B304', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Les reconstitués', 'roomNumber' => 'B306', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Bonne descente', 'roomNumber' => 'B308', 'capacity' => 4, 'mood' => '++', 'totalPoints' => 0, 'userID' => null],
-            ['name' => 'Chambre asso 1', 'roomNumber' => 'B312', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
-            ['name' => 'Chambre asso 2', 'roomNumber' => 'B314', 'capacity' => 4, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
-            ['name' => 'Chambre asso 3', 'roomNumber' => 'B316', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
-            ['name' => 'Chambre asso 4', 'roomNumber' => 'B318', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
+            ['name' => 'Asso 1', 'roomNumber' => 'B312', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
+            ['name' => 'Asso 2', 'roomNumber' => 'B314', 'capacity' => 4, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
+            ['name' => 'Asso 3', 'roomNumber' => 'B316', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
+            ['name' => 'Asso 4', 'roomNumber' => 'B318', 'capacity' => 8, 'mood' => '', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Prout', 'roomNumber' => 'B402', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'La Cabane A Pastis', 'roomNumber' => 'B404', 'capacity' => 6, 'mood' => '++', 'totalPoints' => 0, 'userID' => null],
             ['name' => 'Slay loop', 'roomNumber' => 'A008', 'capacity' => 4, 'mood' => '--', 'totalPoints' => 0, 'userID' => null],
@@ -198,6 +198,7 @@ class RoomsSeeder extends Seeder
                 ->where('roomNumber', $room['roomNumber'])
                 ->update([
                     'userID' => $room['userID'],
+                    //'name' => $room['name'], 
                 ]);
         }
     }
