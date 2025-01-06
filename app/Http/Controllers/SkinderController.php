@@ -14,10 +14,7 @@ class SkinderController extends Controller
     public function getProfilSkinder(Request $request)
     {
         try {
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
             $roomId = User::where('id',$userId)->first()->roomID;
 
             if(!Room::where('id',$roomId)->first()->photoPath) {
@@ -55,10 +52,7 @@ class SkinderController extends Controller
 
     public function likeSkinder(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
         $roomLikeur = User::where('id',$userId)->first()->roomID;
 
         $roomLiked = $request->input('roomLiked');
@@ -98,10 +92,7 @@ class SkinderController extends Controller
     public function getMySkinderMatches(Request $request)
     {
         try {
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
             $roomId = User::where('id', $userId)->first()->roomID;
     
             $matchedRooms = SkinderLike::where('room_likeur', $roomId)
@@ -145,10 +136,7 @@ class SkinderController extends Controller
 
     public function getMyProfilSkinder(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
         $roomId = User::where('id',$userId)->first()->roomID;
 
         $room = Room::findOrFail($roomId);
@@ -171,10 +159,7 @@ class SkinderController extends Controller
 
     public function modifyProfil(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
         $roomId = User::where('id',$userId)->first()->roomID;
 
         $room = Room::findOrFail($roomId);
@@ -195,10 +180,7 @@ class SkinderController extends Controller
 
     public function uploadRoomImage(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
         $roomId = User::where('id', $userId)->first()->roomID;
         $room = Room::where('id', $roomId)->first();
     

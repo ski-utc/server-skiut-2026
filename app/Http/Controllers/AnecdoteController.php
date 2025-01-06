@@ -15,10 +15,7 @@ class AnecdoteController extends Controller
     public function getAnecdotes(Request $request)
     {
         try {
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
     
             $quantity = $request->input('quantity', 10);
     
@@ -53,10 +50,7 @@ class AnecdoteController extends Controller
 
     public function likeAnecdote(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
     
         $anecdoteId = $request->input('anecdoteId');
     
@@ -80,10 +74,7 @@ class AnecdoteController extends Controller
 
     public function warnAnecdote(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
     
         $anecdoteId = $request->input('anecdoteId');
     
@@ -107,10 +98,7 @@ class AnecdoteController extends Controller
 
     public function sendAnecdote(Request $request){
         try{
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
     
             $text = $request->input('texte');
 
@@ -126,10 +114,7 @@ class AnecdoteController extends Controller
     public function deleteAnecdote(Request $request)
     {
         try {
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
     
             $anecdoteId = $request->input('anecdoteId');
     
