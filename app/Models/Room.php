@@ -11,7 +11,7 @@ class Room extends Model
     use HasFactory;
     
     protected $table = 'rooms';
-    protected $fillable = ['id', 'name', 'roomNumber', 'capacity', 'mood', 'totalPoints', 'userID'];
+    protected $fillable = ['id', 'roomNumber', 'capacity', 'mood', 'name', 'photoPath', 'description', 'passions', 'totalPoints', 'userID'];
 
     // Define the belongsTo relationship with User (responsible user)
     public function respUser()

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedInteger('room');
             $table->foreignId('userId')->references('id')->on('users')->onDelete('cascade');
             $table->boolean('valid')->default(false);
-            $table->unsignedTinyInteger('alert')->default(0);
             $table->boolean('delete')->default(false);
             $table->boolean('active')->default(false);
             $table->timestamps();

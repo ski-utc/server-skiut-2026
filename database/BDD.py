@@ -1,16 +1,25 @@
 import sqlite3
+import random
+import json
+from datetime import datetime
 
-# Chemin vers la base de données SQLite
-DB_PATH = "./database/database.sqlite"
+# Connexion à la base de données SQLite
+db_path = "./database/database.sqlite"
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
 
-# Connexion à SQLite
+#cursor.execute("insert into users(id, cas, firstName, lastName, email, roomID, admin, location, alumniOrExte) values(1,'mdelmaer','Mathis', 'Delmaere','mathis.delmaere@etu.utc.fr',1,true, 'hein', false)")
 
-connection = sqlite3.connect(DB_PATH)
-cursor = connection.cursor()
-#cursor.execute("INSERT INTO rooms (id, name, roomNumber, capacity, mood, respRoom) VALUES (1, 'nomChambre', 333, 4, 'cool', 'd2c8a030-1252-11ed-9136-379a47a07441')")
-#cursor.execute("INSERT INTO rooms_user (id, userId, roomsId) VALUES (1, 'd2c8a030-1252-11ed-9136-379a47a07441', 1)")
+cursor.execute("delete from skinder_likes where 1=1")
 
-cursor.execute("UPDATE anecdotes SET valid=true")
+cursor.execute("insert into skinder_likes (id, room_likeur, room_liked) values (1, 2, 1),(2,4,1),(3,6,1),(4,8,1),(5,10,1)")
 
-connection.commit()
-connection.close()
+cursor.execute("update rooms set photoPath='storage/roomImages/imageDefault.jpg' where id!=1")
+
+
+
+# Sauvegarder les changements et fermer la connexion
+conn.commit()
+conn.close()
+
+print(f"{num_rooms_to_generate} chambres ont été insérées dans la base de données.")

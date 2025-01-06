@@ -10,7 +10,7 @@ class Anecdote extends Model
     use HasFactory;
 
     protected $table = 'anecdotes';
-    protected $fillable = ['id', 'text', 'room', 'userId', 'valid', 'alert', 'delete', 'active'];
+    protected $fillable = ['id', 'text', 'room', 'userId', 'valid', 'delete', 'active'];
 
     public function user()
     {

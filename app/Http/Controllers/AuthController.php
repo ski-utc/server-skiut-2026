@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Room;
 use Illuminate\Http\Request;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Firebase\JWT\JWT;
@@ -115,7 +116,7 @@ class AuthController extends Controller
 
             $user=User::where('email',$userDetails['email'])->first();
             if (!$user) {
-                abort(401,"Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée");
+                abort(401,"Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée. Veuillez utiliser le mail utilisé lors de votre achat de la place");
             }
 
             if ($userDetails['provider'] != 'cas') {
@@ -140,7 +141,9 @@ class AuthController extends Controller
                 'refresh_token' => $refreshToken,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['message' => "Callback error: " . $e->getMessage()], 400);
+            return redirect()->route('api-not-connected',[
+                'message' => "Callback error : " . $e->getMessage()
+            ]);
         }
     }
 
@@ -193,7 +196,12 @@ class AuthController extends Controller
 
             $user = User::where('id', $id)->first();
             if (!$user) {
-                return response()->json(['success' => 'false', 'message'=>'utilisateur non trouvé'], 404);
+                return response()->json(['success' => 'false', 'message'=>'Utilisateur non trouvé'], 404);
+            }
+
+            $room = Room::where('id', $user->roomID)->first();
+            if (!$room) {
+                return response()->json(['success' => 'false', 'message'=>'Chambre non trouvée'], 404);
             }
 
             return response()->json([
@@ -201,11 +209,11 @@ class AuthController extends Controller
                 'id'=> $user->id,
                 'name'=> $user->firstName,
                 'lastName'=> $user->lastName,
-                'room'=>$user->roomID,
+                'room'=>$room->roomNumber,
                 'admin'=> $user->admin
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => 'false', 'message'=>'Invalid Token'], 401);
+            return response()->json(['success' => 'false', 'message'=>'Erreur lors de la récupération des users infos : '.$e], 401);
         }
     }
 
