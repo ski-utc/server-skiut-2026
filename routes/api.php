@@ -12,6 +12,7 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 
 /************************************************************** Login *************************************************************/
 Route::get('/connected', function () { return view("api-connected");})->name('api-connected');
+Route::get('/notConnected', function () { return view("api-not-connected");})->name('api-not-connected');
 Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
@@ -39,6 +40,15 @@ Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class,
 
 /************************************************************** Navettes *************************************************************/
 Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'index'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+/**************************************************************************************************************************************/
+
+/*************************************************************** Skinder **************************************************************/
+Route::get('/getProfilSkinder', [\App\Http\Controllers\SkinderController::class, 'getProfilSkinder'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/likeSkinder', [\App\Http\Controllers\SkinderController::class, 'likeSkinder'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getMySkinderMatches', [\App\Http\Controllers\SkinderController::class, 'getMySkinderMatches'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getMyProfilSkinder', [\App\Http\Controllers\SkinderController::class, 'getMyProfilSkinder'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/modifyProfilSkinder', [\App\Http\Controllers\SkinderController::class, 'modifyProfil'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/uploadRoomImage', [\App\Http\Controllers\SkinderController::class, 'uploadRoomImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Administration *************************************************************/

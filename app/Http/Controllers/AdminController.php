@@ -20,11 +20,7 @@ class AdminController extends Controller
     public function getAdmin(Request $request)
     {
         try {
-            // en-tête chiffrée à garder pour récupérer l'user 
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
 
             // Récupère l'utilisateur correspondant à l'ID
             $user = User::find($userId);
@@ -120,10 +116,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 {
     Log::notice('isValid: ' . $isValid);
     try {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-        $userId = $decoded->key;
+        $userId = $request->user['id'];;
 
         $challenge = ChallengeProof::findOrFail($challengeId);
         Log::notice('challenge: ' . $challenge);
@@ -239,10 +232,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
         Log::notice('updateAnecdoteStatus/' . $anecdoteId);
         Log::notice('isValid: ' . $isValid);    
           try {
-            $publicKey = config('services.crypt.public');
-            $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
-            $userId = $decoded->key;
+            $userId = $request->user['id'];;
 
               $anecdote = Anecdote::findOrFail($anecdoteId);    
 
