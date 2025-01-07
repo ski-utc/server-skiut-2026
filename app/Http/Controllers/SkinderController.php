@@ -18,7 +18,7 @@ class SkinderController extends Controller
             $roomId = User::where('id',$userId)->first()->roomID;
 
             if(!Room::where('id',$roomId)->first()->photoPath) {
-                return response()->json(['success' => false, 'message' => "noPhoto"]);
+                return response()->json(['success' => false, 'message' => "NoPhoto"]);
             }
 
             $room = Room::whereNotIn('id', function ($query) use ($roomId) {
@@ -32,7 +32,7 @@ class SkinderController extends Controller
             ->first();
 
             if (!$room) {
-                return response()->json(['success' => false, 'message' => "C'est pas vraiment une erreur mais j'avais la flemme de faire une page dédiée pour te dire que tu avais liké tous les profils..."]);
+                return response()->json(['success' => false, 'message' => "TooMuch"]);
             }
     
             return response()->json([
