@@ -32,7 +32,7 @@ class SkinderController extends Controller
             ->first();
 
             if (!$room) {
-                return response()->json(['success' => false, 'message' => 'Vous avez déjà liké toutes les chambres disponibles pour le moment']);
+                return response()->json(['success' => false, 'message' => "C'est pas vraiment une erreur mais j'avais la flemme de faire une page dédiée pour te dire que tu avais liké tous les profils..."]);
             }
     
             return response()->json([
