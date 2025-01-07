@@ -9,6 +9,7 @@ use Firebase\JWT\Key;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class DefisController extends Controller
 {
@@ -59,6 +60,34 @@ class DefisController extends Controller
         }
     }
 
+    public function getValidatedProofs($challengeId)
+    {
+        try {
+            // Vérifier si le défi existe
+            $challenge = Challenge::findOrFail($challengeId);
+
+            // Récupérer les proofs validées pour ce défi
+            $validatedProofs = ChallengeProof::where('challenge_id', $challengeId)
+                ->where('valid', true)
+                ->get(['id', 'file', 'user_id', 'nb_likes', 'created_at']);
+
+            // Ajouter l'URL complète pour chaque fichier
+            $validatedProofs->each(function ($proof) {
+                $proof->file_url = url('storage/' . $proof->file); // Utilise 'url' pour générer l'URL publique
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $validatedProofs,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function postProof(Request $request)
     {
         $token = $request->bearerToken();
@@ -70,7 +99,7 @@ class DefisController extends Controller
 
             $id = $decoded->key;
 
-            // Charger l'utilisateur avec sa salle associée
+            // Charger l'utilisateur avec sa chambre associée
             $user = User::with('room')->where('id', $id)->first();
 
             if (!$user) {
@@ -89,40 +118,97 @@ class DefisController extends Controller
 
             // Validation des données de la requête
             $validated = $request->validate([
-                'file' => 'required|file|max:10240', // Taille max 10MB
+                'file' => 'required|mimetypes:video/mp4,video/quicktime,image/jpeg,image/png|max:10240',
                 'challenge_id' => 'required|exists:challenges,id',
             ]);
 
             // Génération d'un nom de fichier personnalisé
             $file = $request->file('file');
-            $extension = $file->getClientOriginalExtension(); // Récupère l'extension originale
+            $extension = $file->getClientOriginalExtension() ?: 'mp4'; // Par défaut mp4
             $fileName = "defi-{$validated['challenge_id']}-user-{$user->id}.{$extension}";
 
-            // Enregistrement du fichier avec le nouveau nom
+            // Validation du type MIME
+            $mimeType = $file->getMimeType();
+            if (!in_array($mimeType, ['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png'])) {
+                return response()->json(['success' => false, 'message' => 'Type de fichier non supporté'], 400);
+            }
+
+            // Enregistrement du fichier
             $filePath = $file->storeAs('challenge_proofs', $fileName, 'public');
 
-            // Création de la preuve
-            $proof = ChallengeProof::create([
-                'file' => $filePath,
-                'user_id' => $user->id,
-                'challenge_id' => $validated['challenge_id'],
-                'room_id' => $user->room->id,
-                'nb_likes' => 0,             // Initialisation du nombre de likes
-                'valid' => false,
-                'alert' => false,
-                'delete' => false,
-                'active' => true,
-            ]);
+            // Vérifier si une preuve existe déjà pour cet utilisateur et ce défi
+            $proof = ChallengeProof::where('user_id', $user->id)
+                ->where('challenge_id', $validated['challenge_id'])
+                ->first();
+
+            if ($proof) {
+                // Mettre à jour la preuve existante
+                $proof->update([
+                    'file' => $filePath,
+                    'room_id' => $user->room->id,
+                    'nb_likes' => 0,             // Réinitialiser le nombre de likes
+                    'valid' => false,
+                    'alert' => false,
+                    'delete' => false,
+                    'active' => true,
+                ]);
+
+                $message = 'Défi mis à jour avec succès.';
+            } else {
+                // Créer une nouvelle preuve si elle n'existe pas
+                $proof = ChallengeProof::create([
+                    'file' => $filePath,
+                    'user_id' => $user->id,
+                    'challenge_id' => $validated['challenge_id'],
+                    'room_id' => $user->room->id,
+                    'nb_likes' => 0,
+                    'valid' => false,
+                    'alert' => false,
+                    'delete' => false,
+                    'active' => true,
+                ]);
+
+                $message = 'Défi soumis avec succès.';
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Défi soumis avec succès.',
+                'message' => $message,
                 'data' => $proof,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a proof and its associated media.
+     */
+    public function deleteProof(Request $request, $proofId)
+    {
+        try {
+            // Récupérer la preuve à supprimer
+            $proof = ChallengeProof::findOrFail($proofId);
+
+            // Supprimer le fichier associé dans le stockage
+            if (Storage::exists('public/' . $proof->file)) {
+                Storage::delete('public/' . $proof->file);
+            }
+
+            // Supprimer la preuve de la base de données
+            $proof->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Proof deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage(),
             ], 500);
         }
     }

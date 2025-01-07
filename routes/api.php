@@ -30,10 +30,12 @@ Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'ge
 
 /************************************************************** Défis *************************************************************/
 Route::get('/challenges', [\App\Http\Controllers\DefisController::class, 'getChallenges']);
+Route::get('challenges/{challengeId}/proofs', [\App\Http\Controllers\DefisController::class, 'getValidatedProofs']);
 Route::post('/proofs', [\App\Http\Controllers\DefisController::class, 'postProof']);
 Route::post('/proofs/{proofId}/validate', [\App\Http\Controllers\DefisController::class, 'validateProof']);
 Route::post('/challenges/import', [\App\Http\Controllers\DefisController::class, 'importChallenges']);
 Route::get('/proofs/validate', [\App\Http\Controllers\DefisController::class, 'getProofsForValidation']);
+Route::post('/proofs/{proofId}/delete', [\App\Http\Controllers\DefisController::class, 'deleteProof']);
 /**************************************************************************************************************************************/
 
 /************************************************************** Anecdotes *************************************************************/
