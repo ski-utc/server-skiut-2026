@@ -17,8 +17,9 @@ class SkinderController extends Controller
             $roomId = User::where('id',$userId)->first()->roomID;
 
             $photoPath = Room::where('id',$roomId)->first()->photoPath;
+            $relativePath = str_replace('storage/', '', $photoPath);
 
-            if (!$photoPath || !Storage::exists($photoPath)) {
+            if (!$photoPath || !Storage::disk('public')->exists($relativePath)) {
                 return response()->json(['success' => false, 'message' => "NoPhoto"]);
             }
 
