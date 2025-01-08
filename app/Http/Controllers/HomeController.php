@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\Anecdote;
 use App\Models\Challenge;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -30,11 +31,17 @@ class HomeController extends Controller
 
         $randomChallenge = Challenge::inRandomOrder()->first();
 
+        $bestAnecdote = Anecdote::withCount('likes')
+            ->where("valid", true)
+            ->orderBy('likes_count', 'desc')
+            ->first();
+
         return response()->json([
             'success' => true,
             'data' => [
                 'closestActivity' => $closestActivity,
-                'randomChallenge' => $randomChallenge,
+                'randomChallenge' => $randomChallenge->title,
+                'bestAnecdote' => $bestAnecdote->text
             ]
         ]);
     }
