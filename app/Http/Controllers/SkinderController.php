@@ -6,8 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\SkinderLike;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Storage;
 
 class SkinderController extends Controller
 {
@@ -17,7 +16,9 @@ class SkinderController extends Controller
             $userId = $request->user['id'];;
             $roomId = User::where('id',$userId)->first()->roomID;
 
-            if(!Room::where('id',$roomId)->first()->photoPath) {
+            $photoPath = Room::where('id',$roomId)->first()->photoPath;
+
+            if (!$photoPath || !Storage::exists($photoPath)) {
                 return response()->json(['success' => false, 'message' => "NoPhoto"]);
             }
 
