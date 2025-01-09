@@ -46,7 +46,7 @@ Route::post('/challenges/import', [\App\Http\Controllers\DefisController::class,
 Route::get('/proofs/validate', [\App\Http\Controllers\DefisController::class, 'getProofsForValidation'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/proofs/{proofId}/delete', [\App\Http\Controllers\DefisController::class, 'deleteProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 
-Route::get('/classement-chambres', [\App\Http\Controllers\ClassementController::class, 'classementChambres']);
+Route::get('/classement-chambres', [\App\Http\Controllers\ClassementController::class, 'classementChambres'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);;
 /**************************************************************************************************************************************/
 
 /************************************************************** Anecdotes *************************************************************/
