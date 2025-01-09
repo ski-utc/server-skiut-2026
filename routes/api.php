@@ -34,11 +34,6 @@ Route::get('/challenges', [\App\Http\Controllers\DefisController::class, 'getCha
 Route::post('/challenges/getProofImage', [\App\Http\Controllers\DefisController::class, 'getProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/challenges/uploadProofImage', [\App\Http\Controllers\DefisController::class, 'uploadProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 
-
-
-
-
-
 Route::get('challenges/{challengeId}/proofs', [\App\Http\Controllers\DefisController::class, 'getValidatedProofs'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/proofs', [\App\Http\Controllers\DefisController::class, 'postProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/proofs/{proofId}/validate', [\App\Http\Controllers\DefisController::class, 'validateProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
@@ -84,5 +79,9 @@ Route::post('/sendGeneralNotification', [\App\Http\Controllers\AdminController::
 Route::post('/sendIndividualNotification/{userId}', [\App\Http\Controllers\AdminController::class, 'sendSpecificNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 
 /**************************************************************************************************************************************/
+
+/************************************************************** Vitesse de glisse *************************************************************/
+Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances']);
+/**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';
