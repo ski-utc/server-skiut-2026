@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('challenges', function (Blueprint $table) {
-            $table->id();
+            $table->id('id');
             $table->string('title')->unique();
             $table->unsignedTinyInteger('nbPoints');
             $table->timestamps();

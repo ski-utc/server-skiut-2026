@@ -161,7 +161,7 @@ class SkinderController extends Controller
 
     public function modifyProfil(Request $request)
     {
-        $userId = $request->user['id'];;
+        $userId = $request->user['id'];
         $roomId = User::where('id',$userId)->first()->roomID;
 
         $room = Room::findOrFail($roomId);
@@ -182,7 +182,7 @@ class SkinderController extends Controller
 
     public function uploadRoomImage(Request $request)
     {
-        $userId = $request->user['id'];;
+        $userId = $request->user['id'];
         $roomId = User::where('id', $userId)->first()->roomID;
         $room = Room::where('id', $roomId)->first();
     

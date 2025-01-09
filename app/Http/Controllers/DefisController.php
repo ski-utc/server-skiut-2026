@@ -4,11 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Challenge;
 use App\Models\ChallengeProof;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+
 use Illuminate\Support\Facades\Log;
 
 class DefisController extends Controller
@@ -18,14 +17,8 @@ class DefisController extends Controller
      */
     public function getChallenges(Request $request)
     {
-        $token = $request->bearerToken();
-
         try {
-            $publicKey = config("services.crypt.public");
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-
-            $id = $decoded->key;
-
+            $id = $request->user['id'];
             $user = User::with('room')->where('id', $id)->first();
 
             if (!$user) {
@@ -34,31 +27,123 @@ class DefisController extends Controller
 
             $userRoomId = $user->roomID;
 
-            $challenges = Challenge::with('challengeProofs')->get();
-
-            $challengesWithValidation = $challenges->map(function ($challenge) use ($userRoomId) {
-                $estValide = $challenge->challengeProofs->where('valid', true)
-                    ->filter(function ($proof) use ($userRoomId) {
-                        return $proof->user->roomID === $userRoomId;
-                    })
-                    ->isNotEmpty();
-
+            $challenges = Challenge::with(['challengeProofs' => function ($query) use ($userRoomId) {
+                $query->where('room_id', $userRoomId);
+            }])->get();
+    
+            $challengeData = $challenges->map(function ($challenge) use ($userRoomId) {
+                $proof = $challenge->challengeProofs->first();
+    
+                $status = 'empty';
+                if ($proof) {
+                    if ($proof->valid) {
+                        $status = 'done';
+                    } else {
+                        $status = 'waiting';
+                    }
+                }
+    
                 return [
                     'id' => $challenge->id,
                     'title' => $challenge->title,
                     'nbPoints' => $challenge->nbPoints,
-                    'estValide' => $estValide,
+                    'status' => $status,
                 ];
             });
 
             return response()->json([
                 'success' => true,
-                'data' => $challengesWithValidation,
+                'data' => $challengeData,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Invalid Token'], 401);
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : '.$e]);
         }
     }
+
+    public function getProofImage(Request $request)
+    {
+        try {
+            $id = $request->user['id'];
+            $user = User::with('room')->where('id', $id)->first();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
+            }
+            $userRoomId = $user->roomID;
+
+            $defiId = $request->input('defiId');
+            $proof = ChallengeProof::where('challenge_id',$defiId)->where('room_id',$userRoomId)->first();
+
+            Log::error($proof);
+
+            if(!$proof){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Défi pas encore réalisé',
+                ]); 
+            }
+
+            return response()->json([
+                'success' => true,
+                'image' => asset($proof->file),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e]);
+        }
+    }
+
+    public function uploadProofImage(Request $request)
+    {
+        $id = $request->user['id'];
+        $user = User::with('room')->where('id', $id)->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
+        }
+        $userRoomId = $user->roomID;
+
+        $defiId = $request->input('defiId');
+    
+        if (!$request->hasFile('image')) {
+            return response()->json(['success' => false, 'message' => 'Aucune image fournie'], 400);
+        }
+    
+        $file = $request->file('image');
+    
+        if (!$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
+            return response()->json(['success' => false, 'message' => 'Fichier invalide ou non pris en charge'], 400);
+        }
+    
+        try {
+            $filePath = $file->storeAs('defiProofImages', "challenge_{$defiId}_room_{$userRoomId}.jpg", 'public');
+            ChallengeProof::create(
+                [
+                    'file'=>'storage/' . $filePath,
+                    'challenge_id'=>$defiId,
+                    'room_id'=>$userRoomId,
+                    'user_id'=>$id
+                ]
+            );
+    
+            return response()->json(['success' => true, 'message' => 'Défi envoyé avec succès !']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur lors du téléversement du défi : ' . $e->getMessage()], 500);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function getValidatedProofs($challengeId)
     {
@@ -90,14 +175,8 @@ class DefisController extends Controller
 
     public function postProof(Request $request)
     {
-        $token = $request->bearerToken();
-
         try {
-            // Décoder le token JWT
-            $publicKey = config("services.crypt.public");
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-
-            $id = $decoded->key;
+            $id = $request->user['id'];
 
             // Charger l'utilisateur avec sa chambre associée
             $user = User::with('room')->where('id', $id)->first();
@@ -184,6 +263,10 @@ class DefisController extends Controller
         }
     }
 
+
+
+    
+
     /**
      * Delete a proof and its associated media.
      */
@@ -212,6 +295,16 @@ class DefisController extends Controller
             ], 500);
         }
     }
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Validate a proof.

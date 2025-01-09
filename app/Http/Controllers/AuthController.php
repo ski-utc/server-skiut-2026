@@ -12,7 +12,6 @@ use UnexpectedValueException;
 use LogicException;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
-use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {

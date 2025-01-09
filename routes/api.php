@@ -31,6 +31,14 @@ Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'ge
 
 /************************************************************** Défis *************************************************************/
 Route::get('/challenges', [\App\Http\Controllers\DefisController::class, 'getChallenges'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/challenges/getProofImage', [\App\Http\Controllers\DefisController::class, 'getProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/challenges/uploadProofImage', [\App\Http\Controllers\DefisController::class, 'uploadProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+
+
+
+
+
+
 Route::get('challenges/{challengeId}/proofs', [\App\Http\Controllers\DefisController::class, 'getValidatedProofs'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/proofs', [\App\Http\Controllers\DefisController::class, 'postProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/proofs/{proofId}/validate', [\App\Http\Controllers\DefisController::class, 'validateProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);

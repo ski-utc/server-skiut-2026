@@ -2,17 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Admin;
 use App\Models\User;
 use App\Models\ChallengeProof;
-use App\Models\Challenge;
 use App\Models\Anecdote; 
 use App\Models\Notification;
 use Illuminate\Http\Request;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-use Illuminate\Support\Facades\Log;
- 
 
 class AdminController extends Controller
 {
@@ -27,11 +21,9 @@ class AdminController extends Controller
 
             // Vérifie si l'utilisateur existe et s'il est un administrateur
             if ($user && $user->admin) {
-                log::notice('AdminController: L\'utilisateur est un admin');
                 return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
             } else {
                 // L'utilisateur n'est pas un admin
-                log::notice('AdminController: L\'utilisateur n\'est pas un admin');       
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
             }
         } catch (\Exception $e) {
@@ -91,8 +83,6 @@ class AdminController extends Controller
 public function getChallengeDetails(Request $request, $challengeId)
 {
     try {
-        Log::notice('getChallengeDetails/' . $challengeId);
-
         // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
         $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
 
@@ -114,12 +104,10 @@ public function getChallengeDetails(Request $request, $challengeId)
  */
 public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 {
-    Log::notice('isValid: ' . $isValid);
     try {
         $userId = $request->user['id'];;
 
         $challenge = ChallengeProof::findOrFail($challengeId);
-        Log::notice('challenge: ' . $challenge);
 
         if ($isValid === null) {
             return response()->json([
@@ -200,9 +188,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       */
       public function getAnecdoteDetails(Request $request, $id)
       {
-          try {
-              Log::notice('getAnecdoteDetails/' . $id);
-      
+          try {      
               // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
               $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
               $nbLikes = $anecdote->likes()->count();
@@ -215,7 +201,6 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
                   'nbLikes' => $nbLikes,
                   'nbWarns' => $nbWarns
               ]);
-              Log::notice('response: ' . $response);
           } catch (\Exception $e) {
               return response()->json([
                   'success' => false,
@@ -229,9 +214,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       * Met à jour le statut de validation d'une anecdote (valider ou invalider)
       */
       public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
-      {
-        Log::notice('updateAnecdoteStatus/' . $anecdoteId);
-        Log::notice('isValid: ' . $isValid);    
+      {   
           try {
             $userId = $request->user['id'];;
 
@@ -288,11 +271,9 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 public function getNotificationDetails(Request $request, $notificationId)
 {
     try {
-        Log::notice('getNotificationDetails/' . $notificationId);
 
         // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
         $notification = Notification::findOrFail($notificationId);
-        Log::notice('Notification : ' . $notification); 
 
         return response()->json([
             'success' => true,

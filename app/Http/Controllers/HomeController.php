@@ -5,15 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Anecdote;
 use App\Models\Challenge;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Models\Room;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     /**
      * Obtenir l'activité la plus proche, un défi au hasard, et les contacts "Team Info".
      */
-    public function getRandomData()
+    public function getRandomData(Request $request)
     {
         try {
             $currentDate = Carbon::today();
@@ -29,7 +31,10 @@ class HomeController extends Controller
                 $closestActivity->endTime = Carbon::createFromFormat('H:i:s', $closestActivity->endTime)->format('H\hi');
             }
 
-            $randomChallenge = Challenge::inRandomOrder()->first();
+            $userId = $request->user['id'];
+            $roomId = User::where('id',$userId)->first()->roomID;
+            
+            $randomChallenge = Challenge::whereNot('room_id', $roomId)->inRandomOrder()->first();
 
             $bestAnecdote = Anecdote::withCount('likes')
                 ->where("valid", true)
