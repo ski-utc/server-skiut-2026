@@ -88,7 +88,8 @@ public function getChallengeDetails(Request $request, $challengeId)
 
         return response()->json([
             'success' => true,
-            'data' => $challenge
+            'data' => $challenge,
+            'imagePath'=> asset($challenge->file)
         ]);
         
     } catch (\Exception $e) {
