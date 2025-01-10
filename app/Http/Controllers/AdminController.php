@@ -295,34 +295,37 @@ public function getNotificationDetails(Request $request, $notificationId)
        * Envoie une notification générale à tous les utilisateurs
        */
       public function sendGeneralNotification(Request $request)
-{
-    // Logic to send a general notification to all users
-    $notification = new Notification([
-        'title' => $request->title,
-        'text' => $request->text,
-        'is_general' => true, // Flag to indicate it's a general notification
-    ]);
-    $notification->save();
+    {
+        // Logic to send a general notification to all users
+        $notification = new Notification([
+            'title' => $request->title,
+            'text' => $request->text,
+            'is_general' => true, // Flag to indicate it's a general notification
+        ]);
+        $notification->save();
 
-    // You can implement broadcasting logic here (like using Firebase Cloud Messaging or Pusher)
-    return response()->json(['success' => true, 'message' => 'Notification sent to all users.']);
-}
+        // You can implement broadcasting logic here (like using Firebase Cloud Messaging or Pusher)
+        return response()->json(['success' => true, 'message' => 'Notification sent to all users.']);
+    }
 
-/**
- * Envoie une notification individuelle à un utilisateur spécifique
- */
-public function sendIndividualNotification(Request $request, $userId)
-{
-    // Logic to send a notification to a specific user
-    $notification = new Notification([
-        'title' => $request->title,
-        'text' => $request->text,
-        'user_id' => $userId, // Link notification to a specific user
-    ]);
-    $notification->save();
+    /**
+     * Envoie une notification individuelle à un utilisateur spécifique
+     */
+    public function sendIndividualNotification(Request $request, $userId)
+    {
+        // Logic to send a notification to a specific user
+        $notification = new Notification([
+            'title' => $request->title,
+            'text' => $request->text,
+            'user_id' => $userId, // Link notification to a specific user
+        ]);
+        $notification->save();
 
-    return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
-}
+        return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+    }
 
-
+    public function getMaxFileSize()
+    {
+        return response()->json(['success' => true, 'data' => 1024*1024*0.1]);
+    }
  }

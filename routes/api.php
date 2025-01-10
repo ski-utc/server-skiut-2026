@@ -24,7 +24,6 @@ Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRan
 Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
-
 /************************************************************** Planning *************************************************************/
 Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
@@ -71,7 +70,8 @@ Route::get('/getNotificationDetails/{notificationId}', [\App\Http\Controllers\Ad
 Route::post('/sendGeneralNotification', [\App\Http\Controllers\AdminController::class, 'sendGeneralNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/sendIndividualNotification/{userId}', [\App\Http\Controllers\AdminController::class, 'sendSpecificNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 
-/**************************************************************************************************************************************/
+Route::get('/getMaxFileSize', [\App\Http\Controllers\AdminController::class, 'getMaxFileSize'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+/*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/
 Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances']);

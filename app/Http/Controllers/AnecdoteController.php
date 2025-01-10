@@ -98,14 +98,14 @@ class AnecdoteController extends Controller
 
     public function sendAnecdote(Request $request){
         try{
-            $userId = $request->user['id'];;
+            $userId = $request->user['id'];
     
             $text = $request->input('texte');
 
             $room = User::where('id', $userId)->first()->roomID;
     
             Anecdote::create(["text"=>$text, 'room'=>$room, 'userId'=>$userId]);
-            return response()->json(['success' =>true, "message"=>"Anecdote postée avec succès ! Elle sera visible une fois validée par le bureau"]);
+            return response()->json(['success' =>true, "message"=>"Anecdote postée ! Elle sera visible une fois validée par le bureau"]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, "message"=>"Erreur".$e]);
         }    
@@ -130,7 +130,7 @@ class AnecdoteController extends Controller
     
             $anecdote->delete();
     
-            return response()->json(['success' => true, 'message' => 'Anecdote supprimée avec succès.']);
+            return response()->json(['success' => true, 'message' => "L'anecdote a bien été supprimée"]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
