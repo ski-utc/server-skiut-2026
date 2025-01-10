@@ -6,8 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\SkinderLike;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Storage;
 
 class SkinderController extends Controller
 {
@@ -17,8 +16,11 @@ class SkinderController extends Controller
             $userId = $request->user['id'];;
             $roomId = User::where('id',$userId)->first()->roomID;
 
-            if(!Room::where('id',$roomId)->first()->photoPath) {
-                return response()->json(['success' => false, 'message' => "noPhoto"]);
+            $photoPath = Room::where('id',$roomId)->first()->photoPath;
+            $relativePath = str_replace('storage/', '', $photoPath);
+
+            if (!$photoPath || !Storage::disk('public')->exists($relativePath)) {
+                return response()->json(['success' => false, 'message' => "NoPhoto"]);
             }
 
             $room = Room::whereNotIn('id', function ($query) use ($roomId) {
@@ -32,7 +34,7 @@ class SkinderController extends Controller
             ->first();
 
             if (!$room) {
-                return response()->json(['success' => false, 'message' => 'Vous avez déjà liké toutes les chambres disponibles pour le moment']);
+                return response()->json(['success' => false, 'message' => "TooMuch"]);
             }
     
             return response()->json([
@@ -159,7 +161,7 @@ class SkinderController extends Controller
 
     public function modifyProfil(Request $request)
     {
-        $userId = $request->user['id'];;
+        $userId = $request->user['id'];
         $roomId = User::where('id',$userId)->first()->roomID;
 
         $room = Room::findOrFail($roomId);
@@ -180,7 +182,7 @@ class SkinderController extends Controller
 
     public function uploadRoomImage(Request $request)
     {
-        $userId = $request->user['id'];;
+        $userId = $request->user['id'];
         $roomId = User::where('id', $userId)->first()->roomID;
         $room = Room::where('id', $roomId)->first();
     

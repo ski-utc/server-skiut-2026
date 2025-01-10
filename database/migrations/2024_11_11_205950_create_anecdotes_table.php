@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('anecdotes', function (Blueprint $table) {
             $table->id('id');
-            $table->text('text');
+            $table->text('text')->charset('utf8mb4');
             $table->unsignedInteger('room');
             $table->foreignId('userId')->references('id')->on('users')->onDelete('cascade');
             $table->boolean('valid')->default(false);

@@ -33,4 +33,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Transport::class, 'transport_user');
     }
+
+    public function performances()
+    {
+        return $this->hasOne(UserPerformance::class);
+    }
 }

@@ -12,7 +12,6 @@ use UnexpectedValueException;
 use LogicException;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
-use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -50,7 +49,6 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        Log::error('AuthController: login');
         if (config('auth.app_no_login', false)) {
             $userId=env('USER_ID');
             try {

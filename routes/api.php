@@ -24,11 +24,17 @@ Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRan
 Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
-
 /************************************************************** Planning *************************************************************/
 Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
+/************************************************************** Défis *************************************************************/
+Route::get('/challenges', [\App\Http\Controllers\DefisController::class, 'getChallenges'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/challenges/getProofImage', [\App\Http\Controllers\DefisController::class, 'getProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/challenges/uploadProofImage', [\App\Http\Controllers\DefisController::class, 'uploadProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/challenges/deleteproofImage', [\App\Http\Controllers\DefisController::class, 'deleteproofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/classement-chambres', [\App\Http\Controllers\ClassementController::class, 'classementChambres'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);;
+/**************************************************************************************************************************************/
 
 /************************************************************** Anecdotes *************************************************************/
 Route::post('/getAnecdotes', [\App\Http\Controllers\AnecdoteController::class, 'getAnecdotes'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
@@ -69,6 +75,11 @@ Route::post('/sendNotification', [\App\Http\Controllers\AdminController::class, 
 Route::post('/sendGeneralNotification', [\App\Http\Controllers\AdminController::class, 'sendGeneralNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/sendIndividualNotification/{userId}', [\App\Http\Controllers\AdminController::class, 'sendSpecificNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 
-/**************************************************************************************************************************************/
+Route::get('/getMaxFileSize', [\App\Http\Controllers\AdminController::class, 'getMaxFileSize'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+/*********************************************************************************************************************************************/
+
+/************************************************************** Vitesse de glisse *************************************************************/
+Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances']);
+/**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';

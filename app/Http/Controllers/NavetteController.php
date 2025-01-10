@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\Transport;
-use Illuminate\Http\Request;
 
 class NavetteController extends Controller
 {
@@ -9,7 +8,6 @@ class NavetteController extends Controller
     {
         $transports = Transport::all();
 
-        // Retournez les données
         return response()->json([
             'success' => true,
             'data' => $transports
