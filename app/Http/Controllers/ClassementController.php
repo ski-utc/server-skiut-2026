@@ -20,7 +20,7 @@ class ClassementController extends Controller
                 });
     
                 return [
-                    'roomNumber' => $room->roomNumber,
+                    'roomNumber' => $room->name, // car roomNumber risque de pas correspondre à la réalité
                     'totalPoints' => $totalPoints,
                 ];
             })
