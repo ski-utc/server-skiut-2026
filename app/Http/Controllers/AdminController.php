@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\User;
 use App\Models\ChallengeProof;
+use App\Models\Challenge;
 use App\Models\Anecdote; 
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Log;
+ 
 
 class AdminController extends Controller
 {
@@ -14,16 +20,22 @@ class AdminController extends Controller
     public function getAdmin(Request $request)
     {
         try {
-            $userId = $request->user['id'];;
+            // en-tête chiffrée à garder pour récupérer l'user 
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $userId = $decoded->key;
 
             // Récupère l'utilisateur correspondant à l'ID
             $user = User::find($userId);
 
             // Vérifie si l'utilisateur existe et s'il est un administrateur
             if ($user && $user->admin) {
+                log::notice('AdminController: L\'utilisateur est un admin');
                 return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
             } else {
                 // L'utilisateur n'est pas un admin
+                log::notice('AdminController: L\'utilisateur n\'est pas un admin');       
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
             }
         } catch (\Exception $e) {
@@ -83,13 +95,14 @@ class AdminController extends Controller
 public function getChallengeDetails(Request $request, $challengeId)
 {
     try {
+        Log::notice('getChallengeDetails/' . $challengeId);
+
         // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
         $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
 
         return response()->json([
             'success' => true,
-            'data' => $challenge,
-            'imagePath'=> asset($challenge->file)
+            'data' => $challenge
         ]);
         
     } catch (\Exception $e) {
@@ -105,10 +118,15 @@ public function getChallengeDetails(Request $request, $challengeId)
  */
 public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 {
+    Log::notice('isValid: ' . $isValid);
     try {
-        $userId = $request->user['id'];;
+        $publicKey = config('services.crypt.public');
+        $token = $request->bearerToken();
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        $userId = $decoded->key;
 
         $challenge = ChallengeProof::findOrFail($challengeId);
+        Log::notice('challenge: ' . $challenge);
 
         if ($isValid === null) {
             return response()->json([
@@ -189,7 +207,9 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       */
       public function getAnecdoteDetails(Request $request, $id)
       {
-          try {      
+          try {
+              Log::notice('getAnecdoteDetails/' . $id);
+      
               // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
               $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
               $nbLikes = $anecdote->likes()->count();
@@ -202,6 +222,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
                   'nbLikes' => $nbLikes,
                   'nbWarns' => $nbWarns
               ]);
+              Log::notice('response: ' . $response);
           } catch (\Exception $e) {
               return response()->json([
                   'success' => false,
@@ -214,9 +235,14 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       * Met à jour le statut de validation d'une anecdote (valider ou invalider)
       */
       public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
-      {   
+      {
+        Log::notice('updateAnecdoteStatus/' . $anecdoteId);
+        Log::notice('isValid: ' . $isValid);    
           try {
-            $userId = $request->user['id'];;
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $userId = $decoded->key;
 
               $anecdote = Anecdote::findOrFail($anecdoteId);    
 
@@ -273,9 +299,11 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 public function getNotificationDetails(Request $request, $notificationId)
 {
     try {
+        Log::notice('getNotificationDetails/' . $notificationId);
 
         // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
         $notification = Notification::findOrFail($notificationId);
+        Log::notice('Notification : ' . $notification); 
 
         return response()->json([
             'success' => true,
@@ -311,7 +339,38 @@ public function getNotificationDetails(Request $request, $notificationId)
     }    
 }
 
+      /**
+       * Envoie une notification générale à tous les utilisateurs
+       */
+      public function sendGeneralNotification(Request $request)
+{
+    // Logic to send a general notification to all users
+    $notification = new Notification([
+        'title' => $request->title,
+        'text' => $request->text,
+        'is_general' => true, // Flag to indicate it's a general notification
+    ]);
+    $notification->save();
 
+    // You can implement broadcasting logic here (like using Firebase Cloud Messaging or Pusher)
+    return response()->json(['success' => true, 'message' => 'Notification sent to all users.']);
+}
+
+/**
+ * Envoie une notification individuelle à un utilisateur spécifique
+ */
+public function sendIndividualNotification(Request $request, $userId)
+{
+    // Logic to send a notification to a specific user
+    $notification = new Notification([
+        'title' => $request->title,
+        'text' => $request->text,
+        'user_id' => $userId, // Link notification to a specific user
+    ]);
+    $notification->save();
+
+    return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+}
 
       /**
        * Delete notification
@@ -351,8 +410,4 @@ public function getNotificationDetails(Request $request, $notificationId)
           }
       }
 
-    public function getMaxFileSize()
-    {
-        return response()->json(['success' => true, 'data' => 1024*1024*0.1]);
-    }
  }
