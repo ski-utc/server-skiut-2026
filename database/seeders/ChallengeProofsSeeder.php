@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\ChallengeProof;
+use Illuminate\Support\Facades\DB;
+
 
 class ChallengeProofsSeeder extends Seeder
 {
@@ -14,6 +16,8 @@ class ChallengeProofsSeeder extends Seeder
      */
     public function run()
     {
+        DB::table('challenge_proofs')->truncate();
+
         $challengeProofs = [
             [ # validé
                 'id'            => 1,
@@ -22,7 +26,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => true,
                 'alert'         => false,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 52,
                 'user_id'       => 316050,
                 'challenge_id'  => 1,
@@ -34,7 +37,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => false,
                 'alert'         => true,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 52,
                 'user_id'       => 316050,
                 'challenge_id'  => 2,
@@ -46,7 +48,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => true,
                 'alert'         => false,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 53,
                 'user_id'       => 316366,
                 'challenge_id'  => 1,
@@ -58,7 +59,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => false,
                 'alert'         => true,
                 'delete'        => true,
-                'active'        => false,
                 'room_id'       => 53,
                 'user_id'       => 316377,
                 'challenge_id'  => 1,
@@ -70,7 +70,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => true,
                 'alert'         => false,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 53,
                 'user_id'       => 316617,
                 'challenge_id'  => 5,
@@ -82,7 +81,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => true,
                 'alert'         => false,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 53,
                 'user_id'       => 316617,
                 'challenge_id'  => 6,
@@ -94,7 +92,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => false,
                 'alert'         => true,
                 'delete'        => false,
-                'active'        => false,
                 'room_id'       => 53,
                 'user_id'       => 316617,
                 'challenge_id'  => 7,
@@ -106,7 +103,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => true,
                 'alert'         => false,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 52,
                 'user_id'       => 316050,
                 'challenge_id'  => 8,
@@ -118,7 +114,6 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => true,
                 'alert'         => false,
                 'delete'        => false,
-                'active'        => true,
                 'room_id'       => 53,
                 'user_id'       => 317186,
                 'challenge_id'  => 9,
@@ -130,15 +125,12 @@ class ChallengeProofsSeeder extends Seeder
                 'valid'         => false,
                 'alert'         => true,
                 'delete'        => true,
-                'active'        => false,
                 'room_id'       => 52,
                 'user_id'       => 316050,
                 'challenge_id'  => 8,
             ],
         ];
 
-        foreach ($challengeProofs as $proof) {
-            ChallengeProof::create($proof);
-        }
+        DB::table('challenge_proofs')->insert($challengeProofs);
     }
 }

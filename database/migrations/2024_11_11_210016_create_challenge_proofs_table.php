@@ -18,7 +18,6 @@ return new class extends Migration
             $table->boolean('valid')->default(false);
             $table->unsignedTinyInteger('alert')->default(0); // Number of alerts
             $table->boolean('delete')->default(false); // Mark for deletion
-            $table->boolean('active')->default(false); // Active/inactive status
 
             // Foreign keys
             $table->foreignId('challenge_id')->constrained('challenges')->onDelete('cascade'); // Ensure cascading delete with challenges

@@ -56,16 +56,16 @@ class AdminController extends Controller
         $filter = $request->query('filter', 'all');
 
         // Build the base query
-        $query = ChallengeProof::with(['room', 'user', 'challenge']); // Assuming these are the related models
+        $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false); // Assuming these are the related models
 
         // Apply filters
         switch ($filter) {
             case 'pending':
-                $query->where('delete', false)->where('valid', false);
+                $query->where('valid', false);
                 break;
 
-            case 'deleted':
-                $query->where('delete', true);
+            case 'valid':
+                $query->where('valid', true);
                 break;
 
             case 'all':
@@ -116,9 +116,8 @@ public function getChallengeDetails(Request $request, $challengeId)
 /**
  * Met à jour le statut de validation d'un challenge (valider ou invalider)
  */
-public function updateChallengeStatus(Request $request, $challengeId, $isValid)
+public function updateChallengeStatus(Request $request, $challengeId, $isValid, $isDelete)
 {
-    Log::notice('isValid: ' . $isValid);
     try {
         $publicKey = config('services.crypt.public');
         $token = $request->bearerToken();
@@ -128,20 +127,32 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
         $challenge = ChallengeProof::findOrFail($challengeId);
         Log::notice('challenge: ' . $challenge);
 
-        if ($isValid === null) {
+        if ($isValid === null || $isDelete === null) {
             return response()->json([
                 'success' => false,
-                'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+                'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
             ]);
         }
 
         // Mise à jour du statut de validation
         $challenge->valid = $isValid;
+        $challenge->delete = $isDelete;
         $challenge->save();
+
+
+        // Prépare le message 
+        if ($isValid && $isDelete) {
+            $message = 'Challenge refusé avec succès';
+        } elseif ($isValid && !$isDelete) {
+            $message = 'Challenge validé avec succès';
+        } elseif (!$isValid && !$isDelete) {
+            $message = 'Challenge invalidé avec succès';
+        }
+
 
         return response()->json([
             'success' => true,
-            'message' => $isValid ? 'Challenge validé avec succès.' : 'Challenge invalidé avec succès.',
+            'message' => $message,
         ]);
     } catch (\Exception $e) {
         return response()->json([

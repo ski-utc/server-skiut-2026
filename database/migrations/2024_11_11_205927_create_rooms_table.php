@@ -17,9 +17,9 @@ return new class extends Migration
             $table->unsignedTinyInteger('capacity'); // 4 ou 6
             $table->string('name')->unique();
             $table->string('mood');
-            $table->string('photoPath');
-            $table->string('description')->charset('utf8mb4'); 
-            $table->json('passions')->charset('utf8mb4')->default(json_encode([]));
+            $table->string('photoPath')->nullable();
+            $table->string('description')->charset('utf8mb4')->nullable(); 
+            $table->json('passions')->charset('utf8mb4')->default(json_encode([]))->nullable();
             $table->unsignedTinyInteger('totalPoints')->default(0);
             $table->foreignId('userID')->nullable()->constrained('users', 'id')->onDelete('cascade'); // Foreign key to users table
             $table->timestamps();
