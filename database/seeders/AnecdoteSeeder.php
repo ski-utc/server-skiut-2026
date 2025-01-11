@@ -16,7 +16,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '52',
                 'userId' => 316050,
                 'valid' => 0,
-                'alert' => 0,
                 'delete' => false,
                 'active' => false
             ],
@@ -25,7 +24,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 1,
-                'alert' => 1,
                 'delete' => false,
                 'active' => true
             ],
@@ -34,7 +32,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '52',
                 'userId' => 316050,
                 'valid' => 0,
-                'alert' => 2,
                 'delete' => false,
                 'active' => false
             ],
@@ -43,7 +40,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '52',
                 'userId' => 316050,
                 'valid' => 1,
-                'alert' => 0,
                 'delete' => true,
                 'active' => false
             ],
@@ -52,7 +48,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 1,
-                'alert' => 3,
                 'delete' => false,
                 'active' => true
             ],
@@ -61,7 +56,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 0,
-                'alert' => 0,
                 'delete' => false,
                 'active' => false
             ],
@@ -70,7 +64,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 0,
-                'alert' => 0,
                 'delete' => false,
                 'active' => false
             ],
@@ -79,7 +72,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '52',
                 'userId' => 316050,
                 'valid' => 1,
-                'alert' => 0,
                 'delete' => false,
                 'active' => true
             ],
@@ -88,7 +80,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 0,
-                'alert' => 4,
                 'delete' => false,
                 'active' => false
             ],
@@ -97,7 +88,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 1,
-                'alert' => 0,
                 'delete' => false,
                 'active' => true
             ],
@@ -106,7 +96,6 @@ class AnecdoteSeeder extends Seeder
                 'room' => '53',
                 'userId' => 316366,
                 'valid' => 1,
-                'alert' => 0,
                 'delete' => false,
                 'active' => true
             ],
