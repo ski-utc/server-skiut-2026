@@ -171,46 +171,56 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid, 
      */
 
      public function getAdminAnecdotes(Request $request)
-    {
-        try {
-            // Récupération des paramètres de filtre (facultatifs)
-            $filter = $request->query('filter', 'all');
-
-            // Construire la requête de base
-            $query = Anecdote::with(['user', 'likes', 'warns']);
-
-            // Appliquer les filtres
-            switch ($filter) {
-                case 'pending':
-                    $query->where('valid', false);
-                    break;
-
-                case 'reported':
-                    $query->where('alert', '>', 0);
-                    break;
-
-                case 'all':
-                default:
-                    // Pas de filtre spécifique
-                    break;
-            }
-
-            // Récupérer les anecdotes
-            $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
-                ->orderBy('id', 'desc') // Trier par date de création
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $anecdotes,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération des anecdotes : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+     {
+         try {
+             // Récupération des paramètres de filtre (facultatifs)
+             $filter = $request->query('filter', 'all');
+     
+             // Construire la requête de base
+             $query = Anecdote::with(['user', 'likes', 'warns']);
+     
+             // Appliquer les filtres
+             switch ($filter) {
+                 case 'pending':
+                     $query->where('valid', false);
+                     break;
+     
+                 case 'reported':
+                     // Filtrer les anecdotes ayant plus d'un avertissement
+                     $query->whereHas('warns', function($q) {
+                         $q->groupBy('anecdote_id')  // Groupement par ID d'anecdote
+                           ->havingRaw('COUNT(*) > 0');  // Plus d'un avertissement
+                     });
+                     break;
+     
+                 case 'all':
+                 default:
+                     // Pas de filtre spécifique
+                     break;
+             }
+     
+             // Récupérer les anecdotes
+             $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
+                 ->orderBy('id', 'desc') // Trier par date de création
+                 ->get();
+     
+             // Compter le nombre d'avertissements pour chaque anecdote
+             foreach ($anecdotes as $anecdote) {
+                 $anecdote->nbWarns = $anecdote->warns()->count();
+             }
+     
+             return response()->json([
+                 'success' => true,
+                 'data' => $anecdotes,
+             ]);
+         } catch (\Exception $e) {
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Erreur lors de la récupération des anecdotes : ' . $e->getMessage(),
+             ], 500);
+         }
+     }
+     
 
  
      /**
@@ -270,7 +280,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid, 
 
               return response()->json([
                   'success' => true,
-                  'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote invalidée avec succès.',
+                  'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
               ]);
           } catch (\Exception $e) {
               return response()->json([
