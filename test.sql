@@ -19,3 +19,9 @@ PRAGMA table_info(rooms);
 UPDATE users SET admin = true WHERE id = 316050;
 
 SELECT * FROM anecdotes WHERE id = 12;
+
+UPDATE rooms SET name = 'Asso 1' WHERE id = 52; 
+```Asso 1```
+
+UPDATE rooms SET name = 'Asso 2' WHERE id = 53; 
+// Asso 2
