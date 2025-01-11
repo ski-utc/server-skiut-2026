@@ -17,7 +17,7 @@ Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUse
 /**********************************************************************************************************************************/
 
 /************************************************************** Home *************************************************************/
-Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
