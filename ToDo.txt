@@ -26,3 +26,5 @@ Uniquement pour les tests :
 7. php artisan db:seed --class=AnecdoteSeeder
 8. php artisan db:seed --class=ChallengeProofsSeeder
 9. php artisan db:seed --class=NotificationSeeder
+10. php artisan db:seed --class=TransportSeeder
+

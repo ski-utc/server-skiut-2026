@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('transport_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('userId')->constrained()->onDelete('cascade');
-            $table->foreignId('transportId')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('transport_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

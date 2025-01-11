@@ -28,3 +28,6 @@ UPDATE rooms SET name = 'Asso 2' WHERE id = 53;
 
 DELETE FROM rooms;
 DELETE FROM users; 
+
+
+SELECT * FROM anecdotes WHERE alert > 0;

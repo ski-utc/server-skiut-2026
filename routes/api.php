@@ -45,7 +45,7 @@ Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class,
 /**************************************************************************************************************************************/
 
 /************************************************************** Navettes *************************************************************/
-Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'index'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'getNavettes'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /*************************************************************** Skinder **************************************************************/
