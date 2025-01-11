@@ -11,5 +11,5 @@ class Activity extends Model
     use HasFactory;
     
     protected $table = 'activities';
-    protected $fillable = ['id', 'date', 'text', 'startTime', 'endTime']; 
+    protected $fillable = ['id', 'date', 'text', 'startTime', 'endTime', 'payant']; 
 }

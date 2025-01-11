@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('text');
             $table->time('startTime');
             $table->time('endTime');
+            $table->boolean('payant'); // mentionne si c'est une activité presta
             $table->timestamps();
         });
     }
