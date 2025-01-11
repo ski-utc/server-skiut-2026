@@ -71,11 +71,13 @@ Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [\App\Http\Controlle
 Route::get('/getAdminNotifications', [\App\Http\Controllers\AdminController::class, 'getAdminNotifications'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getNotificationDetails/{notificationId}', [\App\Http\Controllers\AdminController::class, 'getNotificationDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/deleteNotification/{userId}/{delete}', [\App\Http\Controllers\AdminController::class, 'deleteNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::post('/sendNotification', [\App\Http\Controllers\AdminController::class, 'sendNotification'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/sendNotification', [\App\Http\Controllers\AdminController::class, 'sendNotificationToAll'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/sendGeneralNotification', [\App\Http\Controllers\AdminController::class, 'sendGeneralNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/sendIndividualNotification/{userId}', [\App\Http\Controllers\AdminController::class, 'sendSpecificNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 
 Route::get('/getMaxFileSize', [\App\Http\Controllers\AdminController::class, 'getMaxFileSize'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+
+Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 /*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/

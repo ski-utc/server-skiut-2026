@@ -13,7 +13,7 @@ class SkinderController extends Controller
     public function getProfilSkinder(Request $request)
     {
         try {
-            $userId = $request->user['id'];;
+            $userId = $request->user['id'];
             $roomId = User::where('id',$userId)->first()->roomID;
 
             $photoPath = Room::where('id',$roomId)->first()->photoPath;
