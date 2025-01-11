@@ -24,7 +24,6 @@ Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRan
 Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
-
 /************************************************************** Planning *************************************************************/
 Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
@@ -33,14 +32,7 @@ Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'ge
 Route::get('/challenges', [\App\Http\Controllers\DefisController::class, 'getChallenges'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/challenges/getProofImage', [\App\Http\Controllers\DefisController::class, 'getProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/challenges/uploadProofImage', [\App\Http\Controllers\DefisController::class, 'uploadProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-
-Route::get('challenges/{challengeId}/proofs', [\App\Http\Controllers\DefisController::class, 'getValidatedProofs'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/proofs', [\App\Http\Controllers\DefisController::class, 'postProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/proofs/{proofId}/validate', [\App\Http\Controllers\DefisController::class, 'validateProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/challenges/import', [\App\Http\Controllers\DefisController::class, 'importChallenges'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::get('/proofs/validate', [\App\Http\Controllers\DefisController::class, 'getProofsForValidation'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/proofs/{proofId}/delete', [\App\Http\Controllers\DefisController::class, 'deleteProof'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-
+Route::post('/challenges/deleteproofImage', [\App\Http\Controllers\DefisController::class, 'deleteproofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::get('/classement-chambres', [\App\Http\Controllers\ClassementController::class, 'classementChambres'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);;
 /**************************************************************************************************************************************/
 
@@ -67,18 +59,26 @@ Route::post('/uploadRoomImage', [\App\Http\Controllers\SkinderController::class,
 
 /************************************************************** Administration *************************************************************/
 Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'getAdmin'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+
 Route::get('/getAdminChallenges', [\App\Http\Controllers\AdminController::class, 'getAdminChallenges'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getChallengeDetails/{challengeId}', [\App\Http\Controllers\AdminController::class, 'getChallengeDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/updateChallengeStatus/{challengeId}/{isValid}', [\App\Http\Controllers\AdminController::class, 'updateChallengeStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+
 Route::get('/getAdminAnecdotes', [\App\Http\Controllers\AdminController::class, 'getAdminAnecdotes'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getAnecdoteDetails/{anecdoteId}', [\App\Http\Controllers\AdminController::class, 'getAnecdoteDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [\App\Http\Controllers\AdminController::class, 'updateAnecdoteStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+
 Route::get('/getAdminNotifications', [\App\Http\Controllers\AdminController::class, 'getAdminNotifications'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getNotificationDetails/{notificationId}', [\App\Http\Controllers\AdminController::class, 'getNotificationDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::post('/deleteNotification/{userId}/{delete}', [\App\Http\Controllers\AdminController::class, 'deleteNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::post('/sendNotification', [\App\Http\Controllers\AdminController::class, 'sendNotificationToAll'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 Route::post('/sendGeneralNotification', [\App\Http\Controllers\AdminController::class, 'sendGeneralNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::post('/sendIndividualNotification/{userId}', [\App\Http\Controllers\AdminController::class, 'sendSpecificNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 
-/**************************************************************************************************************************************/
+Route::get('/getMaxFileSize', [\App\Http\Controllers\AdminController::class, 'getMaxFileSize'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+
+Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+/*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/
 Route::post('/update-performance', [\App\Http\Controllers\UserPerformanceController::class, 'updatePerformance'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);

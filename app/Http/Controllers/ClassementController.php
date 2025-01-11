@@ -9,21 +9,41 @@ class ClassementController extends Controller
 {
     public function classementChambres()
     {
-        // Récupérer toutes les chambres triées par totalPoints décroissant
-        $rooms = Room::orderBy('totalPoints', 'desc')->get(['roomNumber', 'totalPoints']);
-
-        // Séparer les 3 premières chambres pour le podium
-        $podiumRooms = $rooms->take(3);
-
-        // Séparer le reste des chambres
-        $restRooms = $rooms->slice(3);
-
-        return response()->json([
-            'success' => true,
-            'podium' => $podiumRooms,
-            'rest' => $restRooms
-        ]);
+        try {
+            $rooms = Room::with(['challengeProofs' => function ($query) {
+                $query->where('valid', 1); // Filtrer uniquement les preuves validées
+            }])
+            ->get()
+            ->map(function ($room) {
+                $totalPoints = $room->challengeProofs->sum(function ($proof) {
+                    return $proof->challenge ? $proof->challenge->nbPoints : 0;
+                });
+    
+                return [
+                    'roomNumber' => $room->name, // car roomNumber risque de pas correspondre à la réalité
+                    'totalPoints' => $totalPoints,
+                ];
+            })
+            ->sortByDesc('totalPoints')
+            ->values();
+    
+            $podiumRooms = $rooms->take(3);
+    
+            $restRooms = $rooms->slice(3);
+    
+            return response()->json([
+                'success' => true,
+                'podium' => $podiumRooms,
+                'rest' => $restRooms,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du calcul du classement : ' . $e->getMessage(),
+            ], 500);
+        }
     }
+    
 
     public function classementPerformances()
     {

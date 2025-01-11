@@ -28,6 +28,7 @@ class PlanningController extends Controller
                         'start' => Carbon::parse($activity->startTime)->format('H:i'), 
                         'end' => Carbon::parse($activity->endTime)->format('H:i'),
                     ],
+                    'payant' => $activity->payant,
                     'date' => $activity->date,
                     'status' => $activityStatus,
                 ];

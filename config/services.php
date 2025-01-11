@@ -31,7 +31,7 @@ return [
     'oauth' => [
         'client_id' => file_get_contents(env('OAUTH_CLIENT_ID_PATH', storage_path('app/public/OAuthClientId.txt'))),
         'client_secret' => file_get_contents(env('OAUTH_CLIENT_SECRET_PATH', storage_path('app/private/OAuthClientSecret.txt'))),
-        'redirect_uri' => env('OAUTH_REDIRECT_URI', 'http://192.168.1.154:8000/skiutc/auth/callback'),
+        'redirect_uri' => env('OAUTH_REDIRECT_URI', env('BASE_URL').'skiutc/auth/callback'),
         'scopes' => env('OAUTH_SCOPES', 'users-infos read-memberships read-assos'),
         'authorize_url' => env('OAUTH_AUTHORIZE_URL', 'https://auth.assos.utc.fr/oauth/authorize'),
         'access_token_url' => env('OAUTH_ACCESS_TOKEN_URL', 'https://auth.assos.utc.fr/oauth/token'),
