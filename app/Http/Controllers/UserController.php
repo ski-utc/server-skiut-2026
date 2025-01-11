@@ -29,17 +29,17 @@ class UserController extends Controller
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false
             ]
         ); // si se connecte avec email, utiliser comme clé primaire (et cas sinon)
-    
+
         return $user;
     }
 
-    public function saveToken(Request $request) {   
+    public function saveToken(Request $request) {
         try{
             PushToken::updateOrCreate(
                 ['token' => $request->userToken],
                 ['user_id' => $request->user['id']]
             );
-        
+
             return response()->json(['success'=>true, 'message' => 'Token enregistré avec succès']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération du token : '. $e]);

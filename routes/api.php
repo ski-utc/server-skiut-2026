@@ -81,7 +81,8 @@ Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveTo
 /*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/
-Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances']);
+Route::post('/update-performance', [\App\Http\Controllers\UserPerformanceController::class, 'updatePerformance'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';
