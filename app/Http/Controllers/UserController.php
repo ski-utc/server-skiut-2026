@@ -27,7 +27,7 @@ class UserController extends Controller
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false
             ]
         ); // si se connecte avec email, utiliser comme clé primaire (et cas sinon)
-    
+
         return $user;
     }
 }
