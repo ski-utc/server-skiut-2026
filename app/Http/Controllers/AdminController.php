@@ -6,13 +6,13 @@ use App\Models\Admin;
 use App\Models\User;
 use App\Models\ChallengeProof;
 use App\Models\Challenge;
-use App\Models\Anecdote; 
+use App\Models\Anecdote;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Facades\Log;
-use App\Services\ExpoPushService; 
+use App\Services\ExpoPushService;
 
 class AdminController extends Controller
 {
@@ -20,10 +20,10 @@ class AdminController extends Controller
     public function getAdmin(Request $request)
     {
         try {
-            // en-tête chiffrée à garder pour récupérer l'user 
+            // en-tête chiffrée à garder pour récupérer l'user
             $publicKey = config('services.crypt.public');
             $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
             $userId = $decoded->key;
 
             // Récupère l'utilisateur correspondant à l'ID
@@ -35,18 +35,18 @@ class AdminController extends Controller
                 return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
             } else {
                 // L'utilisateur n'est pas un admin
-                log::notice('AdminController: L\'utilisateur n\'est pas un admin');       
+                log::notice('AdminController: L\'utilisateur n\'est pas un admin');
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
             }
         } catch (\Exception $e) {
             // Capture d'erreur
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
-    }  
+    }
 
 
     /**
-     * Gestion des défis 
+     * Gestion des défis
      */
 
      public function getAdminChallenges(Request $request)
@@ -104,7 +104,7 @@ public function getChallengeDetails(Request $request, $challengeId)
             'success' => true,
             'data' => $challenge
         ]);
-        
+
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
@@ -151,12 +151,12 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
     }
 }
 
-     
 
 
-    
+
+
     /**
-     * Gestion des anecdotes 
+     * Gestion des anecdotes
      */
 
      public function getAdminAnecdotes(Request $request)
@@ -201,7 +201,7 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
         }
     }
 
- 
+
      /**
       * Récupère les détails d'une anecdote spécifique par son ID
       */
@@ -209,16 +209,16 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
       {
           try {
               Log::notice('getAnecdoteDetails/' . $id);
-      
+
               // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
               $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
               $nbLikes = $anecdote->likes()->count();
               $nbWarns = $anecdote->warns()->count();
 
-      
+
               return response()->json([
                   'success' => true,
-                  'data' => $anecdote, 
+                  'data' => $anecdote,
                   'nbLikes' => $nbLikes,
                   'nbWarns' => $nbWarns
               ]);
@@ -230,21 +230,21 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
               ], 500);
           }
       }
-      
+
    /**
       * Met à jour le statut de validation d'une anecdote (valider ou invalider)
       */
       public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
       {
         Log::notice('updateAnecdoteStatus/' . $anecdoteId);
-        Log::notice('isValid: ' . $isValid);    
+        Log::notice('isValid: ' . $isValid);
           try {
             $publicKey = config('services.crypt.public');
             $token = $request->bearerToken();
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));     
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
             $userId = $decoded->key;
 
-              $anecdote = Anecdote::findOrFail($anecdoteId);    
+              $anecdote = Anecdote::findOrFail($anecdoteId);
 
               if ($isValid === null) {
                   return response()->json([
@@ -269,8 +269,8 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
           }
       }
 
-      
-      
+
+
     /**
      * Gestion des notifications
     */
@@ -303,13 +303,13 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 
             // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
             $notification = Notification::findOrFail($notificationId);
-            Log::notice('Notification : ' . $notification); 
+            Log::notice('Notification : ' . $notification);
 
             return response()->json([
                 'success' => true,
                 'data' => $notification
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -320,11 +320,11 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
 
     public function sendNotificationToOne(Request $request)
     {
-        try {   
+        try {
             $title = $request->input('titre');
             $body = $request->input('texte');
             $token = $request->input('token');
-    
+
             $expoPushService = new ExpoPushService();
             $expoPushService->sendNotification(
                 $token,
@@ -339,22 +339,22 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
                 'general' => false,
                 'delete' => false,
             ]);
-    
+
             return response()->json(['success' => true, 'message' => "Notification envoyée avec succès à l'utilisateurice !"]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
         }
     }
-    
+
     public function sendNotificationToAll(Request $request)
     {
-        try {  
+        try {
             $title = $request->input('titre');
             $body = $request->input('texte');
             $data = (object) [];
-    
+
             $tokens = \App\Models\PushToken::pluck('token')->toArray();
-    
+
             $expoPushService = new ExpoPushService();
             foreach ($tokens as $token) {
                 $expoPushService->sendNotification(
@@ -364,20 +364,20 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
                     $data
                 );
             }
-    
+
             Notification::create([
                 'title' => $title,
                 'description' => $body,
                 'general' => true,
                 'delete' => false,
             ]);
-    
+
             return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
         }
     }
-    
+
 
 
 
@@ -434,21 +434,21 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
             $token = $request->bearerToken();
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
             $userId = $decoded->key;
-    
+
             $notification = Notification::findOrFail($notificationId); // Assuming you have a Notification model
             Log::notice('notification: ' . $notification);
-    
+
             if ($delete === null) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Le paramètre "delete" est requis (1 pour supprimer, 0 pour annuler).',
                 ]);
             }
-    
+
             // Mise à jour du statut de suppression
             $notification->delete = $delete; // Assuming there is a 'deleted' field in the Notification model
             $notification->save();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => $delete ? 'Notification supprimée avec succès.' : 'Suppression annulée avec succès.',
@@ -460,5 +460,11 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
             ], 500);
         }
     }
+
+    public function getMaxFileSize()
+        {
+            return response()->json(['success' => true, 'data' => 1024*1024*0.1]);
+        }
+
 
  }
