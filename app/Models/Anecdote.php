@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class Anecdote extends Model
 {
@@ -15,7 +14,6 @@ class Anecdote extends Model
 
     public function user()
     {
-        Log::info('User ID: ' . $this->userId);  // Affiche l'ID utilisateur
         return $this->belongsTo(User::class, 'userId', 'id');
     }
 

@@ -7,7 +7,6 @@ use App\Models\Room;
 use App\Models\User;
 use App\Models\SkinderLike;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 
 class SkinderController extends Controller
 {
@@ -17,14 +16,10 @@ class SkinderController extends Controller
             $userId = $request->user['id'];
             $roomId = User::where('id',$userId)->first()->roomID;
 
-            Log::info('Room ID : ' . $roomId);
-
             $photoPath = Room::where('id',$roomId)->first()->photoPath;
             $relativePath = str_replace('storage/', '', $photoPath);
-            Log::info('Relative path : ' . $relativePath);
 
             if (!$photoPath || !Storage::disk('public')->exists($relativePath)) {
-                Log::info('No photo');
                 return response()->json(['success' => false, 'message' => "NoPhoto"]);
             }
 
@@ -37,8 +32,6 @@ class SkinderController extends Controller
             ->whereNotNull('photoPath')
             ->inRandomOrder()
             ->first();
-
-            Log::info('Room : ' . $room);
 
             if (!$room) {
                 return response()->json(['success' => false, 'message' => "TooMuch"]);

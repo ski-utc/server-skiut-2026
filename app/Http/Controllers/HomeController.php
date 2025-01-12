@@ -9,7 +9,6 @@ use Carbon\Carbon;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -18,10 +17,8 @@ class HomeController extends Controller
      */
     public function getRandomData(Request $request)
 {
-    Log::info('Getting random data...');
     try {
         $currentDate = Carbon::today();
-        Log::info('Current date: ' . $currentDate);
 
         $closestActivity = Activity::whereDate('date', '>=', $currentDate)
             ->whereNotNull('startTime')
@@ -55,7 +52,6 @@ class HomeController extends Controller
             ->orderBy('likes_count', 'desc')
             ->first();
 
-        Log::info('Random data retrieved successfully : '. $closestActivity . ' ' . $randomChallenge . ' ' . $bestAnecdote);
         return response()->json([
             'success' => true,
             'data' => [
