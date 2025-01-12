@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('lastName');
             $table->string('email')->unique();
             $table->foreignId('roomID'); //->constrained('rooms', 'id')->onDelete('cascade');
-            $table->string('location');  // pas encore sûre - pour la géolocalisation 
+            $table->string('location')->nullable();  // pas encore sûre - pour la géolocalisation 
             $table->boolean('admin'); // true if team info
             $table->boolean('alumniOrExte'); 
             $table->timestamps();
