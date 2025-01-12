@@ -102,7 +102,8 @@ public function getChallengeDetails(Request $request, $challengeId)
 
         return response()->json([
             'success' => true,
-            'data' => $challenge
+            'data' => $challenge,
+            'imagePath'=> asset($challenge->file)
         ]);
         
     } catch (\Exception $e) {
@@ -378,34 +379,6 @@ public function updateChallengeStatus(Request $request, $challengeId, $isValid)
         }
     }
     
-
-
-
-
-
-
-
-
-
-
-
-
-    /**
-     * Envoie une notification générale à tous les utilisateurs
-     */
-    public function sendGeneralNotification(Request $request)
-    {
-        // Logic to send a general notification to all users
-        $notification = new Notification([
-            'title' => $request->title,
-            'text' => $request->text,
-            'is_general' => true, // Flag to indicate it's a general notification
-        ]);
-        $notification->save();
-
-        // You can implement broadcasting logic here (like using Firebase Cloud Messaging or Pusher)
-        return response()->json(['success' => true, 'message' => 'Notification sent to all users.']);
-    }
 
     /**
      * Envoie une notification individuelle à un utilisateur spécifique
