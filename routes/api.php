@@ -17,7 +17,7 @@ Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUse
 /**********************************************************************************************************************************/
 
 /************************************************************** Home *************************************************************/
-Route::get('/random-data', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
@@ -45,7 +45,7 @@ Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class,
 /**************************************************************************************************************************************/
 
 /************************************************************** Navettes *************************************************************/
-Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'index'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'getNavettes'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /*************************************************************** Skinder **************************************************************/
@@ -62,7 +62,7 @@ Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'getAdmin'])
 
 Route::get('/getAdminChallenges', [\App\Http\Controllers\AdminController::class, 'getAdminChallenges'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getChallengeDetails/{challengeId}', [\App\Http\Controllers\AdminController::class, 'getChallengeDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::post('/updateChallengeStatus/{challengeId}/{isValid}', [\App\Http\Controllers\AdminController::class, 'updateChallengeStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::post('/updateChallengeStatus/{challengeId}/{isValid}/{isDelete}', [\App\Http\Controllers\AdminController::class, 'updateChallengeStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 
 Route::get('/getAdminAnecdotes', [\App\Http\Controllers\AdminController::class, 'getAdminAnecdotes'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
 Route::get('/getAnecdoteDetails/{anecdoteId}', [\App\Http\Controllers\AdminController::class, 'getAnecdoteDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
@@ -80,7 +80,8 @@ Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveTo
 /*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/
-Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances']);
+Route::post('/update-performance', [\App\Http\Controllers\UserPerformanceController::class, 'updatePerformance'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';

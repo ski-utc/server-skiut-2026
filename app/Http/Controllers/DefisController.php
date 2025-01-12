@@ -34,11 +34,14 @@ class DefisController extends Controller
     
                 $status = 'empty';
                 if ($proof) {
-                    if ($proof->valid) {
+                    if ($proof->valid && !$proof->delete) { // validé par admin
                         $status = 'done';
-                    } else {
-                        $status = 'waiting';
+                    } else if ($proof->valid && $proof->delete) { // refusé par admin
+                        $status = 'refused';
+                    } else { // en attente de validation
+                        $status = 'pending';
                     }
+
                 }
     
                 return [
@@ -174,6 +177,7 @@ class DefisController extends Controller
     
             Storage::disk('public')->delete($relativePath);
     
+            $proof->delete = true;
             $proof->delete();
     
             return response()->json([

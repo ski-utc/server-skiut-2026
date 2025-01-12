@@ -23,9 +23,9 @@ class Transport extends Model
     ];
 
     // Define the many-to-many relationship with User
-    public function users()
+        public function users()
     {
-        return $this->belongsToMany(User::class, 'transport_user');
+        return $this->belongsToMany(User::class, 'transport_user', 'transport_id', 'user_id');
     }
 
     // Accessors

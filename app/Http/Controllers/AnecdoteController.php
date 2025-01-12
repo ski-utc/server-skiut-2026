@@ -25,7 +25,7 @@ class AnecdoteController extends Controller
     
             $anecdotes = Anecdote::withCount('likes')
                 ->where("valid", true)
-                ->orderBy('likes_count', 'desc')
+                ->orderBy('created_at', 'desc') // ou nbLikes
                 ->take((int)$quantity)
                 ->get();
     
