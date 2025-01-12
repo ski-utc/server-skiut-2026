@@ -54,40 +54,48 @@ class SkinderController extends Controller
 
     public function likeSkinder(Request $request)
     {
-        $userId = $request->user['id'];;
-        $roomLikeur = User::where('id',$userId)->first()->roomID;
+        try{
+            $userId = $request->user['id'];;
+            $roomLikeur = User::where('id',$userId)->first()->roomID;
 
-        $roomLiked = $request->input('roomLiked');
+            $roomLiked = $request->input('roomLiked');
 
-        if($roomLikeur == $roomLiked) {
-            return response()->json(['success' => false, 'message' => "Une chambre ne peut pas s'auto_liker"]);
-        }
+            if($roomLikeur == $roomLiked) {
+                return response()->json(['success' => false, 'message' => "Une chambre ne peut pas s'auto_liker"]);
+            }
 
-        SkinderLike::firstOrCreate([
-            'room_likeur' => $roomLikeur,
-            'room_liked' => $roomLiked,
-        ]);
+            if($roomLiked == null) {
+                return response()->json(['success' => false, 'message' => "Crée d'abord ton profil pour liker."]);
+            }
 
-        $reverseLike = SkinderLike::where('room_likeur', $roomLiked)
-            ->where('room_liked', $roomLikeur)
-            ->exists();
-
-        if($reverseLike){
-            $otherRoom = Room::where('id',$roomLiked)->first();
-            $otherRoomResp = User::where('id', $otherRoom->userID)->first();
-            return response()->json([
-                'success' => true,
-                'match' => $reverseLike,
-                'myRoomImage'=>asset(Room::where('id',$roomLikeur)->first()->photoPath),
-                'otherRoomImage'=>asset($otherRoom->photoPath),
-                'otherRoomNumber'=>$otherRoom->roomNumber,
-                'respRoom' => $otherRoomResp ? $otherRoomResp->firstName . ' ' . $otherRoomResp->lastName : null
+            SkinderLike::firstOrCreate([
+                'room_likeur' => $roomLikeur,
+                'room_liked' => $roomLiked,
             ]);
-        } else {
-            return response()->json([
-                'success' => true,
-                'match' => $reverseLike,
-            ]);
+
+            $reverseLike = SkinderLike::where('room_likeur', $roomLiked)
+                ->where('room_liked', $roomLikeur)
+                ->exists();
+
+            if($reverseLike){
+                $otherRoom = Room::where('id',$roomLiked)->first();
+                $otherRoomResp = User::where('id', $otherRoom->userID)->first();
+                return response()->json([
+                    'success' => true,
+                    'match' => $reverseLike,
+                    'myRoomImage'=>asset(Room::where('id',$roomLikeur)->first()->photoPath),
+                    'otherRoomImage'=>asset($otherRoom->photoPath),
+                    'otherRoomNumber'=>$otherRoom->roomNumber,
+                    'respRoom' => $otherRoomResp ? $otherRoomResp->firstName . ' ' . $otherRoomResp->lastName : null
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'match' => $reverseLike,
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur lors du like : ' . $e->getMessage()]);
         }
     }
 

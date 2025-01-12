@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -25,7 +24,6 @@ class NotificationController extends Controller
                     'created_at' => $notification->created_at,
                 ];
             });
-            Log::notice('getNotifications: ' . $data);
     
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
