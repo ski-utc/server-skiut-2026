@@ -25,7 +25,7 @@ images = [
 ]
 
 # Passions possibles
-possible_passions = ["Gaming", "Reading", "Cooking", "Traveling", "Music", "Sports", "Art", "Coding"]
+possible_passions = ["azertyuiopqsdfgj", "azertyuiopqsdfgj", "azertyuiopqsdfgj", "Traveling", "Music", "Sports", "Art", "Coding"]
 
 # Génération de données aléatoires pour les chambres
 def generate_random_room_data(room_number):
@@ -33,7 +33,7 @@ def generate_random_room_data(room_number):
     name = f"Room_{room_number}"
     mood = random.choice(["Happy", "Calm", "Energetic", "Cozy"])
     photo_path = random.choice(images)
-    description = f"This is the description for {name}."
+    description = f"This is the description for {name}.This is the description for This is the descr"
     passions = random.sample(possible_passions, random.randint(0, 6))
     total_points = random.randint(0, 100)
     created_at = updated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
