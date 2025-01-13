@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
 
 /* 
 Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas : 

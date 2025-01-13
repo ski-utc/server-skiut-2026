@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\InstallController;
+use Illuminate\Support\Facades\Artisan;
 
 /*
 Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
@@ -8,6 +10,10 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
     php artisan route:list
 */
 
+Route::get('install_dependencies', function () {
+    Artisan::call('install:dependencies');
+    return 'Dependencies installed successfully!';
+});
 
 
 /************************************************************** Login *************************************************************/
