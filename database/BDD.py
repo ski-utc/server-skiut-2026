@@ -10,6 +10,8 @@ cursor = conn.cursor()
 
 cursor.execute("insert into users(id, cas, firstName, lastName, email, roomID, admin, location, alumniOrExte) values(1,'mdelmaer','Mathis', 'Delmaere','mathis.delmaere@etu.utc.fr',1,true, 'hein', false)")
 
+cursor.execute("insert into activities values(1,'2025-01-18','Tournée des chambres','20:30','21:30',0,null,null)")
+
 cursor.execute("insert into skinder_likes (id, room_likeur, room_liked) values (1, 2, 1),(2,4,1),(3,6,1),(4,8,1),(5,10,1)")
 
 cursor.execute("update rooms set photoPath='storage/roomImages/imageDefault.jpg' where id!=1")
