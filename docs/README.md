@@ -1,5 +1,10 @@
 # Bienvenue sur le serveur de Ski'UT 2025 en Laravel
 
+## Introduction
+Ce serveur est fait pour tourner avec l'application expo de Ski'UT développée en 2025.
+Le serveur ne possède quasiment aucun endpoint de back-office, ni même de view en général (à l'exception des view pour le login). 
+Les endpoints de ce serveur ne servent donc qu'au login et au traitement des données de l'application avec la base de données MySQL fournie par le SIMDE.
+
 ## Pour commencer :
 ### 1. Installer PHP
 
@@ -111,8 +116,8 @@ Cette commande permet de lancer tailwind pour qu'il build bien tes views (les de
 Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api
 
 
-## On rentre dans le détail du fonctionnement
-### 1. Authentification
+## Authentification
+### 1. Authentification avec l'OAuth
 Toute l'authentification est gérée par le Auth Controller.
 Globalement, le User requpete une première fois sur /auth/login. Si tu as activé le bypass login, le user recevra alors directement ses tokens d'accès (on y revient soon). Sinon, un Provider est construit à partir du format donné dans la doc de l'OAuth du SIMDE, et un state est crée pour identifier la session qui vient d'essayer de se connecter.
 Ensuite, le user est redirigé sur l'OAuth du SIMDE où il peut se connecter avec son CAS, ou par mail. Les champs récupérés sont .................................................................................................. 
@@ -129,8 +134,27 @@ La fonction EnsureTokenIsValid s'occupe de récupérer le token en header, le d�
 Les controllers sont normalement assez bien organisés et assez clairs (il me semble). Tu trouveras dans Admin tout ce qui touche l'onglet admin de l'app, dans Skinder tout ce qui touche à Skinder etc...
 S'il y a peut-être un point important à mentionner c'est que grâce au middleware, on peut accéder à toutes les infos du User comme ceci : $user = $request->user;
 
+## EndPoints
+
+
 ## Déployer le serveur 
+Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
+Dans cette version, veille à bien passer le serveur en production, le bypass du login à false, modifier le domain à assos.utc.fr, et modifier les accès dans la BDD pour utiliser la BDD MySQL du SIMDE dans le fichier .env
 
+Une fois ça fait, il va falloir préparer des routes pour éxecuter des commandes. En fait le SIMDE ne donne que des accès SFTP et SSH, mais en SSH on a des droits limités. Du coup pour la plupart des commandes tu auras deux solutions : 
+1. Run la commande en SSH si tu peux
+2. Run la commande par URL
+Rien d'inroyable pour la deuxième option, il suffit de faire des routes éphémères du type :
 
-## Post-Scriptum
-Pour celleux qui reprendront/s'inspireront de ce serveur, pensez bien à modifier les clés de chiffrement public.pem et private.pem : celles présentent dans le repo ne servent qu'à simuler l'utilisation du clé pour plus tard
+```bash
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/migrate', function () {
+    Artisan::call('migrate');
+})->name('home');
+```
+Bien évidemment, il faut rajouter quelques sécurités là-dessus avec une clé privée par exemple.
+
+Finalement, tu peux déployer ton serveur en SFTP sur les serveurs du SIMDE (avec FileZilla par exemple) (dans public_html). Tu peux suivre [ce tuto](https://assos.utc.fr/wiki/Acc%C3%A9der_%C3%A0_ses_donn%C3%A9es)
+Finalement, connectes-toi en SSH et fini le nécessaire pour que ton serveur serve bien (genre migrate la BDD, update les deps, ...).
+Ici, pas besoin de faire un php artisan serve : les serveurs du SIMDE vont directement récup ton code sur files.mde.utc et le faire tourner sur leur serveur Apache.
