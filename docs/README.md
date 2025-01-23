@@ -76,11 +76,9 @@ Pour utiliser ça :
 
 3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
 
-4. Faudra penser à modifier cet id dans l'app (dans _layout, au début, il y a une fonction de bypass) de sorte à ce que tu sois bien considéré comme le user que t'as choisi
-
 ### 3. Lance le serveur
 
-- Si tu veux tester des routes sur le serveur dans ton navigateur, fait
+- Si tu veux tester des routes sur le serveur dans ton navigateur (en localhost), fait
 ```bash
 php artisan serve --port=8000
 ```
@@ -97,12 +95,15 @@ Et entre la commande suivante en remplaçant <> par ton IP
 ```bash
 php artisan serve --host=<> --port=8000
 ```
+Maintenant ton serveur est déployé sur l'IP de ton PC est donc accessible aux appareils sur ton réseau.
+En théorie tu aurais pu lancer un émulateur dans le navigateur et rester et localhost (les requêtes auraient juste bouclées sur ta machine). En pratique, les émulateurs web ne supportent pas la library des webview sur expo.
 
 ### 4. Lance npm pour build le CSS
 Ouvre un nouvel onglet terminal, et lance :
 ```bash
 npm run dev
 ```
+Cette commande permet de lancer tailwind pour qu'il build bien tes views (les deux seuls étaient api-connected et api-not-connected).
 
 ### 5. En théorie le serveur tourne
 
@@ -110,81 +111,26 @@ npm run dev
 Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api
 
 
-## Petit détail de la structure du projet (Pas à jour)
-### Racine
-- .env.example : Fichier template à dupliquer en .env pour gérer toutes les variables d'environnement du projet
-- artisan : Outil en ligne de commande pour exécuter des tâches comme les migrations, les tests, les contrôleurs, ...
-- composer.json : Fichier qui gère les dépendances PHP du projet via Composer, ainsi que les informations sur l'autoloading et les scripts
-- composer.lock : Fichier généré automatiquement par Composer qui verrouille les versions des dépendances installées pour garantir que le projet utilise toujours les mêmes versions
-- package.json : Fichier qui gère les dépendances JavaScript (via npm ou yarn), les scripts de build et autres configurations front-end
-- phpunit.xml : Fichier de configuration pour PHPUnit, le framework de tests PHP utilisé pour écrire et exécuter des tests unitaires et fonctionnels
-- vite.config.js : Fichier de configuration pour Vite, utilisé pour compiler les ressources front-end (CSS, JS) de manière rapide et moderne
+## On rentre dans le détail du fonctionnement
+### 1. Authentification
+Toute l'authentification est gérée par le Auth Controller.
+Globalement, le User requpete une première fois sur /auth/login. Si tu as activé le bypass login, le user recevra alors directement ses tokens d'accès (on y revient soon). Sinon, un Provider est construit à partir du format donné dans la doc de l'OAuth du SIMDE, et un state est crée pour identifier la session qui vient d'essayer de se connecter.
+Ensuite, le user est redirigé sur l'OAuth du SIMDE où il peut se connecter avec son CAS, ou par mail. Les champs récupérés sont .................................................................................................. 
+Une fois que le user s'est connecté, le serveur récupère la requête avec la fonction callback qui vérifie qu'on est toujours sur la session qui a essayé de se login, et récupères les info sur le user. Il y a ensuite une série de vérification pour vérifier que le compte est existant, actif, mais surtout que l'adresse mail est déjà dans la BDD (qui a été préalablement seed avec les adresses mails des personnes qui ont payé sur Wooch). Grâce à celà, l'app n'est accessible qu'à celleux connecté.e.s.
+Finalement, la fonctionn callback construit un accessToken et un refreshToken à partir du userID et d'un temps d'expiration, le tout chiffré en SHA-256. L'accessToken permet d'accéder directement aux données sur le serveur (de s'identifier), et le refreshToken de refresh son accessToken (il ne donne pas directement accès au serveur, mais permet de refresh l'accessToken sans avoir à se reconnecter. Cela permet de gérer le nombre de user co en même temps au serveur). Ces tokens sont ensuite stockés dans les headers des requêtes.
+La fonction refresh permet justement de faire se travail de déchiffrer le refreshToken pour reconstruire un accessToken.
 
-### Dossiers
-- /app : C'est le dossier le plus important de l'app, celui qui contient les Models, les Controllers, le Middleware...
-  - /Console : Contient les commandes artisan personnalisées de l'application
-    - Kernel.php : Enregistre et gère les commandes artisan
-  - /Exceptions : Dossier de gestion des exceptions
-    - Handler.php : Gère toutes les exceptions non capturées et définit la façon dont elles sont rendues ou loguées.
-  - /Http :
-    - /Controllers : Contient tous les Controllers de ton app (les fonctions que tu vas utiliser avec tes requêtes HTTP, et qui vont traiter tes Models)
-      - Auth : C'est le controller qui s'occupe de rédiriger/contrôler les retours de oauth
-    - /Middleware : Contient les fichiers qui vont contrôler les requêtes entrantes (notamment avec la gestion des JWT dans AuthApi)
-      - Authenticate.php : Redirige le user sur la route login (déclarée dans /route/web.php) si nécessaire
-      - RedirectIfAuthenticated.php : Redirige les requêtes des users identifiés en passant par le RouteServiceProvider (cf. Providers/)
-      - TrimStrings.php : Supprime les espaces en début et en fin de chaîne pour toutes les données entrantes
-      - TrustHosts.php : Spécifie les hôtes de confiance pour éviter les attaques de redirection
-      - TrustProxies.php : Gère les proxies de confiance pour la gestion correcte des adresses IP et du protocole
-    - Kernel.php : Enregistre les middlewares globaux et de groupe pour gérer les requêtes HTTP
-  - /Models : Contient tous les Models de ton serveur (un modèle décrit comment les entrées de ta BDD seront traités comme objets)
-    - User : Notre modèle basique pour gérer les utilisateurs de la BDD
-  - /Providers : Contient les classes de service qui fournissent des fonctionnalités clés à l'application
-    - AppServiceProvider.php : Enregistre les services globaux utilisés dans l'application
-    - AuthServiceProvider : Gère les politiques d'autorisation et l'enregistrement des guards (guards = détermine comment les utilisateurs sont authentifiés à chaque requête)
-- /bootstrap : C'est le dossier qui gère le boot de ton serveur
-  - app.php : C'est le fichier qui va load tout ton projet et notamment les services et Kernel
-  - providers.php : Charge les services de configuration du serveur
-- /config : Contient tous les fichiers de config du serveur (en vrai c'est un peu redondant avec .env, mais ça permet une meilleure gestion du cache)
-  - app.php : Config général (nom de l'app, URL, timezone, ...)
-  - auth.php : Config de l'authentification (guards, gestion des mdp, paramètres de oauth...)
-  - cache.php : Comment est géré le cache
-  - cors.php : Config des CORS (Cross-Origin Ressource Sharing) (nécessaire pour faire des requêtes entre différents domaines)
-  - database.php : Config BDD
-  - filesystem.php : Gère la configuration des systèmes de fichiers utilisés pour le stockage
-  - jwt : Config de la gestion des JWT (temps de vie, algo de chiffrement, ...)
-  - logging.php : Configuration du système de logs
-  - mail.php : Configuration pour l'envoi des emails via des services comme SMTP (out autre)
-  - queue.php : Configuration des queues de travail pour le traitement des tâches en arrière-plan
-  - sanctum.php : Gère la configuration de l'authentification API via Sanctum (alternative aux JWT)
-  - services.php : Gère la configuration des services externes (genre AWS)
-  - session.php : Configuration du système de gestion des sessions utilisateur
-- /database : Dossier de la BDD
-  - database.sqlite : Fichier à créer qui te servira de BDD local pour dév
-  - /factories : Contient les modèles de données fictives pour ta BDD
-  - /migrations : Contient les fichiers de création de ta BDD (1 fichier = 1 table)
-  - /seeders : Contient les scripts de remplissage de ta BDD
-- /public : 
-  - .htaccess : Fichier qui gère la redirection et l'accès à tes pages web
-  - index.php : Point d'entrée pour toutes les requêtes HTTP dans l'application Laravel
-  - robots.txt : Fichier utilisé pour gérer l'accès des robots de moteurs de recherche au site
-- /ressources : Contient les Views (pages), CSS et JS pour générer tes pages web
-  - /css : Contient le CSS de tes views
-  - /js : Contient le JS de tes views
-  - /views : Contient les views (fichier qui décrit la structure d'une page php, et qui peut appeler tes Controllers (genre pour faire du Back Office))
-- /routes : Contient les fichiers de config pour déclarer tes routes URL (web et API)
-  - api.php : Contient toutes tes routes API, leur nom et potentiellement le passage par le Middleware Auth
-  - console.php : Définit les commandes artisan personnalisées exécutables depuis la console
-  - web.php : Contient toutes tes routes web, leur nom et potentiellement le passage par le Middleware AuthBackOffice
-- /storage : Dossier de stockage de ton serveur (logs, stockage et ressources nécessaires à l'app)
-  - /app : Contient les fichiers nécessaires au fonctionnement de ton app
-    - /public/key.pub : C'est la clé publique pour chiffrer les JWT
-    - /private/private_key.pem : C'est la clé privée pour déchiffrer les JWT
-    - /framework : Stocke le cache, les sessions et les fichiers temporaires générés par Laravel
-    - /logs : Bah c'est les logs
-- /tests : Ce dossier contient les fichiers pour tester ton serveur 
-  - /Feature : Contient les tests qui vérifient les fonctionnalités complètes de l'application
-  - /Unit : Contient les tests unitaires qui vérifient des portions spécifiques du code (genre une fonction ou une méthode)
-  - TestCase.php : Classe de base pour les tests, gérant la configuration et l'environnement des tests
-  
+### 2. Middleware
+Une fois le user authentifié, toutes ses requêtes vont passer par un middleware. Le middleware c'est ce qui va filtrer les requêtes pour ne donner accès au serveur qu'aux users identifiés, tout en ayant leur ID. 
+Toute route sur laquelle tu veux appliquer ce "filtre" doit avoir la forme : Route::get('/nomUrl', [\App\Http\Controllers\monController::class, 'maFonction'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+La fonction EnsureTokenIsValid s'occupe de récupérer le token en header, le déchiffre, réalise une série de test dessus (inutile de détailler), récupère le user correspondant dans la BDD et ajoute un champ 'user' qui contient un array avec toutes les infos du user à la requête.
+
+### 3. Controllers
+Les controllers sont normalement assez bien organisés et assez clairs (il me semble). Tu trouveras dans Admin tout ce qui touche l'onglet admin de l'app, dans Skinder tout ce qui touche à Skinder etc...
+S'il y a peut-être un point important à mentionner c'est que grâce au middleware, on peut accéder à toutes les infos du User comme ceci : $user = $request->user;
+
+## Déployer le serveur 
+
+
 ## Post-Scriptum
 Pour celleux qui reprendront/s'inspireront de ce serveur, pensez bien à modifier les clés de chiffrement public.pem et private.pem : celles présentent dans le repo ne servent qu'à simuler l'utilisation du clé pour plus tard
