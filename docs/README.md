@@ -19,7 +19,7 @@ brew install php
 - Installer avec un executable Windows
 [Lien vers la page de download](https://windows.php.net/download/)
 
-### 2. Installer composer
+### 2. Installer composer pour gérer les deps
 
 - Mac/Linux (avec homebrew) :
 ``` bash
@@ -34,7 +34,7 @@ brew install composer
   php -r "unlink('composer-setup.php');"
 ```
 
-### 3. Cloner les packages
+### 3. Cloner les packages de deps avec composer
 Pour installer les packages, il faut se placer dans la racine du projet et faire :
 
 ``` bash
@@ -135,7 +135,6 @@ Les controllers sont normalement assez bien organisés et assez clairs (il me se
 S'il y a peut-être un point important à mentionner c'est que grâce au middleware, on peut accéder à toutes les infos du User comme ceci : $user = $request->user;
 
 ## EndPoints (précédés par /skiutc)
----
 ### **1. Authentification (AuthController)**  
 - `/auth.login` : Route sur laquelle requêter pour lancer le processus de login (création d'un state, du provider et redirection vers l'OAuth)
 - `/auth.callback` : Route sur laquelle est renvoyée la response de l'OAuth après la connexion. Vérifie le résultat, le state, récupère le user et envoie et accessToken et refreshToken
@@ -230,7 +229,7 @@ Dans cette version, veille à bien passer le serveur en production, le bypass du
 Une fois ça fait, il va falloir préparer des routes pour éxecuter des commandes. En fait le SIMDE ne donne que des accès SFTP et SSH, mais en SSH on a des droits limités. Du coup pour la plupart des commandes tu auras deux solutions : 
 1. Run la commande en SSH si tu peux
 2. Run la commande par URL
-Rien d'inroyable pour la deuxième option, il suffit de faire des routes éphémères du type :
+Rien d'incroyable pour la deuxième option, il suffit de faire des routes éphémères du type :
 
 ```bash
 use Illuminate\Support\Facades\Artisan;
