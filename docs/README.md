@@ -134,8 +134,94 @@ La fonction EnsureTokenIsValid s'occupe de récupérer le token en header, le d�
 Les controllers sont normalement assez bien organisés et assez clairs (il me semble). Tu trouveras dans Admin tout ce qui touche l'onglet admin de l'app, dans Skinder tout ce qui touche à Skinder etc...
 S'il y a peut-être un point important à mentionner c'est que grâce au middleware, on peut accéder à toutes les infos du User comme ceci : $user = $request->user;
 
-## EndPoints
+## EndPoints (précédés par /skiutc)
+---
+### **1. Authentification (AuthController)**  
+- `/auth.login` : Route sur laquelle requêter pour lancer le processus de login (création d'un state, du provider et redirection vers l'OAuth)
+- `/auth.callback` : Route sur laquelle est renvoyée la response de l'OAuth après la connexion. Vérifie le résultat, le state, récupère le user et envoie et accessToken et refreshToken
+- `/auth.refresh` : Route pour refresh son accessToken à partir du refreshToken
+- `/auth.logout` : Route pour se logout. Supprime le cookie auth_session et redirige vers la page login. En pratique sur l'application il était plus simple de réouvrir une webview en incognito pour relancer un processus de login sans cookies.
 
+---
+
+### **2. Login divers**  
+- `/connected` : View affichée en quand de succès de connexion
+- `/notConnected` : View affichée en cas d'échec de connexion (généralement parce que l'email utilisé pour l'OAuth n'est pas dans la BDD i.e. que cette adresse mail n'est pas dans les ventes Wooch)
+- `/getUserData` : Récupérer les données du user pour l'appli à partir de l'accessToken (id, nom, prénom, chambre, numéro chambre...)
+
+---
+
+### **3. Home (HomeController) **  
+- `/getRandomData` : Retourne un array de la prochaine/actuelle activité, de l'anecdote la plus likée ainsi qu'un défi pas encore réalisé par le user
+
+---
+
+### **4. Notifications (NotificationController) **  
+- `/getNotifications` : Récupères toutes les notifcations envoyés dans la BDD (titre, text)
+- `/sendNotification` : Envoie une notification à tout le monde et l'enregistre dans la BDD
+- `/sendIndividualNotification/{userId}` : Envoie une notification ciblée au user userId
+- `/deleteNotification/{notificationId}/{delete}` : Supprime la notification notificationId
+- `/getAdminNotifications` : Récupère toutes les anecdotes de la BDD
+- `/getNotificationDetails/{notificationId}` : Récupère toutes les infos sur la notification notificationId
+
+---
+
+### **5. Planning (PlanningController)**  
+- `/getPlanning` : Retourne le planning dans la BDD sous forme de array avec pour clé le jour, et pour valeur : début, fin, état (passé, en cours, plus tard), titre, description.
+
+---
+
+### **6. Défis (DefisController)**  
+- `/challenges` : Renvoie tous les défis de la BDD et leur état (pas essayé, en attente, validé ou refusé)
+- `/challenges/getProofImage` : Récupère l'image de preuve qui a été envoyée pour les défis en attente ou validés
+- `/challenges/uploadProofImage` :  Envoie une image de défi au serveur (qui la save au format challange_challengeId_room_roomId
+- `/challenges/deleteProofImage` : Permet de supprimer un défi pas encore validé
+- `/classement-chambres` : Récupère le classement des chambres
+
+---
+
+### **7. Anecdotes (AnecdoteController)**  
+- `/getAnecdotes` : Récupère toutes les anecdotes avec leur nombre de likes
+- `/likeAnecdote` : Like une anecdote (créé une relation user-likeAnecdote entre l'anecdote likée et le user qui fait la requête)
+- `/warnAnecdote` : Signale une anecdote (créé une relation user-warnAnecdote entre l'anecdote signalée et le user qui fait la requête)
+- `/sendAnecdote` : Enregistre une nouvelle anecdote dans la BDD pour le user qui fait la requête
+- `/deleteAnecdote` : Supprime une anecdote
+- `/getAdminAnecdotes` : Récupère toutes les anecdotes 
+- `/getAnecdoteDetails/{anecdoteId}` : Récupères toutes les infos sur l'anecdote anecdoteId (nb likes, signalement, date de création, auteurice...)
+- `/updateAnecdoteStatus/{anecdoteId}/{isValid}` : Active ou désactive la visibilité de l'anecdote anecdoteId
+
+---
+
+### **8. Navettes (NavetteController)**  
+- `/getNavettes` : Récupère toutes les navettes de la BDD avec leur couleur
+
+---
+
+### **9. Skinder (SkinderController)**  
+- `/getProfilSkinder` : Récupère un profil Skinder au hasard parmis les profils pas encore likés
+- `/likeSkinder` : Créé une relation de like entre la chambre qui like et celle likée. En cas de math, renvoie aussi les photos des chambre et le nom de le.a resp de chambre.
+- `/getMySkinderMatches` : Envoie la liste de tous les matchs de la chambre.
+- `/getMyProfilSkinder` : Envoie le profil Skinder de sa chambre pour une modification (url de l'image sur le serveur, nom de chambre, description, passions)
+- `/modifyProfilSkinder` : Enregistre une modification de description ou passions sur la chambre
+- `/uploadRoomImage` : Modifie la photo de profil Skinder pour la chambre qui fait la requête sur le serveur.
+
+---
+
+### **10. Administration (AdminController)**  
+- `/admin` : Vérifie que le user est admin
+- `/getAdminChallenges` : Récupère tous les challenges avec leur état (validé ou en attente)
+- `/getChallengeDetails/{challengeId}` : Récupère toutes les infos (url de l'image, chambre, auteurice, date) du challenge challengeId
+- `/updateChallengeStatus/{challengeId}/{isValid}/{isDelete}` : Active ou désactive le challenge challengeId
+- `/getMaxFileSize` : Récupère la taille maximale de photos envoyables sur le serveur (pour réduire en cas de surcharge)
+- `/save-token` : Enregistre le push-token du user dans la BDD pour envoyer des notifications
+
+---
+
+### **11. Vitesse de glisse (UserPerformanceController)**  
+- `/update-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
+- `/classement-performances` : Renvoie le classement des perfomances user-vitesse
+
+---
 
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
@@ -156,5 +242,5 @@ Route::get('/migrate', function () {
 Bien évidemment, il faut rajouter quelques sécurités là-dessus avec une clé privée par exemple.
 
 Finalement, tu peux déployer ton serveur en SFTP sur les serveurs du SIMDE (avec FileZilla par exemple) (dans public_html). Tu peux suivre [ce tuto](https://assos.utc.fr/wiki/Acc%C3%A9der_%C3%A0_ses_donn%C3%A9es)
-Finalement, connectes-toi en SSH et fini le nécessaire pour que ton serveur serve bien (genre migrate la BDD, update les deps, ...).
+Ensuite, connectes-toi en SSH et fini le nécessaire pour que ton serveur serve bien (genre migrate la BDD, update les deps composer, ...).
 Ici, pas besoin de faire un php artisan serve : les serveurs du SIMDE vont directement récup ton code sur files.mde.utc et le faire tourner sur leur serveur Apache.
