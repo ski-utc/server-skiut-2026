@@ -2,7 +2,9 @@
 
 ## Introduction
 Ce serveur est fait pour tourner avec l'application expo de Ski'UT développée en 2025.
+
 Le serveur ne possède quasiment aucun endpoint de back-office, ni même de view en général (à l'exception des view pour le login). 
+
 Les endpoints de ce serveur ne servent donc qu'au login et au traitement des données de l'application avec la base de données MySQL fournie par le SIMDE.
 
 ## Pour commencer :
@@ -49,7 +51,7 @@ composer install
 ```
 
 ## Maintenant que ton projet est prêt, on va config Laravel
-### 1.Base de données
+### 1. Base de données
 Pour faire tourner ton serveur sur une base de données, il faut lui donner une base de données.
 Pour ça, créé une base de données sqlite dans ./database
 ``` bash
@@ -119,19 +121,34 @@ Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api
 ## Authentification
 ### 1. Authentification avec l'OAuth
 Toute l'authentification est gérée par le Auth Controller.
-Globalement, le User requpete une première fois sur /auth/login. Si tu as activé le bypass login, le user recevra alors directement ses tokens d'accès (on y revient soon). Sinon, un Provider est construit à partir du format donné dans la doc de l'OAuth du SIMDE, et un state est crée pour identifier la session qui vient d'essayer de se connecter.
+
+Globalement, le User requpete une première fois sur /auth/login. Si tu as activé le bypass login, le user recevra alors directement ses tokens d'accès (on y revient soon). Sinon, un Provider est construit à partir du format donné dans la [doc de l'OAuth du SIMDE](https://auth.assos.utc.fr/admin/implement), et un state est crée pour identifier la session qui vient d'essayer de se connecter.
+
 Ensuite, le user est redirigé sur l'OAuth du SIMDE où il peut se connecter avec son CAS, ou par mail. Les champs récupérés sont .................................................................................................. 
+
 Une fois que le user s'est connecté, le serveur récupère la requête avec la fonction callback qui vérifie qu'on est toujours sur la session qui a essayé de se login, et récupères les info sur le user. Il y a ensuite une série de vérification pour vérifier que le compte est existant, actif, mais surtout que l'adresse mail est déjà dans la BDD (qui a été préalablement seed avec les adresses mails des personnes qui ont payé sur Wooch). Grâce à celà, l'app n'est accessible qu'à celleux connecté.e.s.
+
 Finalement, la fonctionn callback construit un accessToken et un refreshToken à partir du userID et d'un temps d'expiration, le tout chiffré en SHA-256. L'accessToken permet d'accéder directement aux données sur le serveur (de s'identifier), et le refreshToken de refresh son accessToken (il ne donne pas directement accès au serveur, mais permet de refresh l'accessToken sans avoir à se reconnecter. Cela permet de gérer le nombre de user co en même temps au serveur). Ces tokens sont ensuite stockés dans les headers des requêtes.
+
 La fonction refresh permet justement de faire se travail de déchiffrer le refreshToken pour reconstruire un accessToken.
+
+### Schéma de fonctionnement complet de l'Authentification avec l'OAtuh du SIMDE :
+![Schéma de fonctionnement de l'OAuth](https://auth.assos.utc.fr/img/oauth-flow.png)
+_Merci le SIMDE pour le schéma_
 
 ### 2. Middleware
 Une fois le user authentifié, toutes ses requêtes vont passer par un middleware. Le middleware c'est ce qui va filtrer les requêtes pour ne donner accès au serveur qu'aux users identifiés, tout en ayant leur ID. 
-Toute route sur laquelle tu veux appliquer ce "filtre" doit avoir la forme : Route::get('/nomUrl', [\App\Http\Controllers\monController::class, 'maFonction'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+
+Toute route sur laquelle tu veux appliquer ce "filtre" doit avoir la forme : 
+```php
+Route::get('/nomUrl', [\App\Http\Controllers\monController::class, 'maFonction'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+```
+
 La fonction EnsureTokenIsValid s'occupe de récupérer le token en header, le déchiffre, réalise une série de test dessus (inutile de détailler), récupère le user correspondant dans la BDD et ajoute un champ 'user' qui contient un array avec toutes les infos du user à la requête.
 
 ### 3. Controllers
 Les controllers sont normalement assez bien organisés et assez clairs (il me semble). Tu trouveras dans Admin tout ce qui touche l'onglet admin de l'app, dans Skinder tout ce qui touche à Skinder etc...
+
 S'il y a peut-être un point important à mentionner c'est que grâce au middleware, on peut accéder à toutes les infos du User comme ceci : $user = $request->user;
 
 ## EndPoints (précédés par /skiutc)
@@ -224,6 +241,7 @@ S'il y a peut-être un point important à mentionner c'est que grâce au middlew
 
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
+
 Dans cette version, veille à bien passer le serveur en production, le bypass du login à false, modifier le domain à assos.utc.fr, et modifier les accès dans la BDD pour utiliser la BDD MySQL du SIMDE dans le fichier .env
 
 Une fois ça fait, il va falloir préparer des routes pour éxecuter des commandes. En fait le SIMDE ne donne que des accès SFTP et SSH, mais en SSH on a des droits limités. Du coup pour la plupart des commandes tu auras deux solutions : 
@@ -231,7 +249,7 @@ Une fois ça fait, il va falloir préparer des routes pour éxecuter des command
 2. Run la commande par URL
 Rien d'incroyable pour la deuxième option, il suffit de faire des routes éphémères du type :
 
-```bash
+```php
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/migrate', function () {
@@ -240,8 +258,10 @@ Route::get('/migrate', function () {
 ```
 Bien évidemment, il faut rajouter quelques sécurités là-dessus avec une clé privée par exemple.
 
-Finalement, tu peux déployer ton serveur en SFTP sur les serveurs du SIMDE (avec FileZilla par exemple) (dans public_html). Tu peux suivre [ce tuto](https://assos.utc.fr/wiki/Acc%C3%A9der_%C3%A0_ses_donn%C3%A9es)
+Finalement, tu peux déployer ton serveur en SFTP sur les serveurs du SIMDE (avec FileZilla par exemple) (dans public_html). Tu peux suivre [ce tuto](https://assos.utc.fr/wiki/Acc%C3%A9der_%C3%A0_ses_donn%C3%A9es).
+
 Ensuite, connectes-toi en SSH et fini le nécessaire pour que ton serveur serve bien (genre migrate la BDD, update les deps composer, ...).
+
 Ici, pas besoin de faire un php artisan serve : les serveurs du SIMDE vont directement récup ton code sur files.mde.utc et le faire tourner sur leur serveur Apache.
 
 ## Points d'amélioration
