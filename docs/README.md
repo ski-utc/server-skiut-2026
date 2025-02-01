@@ -167,12 +167,12 @@ S'il y a peut-être un point important à mentionner c'est que grâce au middlew
 
 ---
 
-### **3. Home (HomeController) **  
+### **3. Home (HomeController)**  
 - `/getRandomData` : Retourne un array de la prochaine/actuelle activité, de l'anecdote la plus likée ainsi qu'un défi pas encore réalisé par le user
 
 ---
 
-### **4. Notifications (NotificationController) **  
+### **4. Notifications (NotificationController)**  
 - `/getNotifications` : Récupères toutes les notifcations envoyés dans la BDD (titre, text)
 - `/sendNotification` : Envoie une notification à tout le monde et l'enregistre dans la BDD
 - `/sendIndividualNotification/{userId}` : Envoie une notification ciblée au user userId
