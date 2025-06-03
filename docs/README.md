@@ -244,6 +244,13 @@ Avant toute chose, push tout ce que tu dois push pour préparer la version de pr
 
 Dans cette version, veille à bien passer le serveur en production, le bypass du login à false, modifier le domain à assos.utc.fr, et modifier les accès dans la BDD pour utiliser la BDD MySQL du SIMDE dans le fichier .env
 
+Ensuite, créé de nouvelles clés de chiffrement (le serveur ne pouvant tourner sans, on en a laissé dans le repo, mais il faut éviter d'utiliser les mêmes sur le serveur (sinon tout le monde peut chiffrer ses requêtes et se faire passer pour qlq d'autre)) : 
+```sh
+mkdir -p storage/app/public storage/app/private
+openssl genrsa -out storage/app/private/private.pem 2048
+openssl rsa -in storage/app/private/private.pem -pubout -out storage/app/public/public.pem
+```
+
 Une fois ça fait, il va falloir préparer des routes pour éxecuter des commandes. En fait le SIMDE ne donne que des accès SFTP et SSH, mais en SSH on a des droits limités. Du coup pour la plupart des commandes tu auras deux solutions : 
 1. Run la commande en SSH si tu peux
 2. Run la commande par URL

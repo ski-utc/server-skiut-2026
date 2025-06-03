@@ -9,12 +9,6 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
     php artisan route:list
 */
 
-Route::get('install_dependencies', function () {
-    Artisan::call('install:dependencies');
-    return 'Dependencies installed successfully!';
-});
-
-
 /************************************************************** Login *************************************************************/
 Route::get('/connected', function () { return view("api-connected");})->name('api-connected');
 Route::get('/notConnected', function () { return view("api-not-connected");})->name('api-not-connected');

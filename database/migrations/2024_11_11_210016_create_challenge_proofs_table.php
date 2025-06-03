@@ -18,15 +18,9 @@ return new class extends Migration
             $table->boolean('valid')->default(false);
             $table->unsignedTinyInteger('alert')->default(0); // Number of alerts
             $table->boolean('delete')->default(false); // Mark for deletion
-
-            // Foreign keys
             $table->foreignId('challenge_id')->constrained('challenges')->onDelete('cascade'); // Ensure cascading delete with challenges
-
             $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade'); // Ensure cascading delete with rooms
-
-            // Optionally, include user_id if proofs are tied to users
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-
             $table->timestamps();
         });
     }
