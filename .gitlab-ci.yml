@@ -5,7 +5,7 @@ stages:
 #  - deploy
 
 check_docker:
-  stage: build
+  stage: check
   image: eclipse-temurin:17-jdk-alpine
   tags:
     - docker
