@@ -1,0 +1,51 @@
+stages:
+  - build
+  - test
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+
+default:
+  image: docker:latest
+  services:
+    - docker:dind
+
+before_script:
+  - echo "Connexion au Container registry Gitlab"
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+build_docker_image:
+  stage: build
+  script:
+    - docker build -t "$IMAGE_TAG" -t "$IMAGE_LATEST" .
+    - docker push "$IMAGE_TAG"
+    - docker push "$IMAGE_LATEST"
+  only:
+    - main
+    - develop
+
+laravel_tests:
+  stage: test
+  image: php:8.3
+  services:
+    - mysql:8.0
+  variables:
+    DB_HOST: mysql
+    DB_DATABASE: test_db
+    DB_USERNAME: root
+    DB_PASSWORD: root
+  before_script:
+    - apt-get update && apt-get install -y unzip git libzip-dev libpng-dev libonig-dev libxml2-dev zip
+    - docker-php-ext-install pdo pdo_mysql mbstring zip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-interaction --prefer-dist
+    - cp .env.testing .env
+    - php artisan key:generate
+    - php artisan migrate --force
+  script:
+    - php artisan test
+  only:
+    - merge_requests
+    - main
+    - develop
