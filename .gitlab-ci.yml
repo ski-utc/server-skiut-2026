@@ -17,6 +17,8 @@ before_script:
 
 build_docker_image:
   stage: build
+  tags:
+  - docker
   script:
     - docker build -t "$IMAGE_TAG" -t "$IMAGE_LATEST" .
     - docker push "$IMAGE_TAG"
@@ -28,6 +30,9 @@ build_docker_image:
 laravel_tests:
   stage: test
   image: php:8.3
+  tags:
+  - docker
+  - linux
   services:
     - mysql:8.0
   variables:
