@@ -3,10 +3,7 @@ stages:
 #  - test
 #  - deploy
 
-default:
-  image: docker:latest
-  services:
-    - docker:dind
+image: docker:latest
 
 build_docker_image:
   stage: build
