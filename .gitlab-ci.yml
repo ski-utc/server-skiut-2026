@@ -1,8 +1,21 @@
 stages:
-  - build
 #  - test
-  - push
+  - build
+#  - integration
 #  - deploy
+
+#laravel_tests:
+#  stage: test
+#  image: php:8.3
+#  tags: [docker]
+#  script:
+#    - apt-get update && apt-get install -y unzip git libzip-dev zip curl libonig-dev libxml2-dev libpng-dev
+#    - docker-php-ext-install pdo_mysql mbstring zip
+#    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+#    - composer install --no-interaction --prefer-dist
+#    - cp .env.ci .env
+#    - php artisan key:generate
+#    - php artisan test
 
 variables:
   PROJECT_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
@@ -25,31 +38,13 @@ build_docker_image:
   only:
     - main
 
-
-#laravel_tests:
-#  stage: test
-#  image: php:8.3
-#  tags:
-#  - docker
-#  - linux
-#  services:
-#    - mysql:8.0
-#  variables:
-#    DB_HOST: mysql
-#    DB_DATABASE: test_db
-#    DB_USERNAME: root
-#    DB_PASSWORD: root
-#  before_script:
-#    - apt-get update && apt-get install -y unzip git libzip-dev libpng-dev libonig-dev libxml2-dev zip
-#    - docker-php-ext-install pdo pdo_mysql mbstring zip
-#    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-#    - composer install --no-interaction --prefer-dist
-#    - cp .env.testing .env
-#    - php artisan key:generate
-#    - php artisan migrate --force
+#integration_test:
+#  stage: integration
+#  tags: [docker]
+#  image: docker:latest
 #  script:
-#    - php artisan test
-#  only:
-#    - merge_requests
-#    - main
-#    - develop
+#    - docker run -d -p 8080:80 --name test-container "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+#    - sleep 5  # attendre que le conteneur démarre
+#    - curl --fail http://localhost:8080 || (docker logs test-container && exit 1)
+#    - docker stop test-container && docker rm test-container
+#  needs: [build_docker_image]
