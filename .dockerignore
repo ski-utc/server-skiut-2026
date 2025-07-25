@@ -1,0 +1,17 @@
+/node_modules
+/vendor
+/public/build
+/storage/app/private
+/storage/framework/cache
+/storage/framework/sessions
+/storage/logs
+.env
+.env.example
+.git/
+.github/
+.gitignore
+.gitattributes
+.dockerignore
+Dockerfile
+docker-compose.yaml
+README.md
