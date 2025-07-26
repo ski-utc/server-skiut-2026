@@ -13,11 +13,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Attention à l'ordre, chaque bloc (sauf le premier) représentent des tables dépendantes
+        $this->call([
+            // Tables indépendantes
+            ContactSeeder::class,
+            ChallengeSeeder::class,
+            ActivitySeeder::class,
+            NotificationSeeder::class,
+            TransportSeeder::class,
+            
+            RoomSeeder::class,
+            UserSeeder::class,
+            RelationsSeeder::class,
+            
+            AnecdoteSeeder::class,
+            StatisticsSeeder::class,
+            UserPerformanceSeeder::class,
+            ChallengeProofSeeder::class,
+            PushTokenSeeder::class,
+            
+            SkinderLikeSeeder::class,
+            AnecdotesLikeSeeder::class,
+            AnecdotesWarnSeeder::class,
         ]);
     }
 }
