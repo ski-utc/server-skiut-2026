@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
             RelationsSeeder::class,
             
             AnecdoteSeeder::class,
-            StatisticsSeeder::class,
             UserPerformanceSeeder::class,
             ChallengeProofSeeder::class,
             PushTokenSeeder::class,

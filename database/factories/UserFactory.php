@@ -26,6 +26,7 @@ class UserFactory extends Factory
             'firstName' => fake()->firstName(),
             'lastName' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
+            'roomID' => fake()->numberBetween(1, 15),
             'location' => fake()->optional()->city(),
             'admin' => fake()->boolean(10),
             'alumniOrExte' => fake()->boolean(20),

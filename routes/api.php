@@ -78,7 +78,7 @@ Route::get('/getAdminNotifications', [AdminController::class, 'getAdminNotificat
 Route::get('/getNotificationDetails/{notificationId}', [AdminController::class, 'getNotificationDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/deleteNotification/{userId}/{delete}', [AdminController::class, 'deleteNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendNotification', [AdminController::class, 'sendNotificationToAll'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendSpecificNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendIndividualNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
 Route::get('/getMaxFileSize', [\App\Http\Controllers\UserController::class, 'getMaxFileSize'])->middleware([EnsureTokenIsValid::class]);
 Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([EnsureTokenIsValid::class]);
