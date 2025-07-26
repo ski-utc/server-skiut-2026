@@ -9,6 +9,8 @@ variables:
 
 run_tests:
   stage: test
+  tags:
+    - linux
   image: laravelsail/php83-composer:latest
   services:
     - name: mysql:8.0
