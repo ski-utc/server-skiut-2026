@@ -7,11 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class SkinderLike extends Model
 {
-    /** @use HasFactory<\Database\Factories\RoomFactory> */
     use HasFactory;
     
     protected $table = 'skinder_likes';
     protected $fillable = ['room_likeur', 'room_liked'];
-
 }
 

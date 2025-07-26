@@ -13,7 +13,6 @@ class User extends Authenticatable
 
     protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'roomID', 'location', 'admin', 'alumniOrExte'];
 
-
     public function anecdotes()
     {
         return $this->hasMany(Anecdote::class);

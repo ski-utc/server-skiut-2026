@@ -11,11 +11,7 @@ class UserPerformance extends Model
 
     protected $table = 'users_performances';
 
-    protected $fillable = [
-        'user_id',
-        'max_speed',
-        'total_distance',
-    ];
+    protected $fillable = ['user_id', 'max_speed', 'total_distance'];
 
     public function user()
     {

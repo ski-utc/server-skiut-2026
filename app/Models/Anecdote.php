@@ -17,7 +17,6 @@ class Anecdote extends Model
         return $this->belongsTo(User::class, 'userId', 'id');
     }
 
-
     public function likes()
     {
         return $this->hasMany(AnecdotesLike::class, 'anecdote_id');

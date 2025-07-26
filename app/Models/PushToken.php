@@ -9,11 +9,5 @@ class PushToken extends Model
 {
     use HasFactory;
 
-    /**
-     * Les champs autorisés pour l'attribution massive.
-     */
-    protected $fillable = [
-        'token', 
-        'user_id',
-    ];
+    protected $fillable = ['token', 'user_id'];
 }
