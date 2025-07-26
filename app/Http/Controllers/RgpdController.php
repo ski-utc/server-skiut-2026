@@ -307,9 +307,9 @@ class RgpdController extends Controller
             ChallengeProof::query()->delete();
 
             $rooms = Room::all();
-            foreach ($rooms as $index => $room) {
+            foreach ($rooms as $room) {
                 $room->update([
-                    'name' => "Chambre anonymisée {$room->id}", // ou "Chambre #$index"
+                    'name' => "Chambre anonymisée_".$room->id,
                     'description' => 'Description anonymisée',
                     'passions' => json_encode([])
                 ]);
