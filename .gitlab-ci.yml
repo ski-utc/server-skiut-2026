@@ -21,7 +21,7 @@ run_tests:
   script:
     - cp .env.ci .env
     - touch database/database.sqlite
-    - composer install --no-interaction --prefer-dist --optimize-autoloader
+    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - php artisan key:generate
     - php artisan migrate --force
     - php artisan test || php artisan test || php artisan test
