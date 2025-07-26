@@ -40,7 +40,7 @@ class AdminController extends Controller
             $filter = $request->query('filter', 'all');
 
             // Build the base query
-            $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false); // Assuming these are the related models
+            $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false);
 
             // Apply filters
             switch ($filter) {
@@ -58,7 +58,7 @@ class AdminController extends Controller
             }
 
             // Fetch challenges
-            $challenges = $query->orderBy('id', 'desc') // Sort by creation date
+            $challenges = $query->orderBy('id', 'desc')
                 ->get();
 
             return response()->json([
@@ -100,32 +100,38 @@ class AdminController extends Controller
     /**
      * Met à jour le statut de validation d'un challenge (valider ou invalider)
      */
-    public function updateChallengeStatus($challengeId, $isValid, $isDelete)
+    public function updateChallengeStatus(Request $request, $challengeId, $isValid, $isDelete)
     {
         try {
             $challenge = ChallengeProof::findOrFail($challengeId);
-
+            
             if ($isValid === null || $isDelete === null) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
-                ]);
+                ], 500);
             }
-
+            
+            // Convert parameters to boolean
+            $isValid = (bool) $isValid;
+            $isDelete = (bool) $isDelete;
+            
             // Mise à jour du statut de validation
             $challenge->valid = $isValid;
             $challenge->delete = $isDelete;
             $challenge->save();
-
-            // Prépare le message 
+            
+            // Prépare le message
             if ($isValid && $isDelete) {
                 $message = 'Challenge refusé avec succès';
             } elseif ($isValid && !$isDelete) {
                 $message = 'Challenge validé avec succès';
             } elseif (!$isValid && !$isDelete) {
                 $message = 'Challenge invalidé avec succès';
+            } else {
+                $message = 'Challenge mis à jour avec succès';
             }
-
+            
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -291,6 +297,7 @@ class AdminController extends Controller
     }
 
     /**
+     * @deprecated
      * Envoie une notification à un utilisateur spécifique
      */
     public function sendNotificationToOne(Request $request)
@@ -330,10 +337,11 @@ class AdminController extends Controller
             $title = $request->input('titre');
             $body = $request->input('texte');
             $data = (object) [];
-
             $tokens = \App\Models\PushToken::pluck('token')->toArray();
-
-            $expoPushService = new ExpoPushService();
+            
+            // Use dependency injection instead of creating new instance
+            $expoPushService = app(\App\Services\ExpoPushService::class);
+            
             foreach ($tokens as $token) {
                 $expoPushService->sendNotification(
                     $token,
@@ -342,14 +350,14 @@ class AdminController extends Controller
                     $data
                 );
             }
-
+            
             Notification::create([
                 'title' => $title,
                 'description' => $body,
                 'general' => true,
                 'delete' => false,
             ]);
-
+            
             return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
@@ -361,14 +369,23 @@ class AdminController extends Controller
      */
     public function sendIndividualNotification(Request $request, $userId)
     {
-        $notification = new Notification([
-            'title' => $request->title,
-            'text' => $request->text,
-            'user_id' => $userId,
-        ]);
-        $notification->save();
-
-        return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+        try {
+            $notification = new Notification([
+                'title' => $request->title,
+                'description' => $request->texte,
+                'user_id' => $userId,
+                'general' => false,
+                'delete' => false,
+            ]);
+            $notification->save();
+            
+            return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
