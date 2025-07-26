@@ -401,9 +401,4 @@ class AdminController extends Controller
             ], 500);
         }
     }
-
-    public function getMaxFileSize()
-    {
-        return response()->json(['success' => true, 'data' => 1024*1024*0.1]);
-    }
 }

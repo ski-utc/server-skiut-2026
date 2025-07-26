@@ -33,6 +33,14 @@ class UserController extends Controller
         return $user;
     }
 
+    /**
+     * Récupère la taille maximale autorisée pour les images (l'app compresse tant qu'elle n'est pas sous ce seuil)
+     */
+    public function getMaxFileSize()
+    {
+        return response()->json(['success' => true, 'data' => 1024*1024*0.1]);
+    }
+
     public function saveToken(Request $request) {
         try{
             PushToken::updateOrCreate(
