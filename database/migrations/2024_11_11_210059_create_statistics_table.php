@@ -17,7 +17,7 @@ return new class extends Migration
             $table->dateTime('startTime');
             $table->dateTime('endTime')->nullable(); // null au départ
             $table->string('location'); // pas encore sûre du type
-            $table->foreignId('userId')->constrained()->onDelete('cascade');
+            $table->foreignId('userId')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
