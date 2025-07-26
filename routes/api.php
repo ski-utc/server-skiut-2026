@@ -1,7 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
+use App\Http\Middleware\EnsureTokenIsValid;
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\DefisController;
+use App\Http\Controllers\AnecdoteController;
+use App\Http\Controllers\SkinderController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\UserPerformanceController;
+use App\Http\Controllers\ClassementController;
 
 /*
 Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
@@ -12,75 +19,74 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 /************************************************************** Login *************************************************************/
 Route::get('/connected', function () { return view("api-connected");})->name('api-connected');
 Route::get('/notConnected', function () { return view("api-not-connected");})->name('api-not-connected');
-Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
 /************************************************************** Home *************************************************************/
-Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
-Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Planning *************************************************************/
-Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Défis *************************************************************/
-Route::get('/challenges', [\App\Http\Controllers\DefisController::class, 'getChallenges'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/challenges/getProofImage', [\App\Http\Controllers\DefisController::class, 'getProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/challenges/uploadProofImage', [\App\Http\Controllers\DefisController::class, 'uploadProofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/challenges/deleteproofImage', [\App\Http\Controllers\DefisController::class, 'deleteproofImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::get('/classement-chambres', [\App\Http\Controllers\ClassementController::class, 'classementChambres'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);;
+Route::get('/challenges', [DefisController::class, 'getChallenges'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/getProofImage', [DefisController::class, 'getProofImage'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/uploadProofImage', [DefisController::class, 'uploadProofImage'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/deleteproofImage', [DefisController::class, 'deleteproofImage'])->middleware(EnsureTokenIsValid::class);
+Route::get('/classement-chambres', [ClassementController::class, 'classementChambres'])->middleware(EnsureTokenIsValid::class);;
 /**************************************************************************************************************************************/
 
 /************************************************************** Anecdotes *************************************************************/
-Route::post('/getAnecdotes', [\App\Http\Controllers\AnecdoteController::class, 'getAnecdotes'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/likeAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'likeAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/warnAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'warnAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/sendAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'sendAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/deleteAnecdote', [\App\Http\Controllers\AnecdoteController::class, 'deleteAnecdote'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/getAnecdotes', [AnecdoteController::class, 'getAnecdotes'])->middleware(EnsureTokenIsValid::class);
+Route::post('/likeAnecdote', [AnecdoteController::class, 'likeAnecdote'])->middleware(EnsureTokenIsValid::class);
+Route::post('/warnAnecdote', [AnecdoteController::class, 'warnAnecdote'])->middleware(EnsureTokenIsValid::class);
+Route::post('/sendAnecdote', [AnecdoteController::class, 'sendAnecdote'])->middleware(EnsureTokenIsValid::class);
+Route::post('/deleteAnecdote', [AnecdoteController::class, 'deleteAnecdote'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Navettes *************************************************************/
-Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'getNavettes'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'getNavettes'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /*************************************************************** Skinder **************************************************************/
-Route::get('/getProfilSkinder', [\App\Http\Controllers\SkinderController::class, 'getProfilSkinder'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/likeSkinder', [\App\Http\Controllers\SkinderController::class, 'likeSkinder'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::get('/getMySkinderMatches', [\App\Http\Controllers\SkinderController::class, 'getMySkinderMatches'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::get('/getMyProfilSkinder', [\App\Http\Controllers\SkinderController::class, 'getMyProfilSkinder'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/modifyProfilSkinder', [\App\Http\Controllers\SkinderController::class, 'modifyProfil'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/uploadRoomImage', [\App\Http\Controllers\SkinderController::class, 'uploadRoomImage'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::get('/getProfilSkinder', [SkinderController::class, 'getProfilSkinder'])->middleware(EnsureTokenIsValid::class);
+Route::post('/likeSkinder', [SkinderController::class, 'likeSkinder'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getMySkinderMatches', [SkinderController::class, 'getMySkinderMatches'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getMyProfilSkinder', [SkinderController::class, 'getMyProfilSkinder'])->middleware(EnsureTokenIsValid::class);
+Route::post('/modifyProfilSkinder', [SkinderController::class, 'modifyProfil'])->middleware(EnsureTokenIsValid::class);
+Route::post('/uploadRoomImage', [SkinderController::class, 'uploadRoomImage'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Administration *************************************************************/
-Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'getAdmin'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::get('/admin', [AdminController::class, 'getAdmin'])->middleware([EnsureTokenIsValid::class]);
 
-Route::get('/getAdminChallenges', [\App\Http\Controllers\AdminController::class, 'getAdminChallenges'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::get('/getChallengeDetails/{challengeId}', [\App\Http\Controllers\AdminController::class, 'getChallengeDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::post('/updateChallengeStatus/{challengeId}/{isValid}/{isDelete}', [\App\Http\Controllers\AdminController::class, 'updateChallengeStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::get('/getAdminChallenges', [AdminController::class, 'getAdminChallenges'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::get('/getChallengeDetails/{challengeId}', [AdminController::class, 'getChallengeDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/updateChallengeStatus/{challengeId}/{isValid}/{isDelete}', [AdminController::class, 'updateChallengeStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
-Route::get('/getAdminAnecdotes', [\App\Http\Controllers\AdminController::class, 'getAdminAnecdotes'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::get('/getAnecdoteDetails/{anecdoteId}', [\App\Http\Controllers\AdminController::class, 'getAnecdoteDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [\App\Http\Controllers\AdminController::class, 'updateAnecdoteStatus'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::get('/getAdminAnecdotes', [AdminController::class, 'getAdminAnecdotes'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::get('/getAnecdoteDetails/{anecdoteId}', [AdminController::class, 'getAnecdoteDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [AdminController::class, 'updateAnecdoteStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
-Route::get('/getAdminNotifications', [\App\Http\Controllers\AdminController::class, 'getAdminNotifications'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::get('/getNotificationDetails/{notificationId}', [\App\Http\Controllers\AdminController::class, 'getNotificationDetails'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::post('/deleteNotification/{userId}/{delete}', [\App\Http\Controllers\AdminController::class, 'deleteNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-Route::post('/sendNotification', [\App\Http\Controllers\AdminController::class, 'sendNotificationToAll'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::post('/sendIndividualNotification/{userId}', [\App\Http\Controllers\AdminController::class, 'sendSpecificNotification'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::get('/getAdminNotifications', [AdminController::class, 'getAdminNotifications'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::get('/getNotificationDetails/{notificationId}', [AdminController::class, 'getNotificationDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/deleteNotification/{userId}/{delete}', [AdminController::class, 'deleteNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/sendNotification', [AdminController::class, 'sendNotificationToAll'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendSpecificNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
-Route::get('/getMaxFileSize', [\App\Http\Controllers\AdminController::class, 'getMaxFileSize'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
-
-Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([\App\Http\Middleware\EnsureTokenIsValid::class]);
+Route::get('/getMaxFileSize', [\App\Http\Controllers\UserController::class, 'getMaxFileSize'])->middleware([EnsureTokenIsValid::class]);
+Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([EnsureTokenIsValid::class]);
 /*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/
-Route::post('/update-performance', [\App\Http\Controllers\UserPerformanceController::class, 'updatePerformance'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
-Route::get('/classement-performances', [\App\Http\Controllers\ClassementController::class, 'classementPerformances'])->middleware(\App\Http\Middleware\EnsureTokenIsValid::class);
+Route::post('/update-performance', [UserPerformanceController::class, 'updatePerformance'])->middleware(EnsureTokenIsValid::class);
+Route::get('/classement-performances', [ClassementController::class, 'classementPerformances'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';
