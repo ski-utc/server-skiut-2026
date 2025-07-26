@@ -1,6 +1,9 @@
 stages:
   - integration
 
+variables:
+  PROJECT_IMAGE_TAG: skiutc/server-skiut-2026:latest
+
 integration_test:
   stage: integration
   tags:
