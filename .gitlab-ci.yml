@@ -9,7 +9,7 @@ integration_test:
   tags:
     - docker-skiut  # Assure-toi que ce tag est bien celui du runner que tu viens de tester
   script:
-    - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+    - docker login registry.gitlab.utc.fr -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
     - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
     - docker cp .env.ci app:/var/www/html/.env
     - sleep 10
