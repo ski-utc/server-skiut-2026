@@ -46,7 +46,7 @@ class AnecdoteFactory extends Factory
         return [
             'text' => fake()->randomElement($anecdotes),
             'room' => fake()->numberBetween(1, 15),
-            'userId' => fake()->numberBetween(1, 30),
+            'user_id' => fake()->numberBetween(1, 30),
             'valid' => fake()->boolean(80),
             'delete' => fake()->boolean(5),
             'active' => fake()->boolean(90),

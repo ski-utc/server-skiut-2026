@@ -111,7 +111,7 @@ class AnecdoteController extends Controller
             $text = $request->input('texte');
             $room = User::where('id', $userId)->first()->roomID;
     
-            Anecdote::create(["text"=>$text, 'room'=>$room, 'userId'=>$userId]);
+            Anecdote::create(["text"=>$text, 'room'=>$room, 'user_id'=>$userId]);
 
             return response()->json(['success' =>true, "message"=>"Anecdote postée ! Elle sera visible une fois validée par le bureau"]);
         } catch (\Exception $e) {
@@ -133,7 +133,7 @@ class AnecdoteController extends Controller
                 return response()->json(['success' => false, 'message' => 'Anecdote introuvable.']);
             }
     
-            if ($anecdote->userId !== $userId) {
+            if ($anecdote->user_id !== $userId) {
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas autorisé à supprimer cette anecdote.']);
             }
     
