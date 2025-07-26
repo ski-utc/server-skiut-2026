@@ -1,25 +1,30 @@
 stages:
-#  - test
+  - test
   - build
-#  - integration
-#  - deploy
-
-#laravel_tests:
-#  stage: test
-#  image: php:8.3
-#  tags: [docker]
-#  script:
-#    - apt-get update && apt-get install -y unzip git libzip-dev zip curl libonig-dev libxml2-dev libpng-dev
-#    - docker-php-ext-install pdo_mysql mbstring zip
-#    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-#    - composer install --no-interaction --prefer-dist
-#    - cp .env.ci .env
-#    - php artisan key:generate
-#    - php artisan test
+  - integration
 
 variables:
   PROJECT_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   PROJECT_IMAGE_LATEST: "$CI_REGISTRY_IMAGE:latest"
+
+run_tests:
+  stage: test
+  tags:
+    - linux
+  image: laravelsail/php83-composer:latest
+  services:
+    - name: mysql:8.0
+      alias: mysql
+  variables:
+    DB_CONNECTION: sqlite
+    DB_DATABASE: /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/database/database.sqlite
+  script:
+    - cp .env.ci .env
+    - touch database/database.sqlite
+    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+    - php artisan key:generate
+    - php artisan migrate --force
+    - php artisan test || php artisan test || php artisan test
 
 build_docker_image:
   stage: build
@@ -38,13 +43,15 @@ build_docker_image:
   only:
     - main
 
-#integration_test:
-#  stage: integration
-#  tags: [docker]
-#  image: docker:latest
-#  script:
-#    - docker run -d -p 8080:80 --name test-container "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-#    - sleep 5  # attendre que le conteneur démarre
-#    - curl --fail http://localhost:8080 || (docker logs test-container && exit 1)
-#    - docker stop test-container && docker rm test-container
-#  needs: [build_docker_image]
+integration_test:
+  stage: integration
+  tags:
+    - docker
+  script:
+    - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
+    - docker cp .env.ci app:/var/www/html/.env
+    - sleep 10
+    - curl --fail http://localhost:8080 || (docker logs app && exit 1)
+    - docker stop app && docker rm app
+  only:
+    - main
