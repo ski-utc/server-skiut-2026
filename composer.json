@@ -17,6 +17,7 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "firebase/php-jwt": "^6.11",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",

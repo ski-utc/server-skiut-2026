@@ -306,13 +306,15 @@ class RgpdController extends Controller
             }
             ChallengeProof::query()->delete();
 
-            // Anonymiser toutes les chambres
-            Room::query()->update([
-                'name' => 'Chambre anonymisée',
-                'description' => 'Description anonymisée',
-                'passions' => json_encode([])
-            ]);
-
+            $rooms = Room::all();
+            foreach ($rooms as $index => $room) {
+                $room->update([
+                    'name' => "Chambre anonymisée {$room->id}", // ou "Chambre #$index"
+                    'description' => 'Description anonymisée',
+                    'passions' => json_encode([])
+                ]);
+            }
+            
             // Supprimer toutes les photos de chambres
             $rooms = Room::all();
             foreach ($rooms as $room) {
