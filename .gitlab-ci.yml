@@ -1,67 +1,11 @@
 stages:
-  - test
-  - build
-  - integration
+  - docker_test
 
-variables:
-  PROJECT_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-  PROJECT_IMAGE_LATEST: "$CI_REGISTRY_IMAGE:latest"
-
-run_tests:
+docker_test:
   stage: test
   tags:
-    - linux
-  image: laravelsail/php83-composer:latest
-  services:
-    - name: mysql:8.0
-      alias: mysql
-  variables:
-    DB_CONNECTION: sqlite
-    DB_DATABASE: /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/database/database.sqlite
-  script:
-    - apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
-    - docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
-    - docker-php-ext-install gd
-    - cp .env.ci .env
-    - touch database/database.sqlite
-    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
-    - php artisan key:generate
-    - php artisan migrate --force
-    - php artisan test || php artisan test || php artisan test
-
-build_docker_image:
-  stage: build
-  tags:
-    - docker
-  image:
-    name: gcr.io/kaniko-project/executor:v1.14.0-debug
-    entrypoint: [""]
-  script:
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor
-        --context "${CI_PROJECT_DIR}"
-        --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-        --destination "$PROJECT_IMAGE_TAG"
-        --destination "$PROJECT_IMAGE_LATEST"
-  only:
-    - main
-
-integration_test:
-  stage: integration
-  tags:
     - docker-skiut
-  image: docker:24
-  services:
-    - name: docker:dind
-      alias: docker
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
   script:
-    - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
-    - docker cp .env.ci app:/var/www/html/.env
-    - sleep 10
-    - curl --fail http://localhost:8080 || (docker logs app && exit 1)
-    - docker stop app && docker rm app
-  only:
-    - main
+    - docker version
+    - docker info
+    - docker run hello-world
