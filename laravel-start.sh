@@ -20,6 +20,8 @@ mkdir -p storage/logs
 mkdir -p bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
+php artisan jwt:generate
+
 php artisan migrate --force
 
 exec apache2-foreground
