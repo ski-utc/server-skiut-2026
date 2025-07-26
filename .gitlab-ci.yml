@@ -49,7 +49,7 @@ build_docker_image:
 integration_test:
   stage: integration
   tags:
-    - docker
+    - docker-skiut
   script:
     - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
     - docker cp .env.ci app:/var/www/html/.env
