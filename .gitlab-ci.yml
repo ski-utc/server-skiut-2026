@@ -12,8 +12,8 @@ integration_test:
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
     - docker stop app || true
     - docker rm app || true
-    - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
+    - docker run -d -p 8090:80 --name app "$PROJECT_IMAGE_TAG"
     - docker cp .env.ci app:/var/www/html/.env
     - sleep 10
-    - curl --fail http://localhost:8080 || (docker logs app && exit 1)
+    - curl --fail http://localhost:8090 || (docker logs app && exit 1)
     - docker stop app && docker rm app
