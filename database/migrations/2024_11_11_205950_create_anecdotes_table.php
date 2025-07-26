@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('id');
             $table->text('text')->charset('utf8mb4');
             $table->unsignedInteger('room');
-            $table->foreignId('userId')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->boolean('valid')->default(false);
             $table->boolean('delete')->default(false);
             $table->boolean('active')->default(false);

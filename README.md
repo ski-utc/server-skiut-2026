@@ -69,6 +69,7 @@ ls ./database/database.sqlite
 Enfin, remplis ta base de données avec les config de migration pré-définies : 
 ``` bash
 php artisan migrate
+php artisan db:seed
 ```
 _En théorie vous pouvez directement faire $ php artisan migrate sans créer la BDD, il vous proposera de le faire_
 

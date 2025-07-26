@@ -18,11 +18,6 @@ class User extends Authenticatable
         return $this->hasMany(Anecdote::class);
     }
 
-    public function statistics()
-    {
-        return $this->hasMany(Statistics::class);
-    }
-
     public function room()
     {
         return $this->belongsTo(Room::class, 'roomID');
