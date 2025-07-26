@@ -1,10 +1,11 @@
 stages:
-  - docker_test
+  - test
 
 docker_test:
   stage: test
   tags:
     - docker-skiut
+  image: docker:24
   script:
     - docker version
     - docker info
