@@ -96,5 +96,3 @@ Route::get('/rgpd/export-my-data', [\App\Http\Controllers\RgpdController::class,
 Route::post('/rgpd/anonymize-all-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeAllData']);
 Route::post('/rgpd/delete-all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
 /**********************************************************************************************************************************************/
-
-require __DIR__.'/auth.php';
