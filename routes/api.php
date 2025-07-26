@@ -89,4 +89,12 @@ Route::post('/update-performance', [UserPerformanceController::class, 'updatePer
 Route::get('/classement-performances', [ClassementController::class, 'classementPerformances'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 
+/************************************************************** RGPD *************************************************************/
+Route::post('/rgpd/anonymize-my-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeMyData'])->middleware(EnsureTokenIsValid::class);
+Route::post('/rgpd/delete-my-data', [\App\Http\Controllers\RgpdController::class, 'deleteMyData'])->middleware(EnsureTokenIsValid::class);
+Route::get('/rgpd/export-my-data', [\App\Http\Controllers\RgpdController::class, 'exportMyData'])->middleware(EnsureTokenIsValid::class);
+Route::post('/rgpd/anonymize-all-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeAllData']);
+Route::post('/rgpd/delete-all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
+/**********************************************************************************************************************************************/
+
 require __DIR__.'/auth.php';
