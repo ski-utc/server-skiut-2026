@@ -84,7 +84,14 @@ Pour utiliser ça :
 
 3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
 
-### 3. Lance le serveur
+### 3. Générer les clés RSA pour les JWT
+
+Pour générer les clés RSA pour les JWT, une commande Artisan a été créée, fait :
+```bash
+php artisan jwt:generate
+```
+
+### 4. Lance le serveur
 
 - Si tu veux tester des routes sur le serveur dans ton navigateur (en localhost), fait
 ```bash
