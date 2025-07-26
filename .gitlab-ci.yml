@@ -19,9 +19,6 @@ run_tests:
     DB_CONNECTION: sqlite
     DB_DATABASE: /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/database/database.sqlite
   script:
-    - apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
-    - docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
-    - docker-php-ext-install gd
     - cp .env.ci .env
     - touch database/database.sqlite
     - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
@@ -49,8 +46,16 @@ build_docker_image:
 integration_test:
   stage: integration
   tags:
-    - docker-skiut
+    - docker
+  image: docker:24
+  services:
+    - name: docker:dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   script:
+    - docker info
     - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
     - docker cp .env.ci app:/var/www/html/.env
     - sleep 10
