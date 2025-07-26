@@ -1,420 +1,528 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Tests\Feature\Controllers;
 
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\ChallengeProof;
 use App\Models\Anecdote;
 use App\Models\Notification;
-use Illuminate\Http\Request;
-use App\Services\ExpoPushService;
+use App\Models\PushToken;
+use App\Models\Challenge;
+use App\Models\Room;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
+use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Log;
 
-class AdminController extends Controller
+class AdminControllerTest extends TestCase
 {
-    /**
-     * Permet de vérifier si le user est admin
-     */
-    public function getAdmin(Request $request)
-    {
-        try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+    use RefreshDatabase;
 
-            if ($user && $user->admin) {
-                return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
-            }
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+    private function getToken($isAdmin = false)
+    {
+        $user = User::factory()->create(['admin' => $isAdmin]);
+        $payload = [
+            'key' => $user->id,
+            'exp' => time() + 3600,
+        ];
+        $privateKey = Config::get('services.crypt.private');
+        return JWT::encode($payload, $privateKey, 'RS256');
+    }
+
+    public function test_get_admin_authenticated_as_admin()
+    {
+        $token = $this->getToken(true);
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/admin');
+        $response->assertExactJson(['success' => true, 'message' => 'Vous êtes admin.']);
+    }
+
+    public function test_get_admin_authenticated_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/admin');
+        $response->assertExactJson(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
+    }
+
+    // Tests pour getAdminChallenges
+    public function test_get_admin_challenges_as_admin()
+    {
+        $token = $this->getToken(true);
+        
+        // Créer les données nécessaires avec les relations
+        $user = User::factory()->create();
+        $room = Room::factory()->create();
+        $challenge = Challenge::factory()->create();
+        
+        ChallengeProof::factory()->create([
+            'delete' => false, 
+            'valid' => false,
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminChallenges');
+        
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'success',
+                     'data' => [
+                         '*' => ['id', 'valid', 'delete']
+                     ]
+                 ]);
+    }
+
+    public function test_get_admin_challenges_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminChallenges');
+        
+        $response->assertStatus(403);
+    }
+
+    public function test_get_admin_challenges_with_filter_pending()
+    {
+        $token = $this->getToken(true);
+        
+        // Créer les données nécessaires avec les relations
+        $user = User::factory()->create();
+        $room = Room::factory()->create();
+        $challenge1 = Challenge::factory()->create();
+        $challenge2 = Challenge::factory()->create();
+        
+        // Create a pending challenge (valid = false)
+        ChallengeProof::factory()->create([
+            'delete' => false, 
+            'valid' => false, // This should be in the filtered results
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge1->id
+        ]);
+        
+        // Create a valid challenge (valid = true)
+        ChallengeProof::factory()->create([
+            'delete' => false, 
+            'valid' => true, // This should NOT be in the filtered results
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge2->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminChallenges?filter=pending');
+        
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        
+        // Ensure we have at least one result
+        $this->assertNotEmpty($data, 'No pending challenges found in the response');
+        
+        // Check that all returned challenges have valid = false (pending)
+        foreach ($data as $challenge) {
+            $this->assertEquals(false, $challenge['valid'], 'Found a non-pending challenge in pending filter results');
         }
     }
 
-    /**
-     * Gestion des défis (récupération, validation, suppression)
-     */
-     public function getAdminChallenges(Request $request)
+    // Tests pour getChallengeDetails
+    public function test_get_challenge_details_as_admin()
     {
-        try {
-            // Retrieve filter parameter (optional)
-            $filter = $request->query('filter', 'all');
-
-            // Build the base query
-            $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false);
-
-            // Apply filters
-            switch ($filter) {
-                case 'pending':
-                    $query->where('valid', false);
-                    break;
-
-                case 'valid':
-                    $query->where('valid', true);
-                    break;
-
-                case 'all':
-                default:
-                    break;
-            }
-
-            // Fetch challenges
-            $challenges = $query->orderBy('id', 'desc')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $challenges,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(true);
+        
+        // Créer les données nécessaires avec les relations
+        $user = User::factory()->create();
+        $room = Room::factory()->create();
+        $challenge = Challenge::factory()->create();
+        
+        $challengeProof = ChallengeProof::factory()->create([
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson("/api/getChallengeDetails/{$challengeProof->id}");
+        
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'success',
+                     'data' => ['id'],
+                     'imagePath'
+                 ]);
     }
 
-    /**
-     * Récupère les détails d'un défi spécifique par son ID
-     */
-    public function getChallengeDetails($challengeId)
+    public function test_get_challenge_details_as_non_admin()
     {
-        try {
-
-            // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
-            $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
-
-            return response()->json([
-                'success' => true,
-                'data' => $challenge,
-                'imagePath'=> asset($challenge->file)
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(false);
+        
+        // Créer les données nécessaires avec les relations
+        $user = User::factory()->create();
+        $room = Room::factory()->create();
+        $challenge = Challenge::factory()->create();
+        
+        $challengeProof = ChallengeProof::factory()->create([
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson("/api/getChallengeDetails/{$challengeProof->id}");
+        
+        $response->assertStatus(403);
     }
 
-    /**
-     * Met à jour le statut de validation d'un challenge (valider ou invalider)
-     */
-    public function updateChallengeStatus($challengeId, $isValid = null, $isDelete = null)
+    // Tests pour updateChallengeStatus
+    public function test_update_challenge_status_as_admin()
     {
-        try {
-            $challenge = ChallengeProof::findOrFail($challengeId);
-
-            if ($isValid === null || $isDelete === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
-                ], 500);
-            }
-
-            // Convert string parameters to boolean
-            $isValid = (bool) $isValid;
-            $isDelete = (bool) $isDelete;
-
-            // Mise à jour du statut de validation
-            $challenge->valid = $isValid;
-            $challenge->delete = $isDelete;
-            $challenge->save();
-
-            // Prépare le message 
-            if ($isValid && $isDelete) {
-                $message = 'Challenge refusé avec succès';
-            } elseif ($isValid && !$isDelete) {
-                $message = 'Challenge validé avec succès';
-            } elseif (!$isValid && !$isDelete) {
-                $message = 'Challenge invalidé avec succès';
-            } else {
-                $message = 'Challenge mis à jour avec succès';
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour du statut du challenge : ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(true);
+        
+        // Créer les données nécessaires avec les relations
+        $user = User::factory()->create();
+        $room = Room::factory()->create();
+        $challenge = Challenge::factory()->create();
+        
+        $challengeProof = ChallengeProof::factory()->create([
+            'valid' => false, 
+            'delete' => false,
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/updateChallengeStatus/{$challengeProof->id}/1/0");
+        
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Challenge validé avec succès'
+                 ]);
+        
+        $this->assertDatabaseHas('challenge_proofs', [
+            'id' => $challengeProof->id,
+            'valid' => true,
+            'delete' => false
+        ]);
     }
 
-    /**
-     * Récupère les détails d'une anecdote spécifique par son ID
-     */
-    public function getAdminAnecdotes(Request $request)
+    public function test_update_challenge_status_as_non_admin()
     {
-        try {
-            // Récupération des paramètres de filtre (facultatifs)
-            $filter = $request->query('filter', 'all');
-    
-            // Construire la requête de base
-            $query = Anecdote::with(['user', 'likes', 'warns']);
-    
-            // Appliquer les filtres
-            switch ($filter) {
-                case 'pending':
-                    $query->where('valid', false);
-                    break;
-    
-                case 'reported':
-                    // Filtrer les anecdotes ayant plus d'un avertissement
-                    $query->whereHas('warns', function($q) {
-                        $q->groupBy('anecdote_id')  // Groupement par ID d'anecdote
-                        ->havingRaw('COUNT(*) > 0');  // Plus d'un avertissement
-                    });
-                    break;
-    
-                case 'all':
-                default:
-                    // Pas de filtre spécifique
-                    break;
-            }
-    
-            // Récupérer les anecdotes
-            $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
-                ->orderBy('id', 'desc') // Trier par date de création
-                ->get();
-    
-            // Compter le nombre d'avertissements pour chaque anecdote
-            foreach ($anecdotes as $anecdote) {
-                $anecdote->nbWarns = $anecdote->warns()->count();
-            }
-    
-            return response()->json([
-                'success' => true,
-                'data' => $anecdotes,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération des anecdotes : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-     
-    /**
-     * Récupère les détails d'une anecdote spécifique par son ID
-    */
-    public function getAnecdoteDetails($id)
-    {
-        try {
-
-            // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
-            $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
-            $nbLikes = $anecdote->likes()->count();
-            $nbWarns = $anecdote->warns()->count();
-
-            return response()->json([
-                'success' => true,
-                'data' => $anecdote,
-                'nbLikes' => $nbLikes,
-                'nbWarns' => $nbWarns
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération de l\'anecdote : ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(false);
+        
+        // Créer les données nécessaires avec les relations
+        $user = User::factory()->create();
+        $room = Room::factory()->create();
+        $challenge = Challenge::factory()->create();
+        
+        $challengeProof = ChallengeProof::factory()->create([
+            'user_id' => $user->id,
+            'room_id' => $room->id,
+            'challenge_id' => $challenge->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/updateChallengeStatus/{$challengeProof->id}/1/0");
+        
+        $response->assertStatus(403);
     }
 
-    /**
-     * Met à jour le statut de validation d'une anecdote (valider ou invalider)
-    */
-    public function updateAnecdoteStatus($anecdoteId, $isValid)
+    // Tests pour getAdminAnecdotes
+    public function test_get_admin_anecdotes_as_admin()
     {
-        try {
-            $anecdote = Anecdote::findOrFail($anecdoteId);
-
-            if ($isValid === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
-                ]);
-            }
-
-            // Mise à jour du statut de validation
-            $anecdote->valid = $isValid;
-            $anecdote->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(true);
+        
+        // Créer un utilisateur pour l'anecdote
+        $user = User::factory()->create();
+        
+        Anecdote::factory()->create([
+            'delete' => false,
+            'user_id' => $user->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminAnecdotes');
+        
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'success',
+                     'data' => [
+                         '*' => ['id', 'valid', 'delete']
+                     ]
+                 ]);
     }
 
-    /**
-     * Récupère les notifications
-     */
-    public function getAdminNotifications()
+    public function test_get_admin_anecdotes_as_non_admin()
     {
-        try {
-            $notifications = Notification::orderBy('created_at', 'desc')->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $notifications,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving notifications: ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(false);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminAnecdotes');
+        
+        $response->assertStatus(403);
     }
 
-    /**
-     * Récupère les détails d'une notification spécifique par son ID
-     */
-    public function getNotificationDetails($notificationId)
+    // Tests pour getAnecdoteDetails
+    public function test_get_anecdote_details_as_admin()
     {
-        try {
-            $notification = Notification::findOrFail($notificationId);
-
-            return response()->json([
-                'success' => true,
-                'data' => $notification
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
-            ], 500);
-        }
+        $token = $this->getToken(true);
+        
+        // Créer un utilisateur pour l'anecdote
+        $user = User::factory()->create();
+        
+        $anecdote = Anecdote::factory()->create([
+            'user_id' => $user->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson("/api/getAnecdoteDetails/{$anecdote->id}");
+        
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'success',
+                     'data' => ['id'],
+                     'nbLikes',
+                     'nbWarns'
+                 ]);
     }
 
-    /**
-     * Envoie une notification à un utilisateur spécifique
-     */
-    public function sendNotificationToOne(Request $request)
+    public function test_get_anecdote_details_as_non_admin()
     {
-        try {
-            $title = $request->input('titre');
-            $body = $request->input('texte');
-            $token = $request->input('token');
-
-            $expoPushService = new ExpoPushService();
-            $expoPushService->sendNotification(
-                $token,
-                $title,
-                $body,
-                $request->input('data', [])
-            );
-
-            Notification::create([
-                'title' => $title,
-                'description' => $body,
-                'general' => false,
-                'delete' => false,
-            ]);
-
-            return response()->json(['success' => true, 'message' => "Notification envoyée avec succès à l'utilisateurice !"]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
-        }
+        $token = $this->getToken(false);
+        
+        // Créer un utilisateur pour l'anecdote
+        $user = User::factory()->create();
+        
+        $anecdote = Anecdote::factory()->create([
+            'user_id' => $user->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson("/api/getAnecdoteDetails/{$anecdote->id}");
+        
+        $response->assertStatus(403);
     }
 
-    /**
-     * Envoie une notification à tous les utilisateurs
-     */
-    public function sendNotificationToAll(Request $request)
+    // Tests pour updateAnecdoteStatus
+    public function test_update_anecdote_status_as_admin()
     {
-        try {
-            $title = $request->input('titre');
-            $body = $request->input('texte');
-            $data = (object) [];
-
-            $tokens = \App\Models\PushToken::pluck('token')->toArray();
-
-            $expoPushService = new ExpoPushService();
-            foreach ($tokens as $token) {
-                $expoPushService->sendNotification(
-                    $token,
-                    $title,
-                    $body,
-                    $data
-                );
-            }
-
-            Notification::create([
-                'title' => $title,
-                'description' => $body,
-                'general' => true,
-                'delete' => false,
-            ]);
-
-            return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
-        }
+        $token = $this->getToken(true);
+        
+        // Créer un utilisateur pour l'anecdote
+        $user = User::factory()->create();
+        
+        $anecdote = Anecdote::factory()->create([
+            'valid' => false,
+            'user_id' => $user->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/updateAnecdoteStatus/{$anecdote->id}/1");
+        
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Anecdote validée avec succès.'
+                 ]);
+        
+        $this->assertDatabaseHas('anecdotes', [
+            'id' => $anecdote->id,
+            'valid' => true
+        ]);
     }
 
-    /**
-     * Envoie une notification individuelle à un utilisateur spécifique
-     */
-    public function sendIndividualNotification(Request $request, $userId)
+    public function test_update_anecdote_status_as_non_admin()
     {
-        try {
-            $notification = new Notification([
-                'title' => $request->title,
-                'text' => $request->texte, // Changed from 'text' to 'texte' to match the test
-                'description' => $request->texte, // Add description field that seems to be required
-                'user_id' => $userId,
-                'general' => false,
-                'delete' => false,
-            ]);
-            $notification->save();
-
-            return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false, 
-                'message' => 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage()
-            ], 500);
-        }
+        $token = $this->getToken(false);
+        
+        // Créer un utilisateur pour l'anecdote
+        $user = User::factory()->create();
+        
+        $anecdote = Anecdote::factory()->create([
+            'user_id' => $user->id
+        ]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/updateAnecdoteStatus/{$anecdote->id}/1");
+        
+        $response->assertStatus(403);
     }
 
-    /**
-     * Supprime une notification
-     */
-    public function deleteNotification($notificationId, $delete)
+    // Tests pour getAdminNotifications
+    public function test_get_admin_notifications_as_admin()
     {
-        try {
-            $notification = Notification::findOrFail($notificationId);
+        $token = $this->getToken(true);
+        Notification::factory()->create();
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminNotifications');
+        
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'success',
+                     'data' => [
+                         '*' => ['id', 'title', 'description']
+                     ]
+                 ]);
+    }
 
-            if ($delete === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Le paramètre "delete" est requis (1 pour supprimer, 0 pour annuler).',
-                ]);
-            }
+    public function test_get_admin_notifications_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAdminNotifications');
+        
+        $response->assertStatus(403);
+    }
 
-            // Mise à jour du statut de suppression
-            $notification->delete = $delete;
-            $notification->save();
+    // Tests pour getNotificationDetails
+    public function test_get_notification_details_as_admin()
+    {
+        $token = $this->getToken(true);
+        $notification = Notification::factory()->create();
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson("/api/getNotificationDetails/{$notification->id}");
+        
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'success',
+                     'data' => ['id']
+                 ]);
+    }
 
-            return response()->json([
-                'success' => true,
-                'message' => $delete ? 'Notification supprimée avec succès.' : 'Suppression annulée avec succès.',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
-            ], 500);
-        }
+    public function test_get_notification_details_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        $notification = Notification::factory()->create();
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson("/api/getNotificationDetails/{$notification->id}");
+        
+        $response->assertStatus(403);
+    }
+
+    // Tests pour deleteNotification
+    public function test_delete_notification_as_admin()
+    {
+        $token = $this->getToken(true);
+        $notification = Notification::factory()->create(['delete' => false]);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/deleteNotification/{$notification->id}/1");
+        
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Notification supprimée avec succès.'
+                 ]);
+        
+        $this->assertDatabaseHas('notifications', [
+            'id' => $notification->id,
+            'delete' => true
+        ]);
+    }
+
+    public function test_delete_notification_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        $notification = Notification::factory()->create();
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/deleteNotification/{$notification->id}/1");
+        
+        $response->assertStatus(403);
+    }
+
+    // Tests pour sendNotificationToAll
+    public function test_send_notification_to_all_as_admin()
+    {
+        $token = $this->getToken(true);
+        
+        // Créer un token push valide (format Expo)
+        PushToken::factory()->create(['token' => 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]']);
+        
+        // Mock du service ExpoPushService pour éviter l'erreur de token invalide
+        $this->mock(\App\Services\ExpoPushService::class, function ($mock) {
+            $mock->shouldReceive('sendNotification')
+                 ->once()
+                 ->andReturn(true);
+        });
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson('/api/sendNotification', [
+                             'titre' => 'Test Title',
+                             'texte' => 'Test Body'
+                         ]);
+        
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Notification envoyée à tous les utilisateurs !'
+                 ]);
+        
+        $this->assertDatabaseHas('notifications', [
+            'title' => 'Test Title',
+            'description' => 'Test Body',
+            'general' => true
+        ]);
+    }
+
+    public function test_send_notification_to_all_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson('/api/sendNotification', [
+                             'titre' => 'Test Title',
+                             'texte' => 'Test Body'
+                         ]);
+        
+        $response->assertStatus(403);
+    }
+
+    // Tests pour sendIndividualNotification
+    public function test_send_individual_notification_as_admin()
+    {
+        $token = $this->getToken(true);
+        $user = User::factory()->create();
+                
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/sendIndividualNotification/{$user->id}", [
+                             'title' => 'Individual Test',
+                             'texte' => 'Individual Body'
+                         ]);
+        
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true,
+                     'message' => 'Notification sent to user.'
+                 ]);
+    }
+
+    public function test_send_individual_notification_as_non_admin()
+    {
+        $token = $this->getToken(false);
+        $user = User::factory()->create();
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                         ->postJson("/api/sendIndividualNotification/{$user->id}", [
+                             'title' => 'Individual Test',
+                             'texte' => 'Individual Body'
+                         ]);
+        
+        $response->assertStatus(403);
+    }
+
+    // Tests d'erreur pour les cas edge
+    public function test_get_challenge_details_not_found()
+    {
+        $token = $this->getToken(true);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getChallengeDetails/999999');
+        
+        $response->assertStatus(500)
+                 ->assertJson(['success' => false]);
+    }
+
+    public function test_get_anecdote_details_not_found()
+    {
+        $token = $this->getToken(true);
+        
+        $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/getAnecdoteDetails/999999');
+        
+        $response->assertStatus(500)
+                 ->assertJson(['success' => false]);
     }
 }
