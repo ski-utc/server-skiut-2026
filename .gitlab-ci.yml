@@ -20,6 +20,4 @@ integration_test:
     - sleep 10
     - docker exec app curl --fail http://localhost || (docker logs app && exit 1)
     - docker stop app && docker rm app
-  only:
-    - main
 
