@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Room;
 use App\Models\Challenge;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Firebase\JWT\JWT;
@@ -48,7 +49,8 @@ class DefisControllerTest extends TestCase
     }
     public function test_upload_proof_image_authenticated()
     {
-        Challenge::create(['title' => 'Test', 'nbPoints' => 10]);
+        $now = Carbon::now();
+        Challenge::create(['title' => 'Test'.$now, 'nbPoints' => 10]);
         Storage::fake('public');
         $token = $this->getToken();
 
