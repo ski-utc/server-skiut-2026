@@ -50,10 +50,10 @@ build_docker_image:
 integration_test:
   stage: integration
   allow_failure: true
+  image: curlimages/curl:latest
   tags:
     - docker-skiut
   script:
-    - apt-get update && apt-get install -y curl
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
     - docker stop app || true
     - docker rm app || true
