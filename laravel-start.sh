@@ -15,6 +15,11 @@ php artisan event:cache --no-interaction
 php artisan optimize --no-interaction
 
 php artisan storage:link
+mkdir -p storage/framework/{cache,sessions,testing,views}
+mkdir -p storage/logs
+mkdir -p bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+
 php artisan migrate --force
 
 exec apache2-foreground

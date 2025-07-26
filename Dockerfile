@@ -19,6 +19,10 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-d
 COPY laravel-start.sh /usr/local/bin/laravel-start.sh
 RUN chmod +x /usr/local/bin/laravel-start.sh
 
+RUN mkdir -p storage/app/private \
+    && openssl genpkey -algorithm RSA -out storage/app/private/private.pem -pkeyopt rsa_keygen_bits:2048 \
+    && openssl rsa -pubout -in storage/app/private/private.pem -out storage/app/private/public.pem
+
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
