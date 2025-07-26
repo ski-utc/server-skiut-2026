@@ -1,21 +1,17 @@
 stages:
   - integration
 
+variables:
+  PROJECT_IMAGE_TAG: $CI_REGISTRY_IMAGE:latest  # <- image complète ici
+
 integration_test:
   stage: integration
   tags:
     - docker-skiut
-  image: docker:24
-  services:
-    - docker:dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
-    - docker run -d -p 8080:80 --name app "$CI_REGISTRY_IMAGE:latest"
+    - docker run -d -p 8080:80 --name app "$PROJECT_IMAGE_TAG"
     - docker cp .env.ci app:/var/www/html/.env
     - sleep 10
     - curl --fail http://localhost:8080 || (docker logs app && exit 1)
     - docker stop app && docker rm app
-
