@@ -7,11 +7,12 @@ use App\Models\User;
 use App\Models\AnecdotesLike;
 use App\Models\AnecdotesWarn;
 use Illuminate\Http\Request;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
 class AnecdoteController extends Controller
 {
+    /**
+     * Récupère les anecdotes d'un utilisateur
+     */
     public function getAnecdotes(Request $request)
     {
         try {
@@ -47,7 +48,9 @@ class AnecdoteController extends Controller
         }
     }  
     
-
+    /**
+     * Like d'une anecdote
+     */
     public function likeAnecdote(Request $request)
     {
         $userId = $request->user['id'];;
@@ -72,6 +75,9 @@ class AnecdoteController extends Controller
         return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
     }
 
+    /**
+     * Warn d'une anecdote
+     */
     public function warnAnecdote(Request $request)
     {
         $userId = $request->user['id'];;
@@ -96,28 +102,31 @@ class AnecdoteController extends Controller
         return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
     }
 
+    /**
+     * Envoie une anecdote (ajout dans la BDD)
+     */
     public function sendAnecdote(Request $request){
         try{
             $userId = $request->user['id'];
-    
             $text = $request->input('texte');
-
             $room = User::where('id', $userId)->first()->roomID;
     
             Anecdote::create(["text"=>$text, 'room'=>$room, 'userId'=>$userId]);
+
             return response()->json(['success' =>true, "message"=>"Anecdote postée ! Elle sera visible une fois validée par le bureau"]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, "message"=>"Erreur".$e]);
         }    
     }
 
+    /**
+     * Supprime une anecdote
+     */
     public function deleteAnecdote(Request $request)
     {
         try {
             $userId = $request->user['id'];;
-    
             $anecdoteId = $request->input('anecdoteId');
-    
             $anecdote = Anecdote::find($anecdoteId);
     
             if (!$anecdote) {
@@ -135,5 +144,4 @@ class AnecdoteController extends Controller
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
     }
-    
 }

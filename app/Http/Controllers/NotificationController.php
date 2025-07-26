@@ -3,17 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
-use Illuminate\Http\Request;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
 class NotificationController extends Controller
 {
+    /**
+     * Récupère les notifications
+     */
     public function getNotifications()
     {
         try {
             $notifications = Notification::where('delete', false)
-            ->orderBy('created_at', 'desc') // Trie par ordre décroissant
+            ->orderBy('created_at', 'desc')
             ->get();
     
             $data = $notifications->map(function($notification) {

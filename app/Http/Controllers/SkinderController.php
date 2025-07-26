@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Storage;
 
 class SkinderController extends Controller
 {
+    /**
+     * Récupère les données de l'utilisateur pour le profil Skinder
+     */
     public function getProfilSkinder(Request $request)
     {
         try {
@@ -52,6 +55,9 @@ class SkinderController extends Controller
         }
     }
 
+    /**
+     * Like d'une chambre
+     */
     public function likeSkinder(Request $request)
     {
         try{
@@ -99,6 +105,9 @@ class SkinderController extends Controller
         }
     }
 
+    /**
+     * Récupère les matchs de l'utilisateur
+     */
     public function getMySkinderMatches(Request $request)
     {
         try {
@@ -144,6 +153,9 @@ class SkinderController extends Controller
         }
     }    
 
+    /**
+     * Récupère les données du profil Skinder de l'utilisateur
+     */
     public function getMyProfilSkinder(Request $request)
     {
         $userId = $request->user['id'];;
@@ -167,6 +179,9 @@ class SkinderController extends Controller
         ]);
     }
 
+    /**
+     * Modifier le profil Skinder de l'utilisateur
+     */
     public function modifyProfil(Request $request)
     {
         $userId = $request->user['id'];
@@ -188,6 +203,9 @@ class SkinderController extends Controller
         return response()->json(['success' => true, 'message' => 'Profil mis à jour avec succès.']);
     }
 
+    /**
+     * Téléversement d'une image pour la chambre
+     */
     public function uploadRoomImage(Request $request)
     {
         $userId = $request->user['id'];

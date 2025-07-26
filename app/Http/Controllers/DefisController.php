@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class DefisController extends Controller
 {
     /**
-     * Get all challenges with their proofs.
+     * Récupère les défis (et le status selon le user)
      */
     public function getChallenges(Request $request)
     {
@@ -61,6 +61,9 @@ class DefisController extends Controller
         }
     }
 
+    /**
+     * Récupère l'image de preuve d'un défi
+     */
     public function getProofImage(Request $request)
     {
         try {
@@ -91,6 +94,9 @@ class DefisController extends Controller
         }
     }
 
+    /**
+     * Envoie une preuve d'un défi
+     */
     public function uploadProofImage(Request $request)
     {
         $id = $request->user['id'];
@@ -131,7 +137,7 @@ class DefisController extends Controller
     }
 
     /**
-     * Delete a proof and its associated media.
+     * Supprime une preuve d'un défi
      */
     public function deleteProofImage(Request $request)
     {

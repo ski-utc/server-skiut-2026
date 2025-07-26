@@ -7,6 +7,9 @@ use App\Models\UserPerformance;
 
 class ClassementController extends Controller
 {
+    /**
+     * Calcule le classement des chambres
+     */
     public function classementChambres()
     {
         try {
@@ -44,7 +47,9 @@ class ClassementController extends Controller
         }
     }
     
-
+    /**
+     * Calcule le classement des performances
+     */
     public function classementPerformances()
     {
         // Récupérer toutes les performances triées par vitesse maximale décroissante

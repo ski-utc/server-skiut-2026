@@ -7,6 +7,9 @@ use Carbon\Carbon;
 
 class PlanningController extends Controller
 {
+    /**
+     * Récupère les activités de la semaine
+     */
     public function getPlanning()
     {
         try {

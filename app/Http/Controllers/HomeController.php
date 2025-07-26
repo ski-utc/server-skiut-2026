@@ -27,17 +27,16 @@ class HomeController extends Controller
 
             if ($closestActivity) {
 
-                // Check if startTime and endTime are not null before formatting
                 if ($closestActivity->startTime) {
                     $closestActivity->startTime = Carbon::createFromFormat('H:i', $closestActivity->startTime)->format('H\hi');
                 } else {
-                    $closestActivity->startTime = 'N/A'; // Default or placeholder value
+                    $closestActivity->startTime = 'N/A';
                 }
 
                 if ($closestActivity->endTime) {
                     $closestActivity->endTime = Carbon::createFromFormat('H:i', $closestActivity->endTime)->format('H\hi');
                 } else {
-                    $closestActivity->endTime = 'N/A'; // Default or placeholder value
+                    $closestActivity->endTime = 'N/A';
                 }
             }
 

@@ -16,20 +16,16 @@ use Firebase\JWT\SignatureInvalidException;
 class AuthController extends Controller
 {
     /**
-     * The OAuth2 provider instance.
-     *
-     * @var GenericProvider
+     * Le fournisseur d'OAuth2.
      */
     public GenericProvider $provider;
 
     /**
-     * Create a new AuthController instance.
-     *
-     * @return void
+     * Crée un nouveau contrôleur AuthController.
      */
     public function __construct()
     {
-        // Initialize the OAuth2 provider with configuration values from environment variables
+        // Initialisation du fournisseur OAuth2 avec les valeurs de configuration des variables d'environnement
         $this->provider = new GenericProvider([
             'clientId'                => config("services.oauth.client_id"),
             'clientSecret'            => config("services.oauth.client_secret"),
@@ -42,10 +38,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle user login via OAuth2.
-     *
-     * @param  Request $request The HTTP request object.
-     * @return \Illuminate\Http\RedirectResponse
+     * Gère le login d'un utilisateur via OAuth2 (génère un token de session et renvoie vers l'OAuth du SiMDE)
      */
     public function login(Request $request)
     {
@@ -74,12 +67,10 @@ class AuthController extends Controller
             }
         }
 
-        // Generate a random state parameter
-        $state = bin2hex(random_bytes(16));
+        $state = bin2hex(random_bytes(16));   // génère un token de session aléatoire
         $request->session()->put('oauth2state', $state);
 
-        // Redirect the user to the OAuth2 authorization URL
-        $authorizationUrl = $this->provider->getAuthorizationUrl([
+        $authorizationUrl = $this->provider->getAuthorizationUrl([    // Redirection vers l'URL d'autorisation de l'OAuth avec le token
             'state' => $state
         ]);
 
@@ -87,19 +78,17 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle the OAuth2 callback.
+     * Gère le callback de l'OAuth du SiMDE
      */
     public function callback(Request $request)
     {
         $storedState = $request->session()->pull('oauth2state');
 
-        // Check if the state parameter is present and valid
-        if (!$request->has('state') || $request->get('state') !== $storedState) {
+        if (!$request->has('state') || $request->get('state') !== $storedState) {   // Vérifie que le token de session est valide
             abort(400, 'Invalid state: '. $request->get('state') . ' VS ' . $storedState);
         }
 
-        // Check if the authorization code is present
-        if (!$request->has('code')) {
+        if (!$request->has('code')) {     // Vérifie que le code d'autorisation est présent
             abort(400, 'No authorization code');
         }
         try {
@@ -114,7 +103,7 @@ class AuthController extends Controller
                 abort(401, 'Compte supprimé ou désactivé');
             }
 
-            $user=User::where('email',$userDetails['email'])->first();
+            $user=User::where('email',$userDetails['email'])->first();  // Si le user n'existe pas => ielle n'a pas de pack Ski'Ut
             if (!$user) {
                 abort(401,"Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée. Veuillez utiliser le mail utilisé lors de votre achat de la place");
             }
@@ -147,6 +136,9 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Refresh l'access token du user à partir de son refresh token.
+     */
     public function refresh(Request $request)
     {
         $publicKey = config('services.crypt.public');
@@ -185,40 +177,42 @@ class AuthController extends Controller
      * Récupère les informations de l'utilisateur à partir d'un token.
      */
     public function getUserData(Request $request)
-{
-    $token = $request->bearerToken();
+    {
+        $token = $request->bearerToken();
 
-    try {
-        $publicKey = config("services.crypt.public");
-        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        try {
+            $publicKey = config("services.crypt.public");
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
 
-        $id = $decoded->key;
+            $id = $decoded->key;
 
-        $user = User::where('id', $id)->first();
-        if (!$user) {
-            return response()->json(['success' => 'false', 'message'=>'Utilisateur non trouvé'], 404);
+            $user = User::where('id', $id)->first();
+            if (!$user) {
+                return response()->json(['success' => 'false', 'message'=>'Utilisateur non trouvé'], 404);
+            }
+
+            $room = Room::where('id', $user->roomID)->first();
+            if (!$room) {
+                return response()->json(['success' => 'false', 'message'=>'Chambre non trouvée'], 404);
+            }
+
+            return response()->json([
+                'success'=>true,
+                'id'=> $user->id,
+                'name'=> $user->firstName,
+                'lastName'=> $user->lastName,
+                'room'=>$room->roomNumber,
+                'roomName' =>$room->name ? $room->name : null,
+                'admin'=> $user->admin
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => 'false', 'message'=>'Erreur lors de la récupération des users infos : '.$e], 401);
         }
-
-        $room = Room::where('id', $user->roomID)->first();
-        if (!$room) {
-            return response()->json(['success' => 'false', 'message'=>'Chambre non trouvée'], 404);
-        }
-
-        return response()->json([
-            'success'=>true,
-            'id'=> $user->id,
-            'name'=> $user->firstName,
-            'lastName'=> $user->lastName,
-            'room'=>$room->roomNumber,
-            'roomName' =>$room->name ? $room->name : null,
-            'admin'=> $user->admin
-        ]);
-    } catch (\Exception $e) {
-        return response()->json(['success' => 'false', 'message'=>'Erreur lors de la récupération des users infos : '.$e], 401);
     }
-}
 
-
+    /**
+     * Déconnexion de l'utilisateur
+     */
     public function logout()
     {
         $cookie = cookie('auth_session', null, -1);
