@@ -57,7 +57,7 @@ integration_test:
     - docker stop app || true
     - docker rm app || true
     - docker run -d -p 8090:80 --name app -v $(pwd)/.env.ci:/var/www/html/.env "$CI_REGISTRY_IMAGE:latest"
-    - docker exec -it app php artisan jwt:generate
+    - docker exec app php artisan jwt:generate
     - sleep 10
     - curl --fail http://localhost:8090/skiutc || (docker logs app && exit 1)
     - docker stop app && docker rm app
