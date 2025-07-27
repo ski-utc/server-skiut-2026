@@ -59,7 +59,8 @@ integration_test:
     - docker run -d -p 8090:80 --name app -v $(pwd)/.env.ci:/var/www/html/.env "$CI_REGISTRY_IMAGE:latest"
     - docker exec app php artisan jwt:generate
     - sleep 10
-    - curl --fail http://localhost:8090/skiutc || (docker logs app && exit 1)
+    - export APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' app)
+    - curl --fail "http://$APP_IP/skiutc" || (docker logs app && exit 1)
     - docker stop app && docker rm app
   only:
     - main
