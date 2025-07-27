@@ -2,11 +2,6 @@
 
 set -eu
 
-mkdir -p storage/logs
-touch storage/logs/laravel.log
-chown www-data:www-data storage/logs/laravel.log
-chmod 664 storage/logs/laravel.log
-
 php artisan config:clear || true
 php artisan cache:clear || true
 php artisan route:clear || true

@@ -2,11 +2,20 @@
 /public/build
 /storage/app/private
 
+.env
+.env.example
+.editorconfig
+
 .git/
 .github/
 .gitignore
 .gitattributes
+.gitlab-ci.yml
+
 .dockerignore
 Dockerfile
 docker-compose.yaml
+
 README.md
+CONTRIBUTING.md
+LICENSE
