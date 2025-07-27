@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
-            $table->text('name')->unique();
+            $table->string('name')->unique();
             $table->string('role'); // prez / resp anim...
             $table->string('phoneNumber'); 
             $table->timestamps();

@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('mood');
             $table->string('photoPath')->nullable();
-            $table->string('description')->charset('utf8mb4')->nullable(); 
-            $table->json('passions')->charset('utf8mb4')->default(json_encode([]))->nullable();
+            $table->string('description')->nullable(); 
+            $table->json('passions')->nullable();
             $table->unsignedTinyInteger('totalPoints')->default(0);
             $table->foreignId('userID')->nullable()->constrained('users', 'id')->onDelete('cascade'); // Foreign key to users table
             $table->timestamps();
