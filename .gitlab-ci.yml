@@ -23,10 +23,9 @@ run_tests:
     - docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
     - docker-php-ext-install gd
     - cp .env.ci .env
-    - touch database/database.sqlite
     - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
-    - php artisan key:generate
     - php artisan jwt:generate
+    - touch database/database.sqlite
     - php artisan migrate --force
     - php artisan test || php artisan test || php artisan test
 
@@ -57,8 +56,8 @@ integration_test:
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
     - docker stop app || true
     - docker rm app || true
-    - docker run -d -p 8090:80 --name app "$CI_REGISTRY_IMAGE:latest"
-    - docker cp .env.ci app:/var/www/html/.env
+    - docker run -d -p 8090:80 --name app -v $(pwd)/.env.ci:/var/www/html/.env "$CI_REGISTRY_IMAGE:latest"
+    - php artisan jwt:generate
     - sleep 10
     - curl --fail http://localhost:8090/skiutc || (docker logs app && exit 1)
     - docker stop app && docker rm app
