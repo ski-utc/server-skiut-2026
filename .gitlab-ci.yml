@@ -60,7 +60,5 @@ integration_test:
     - docker run -d -p 8090:80 --name app "$CI_REGISTRY_IMAGE:latest"
     - docker exec app php artisan jwt:generate
     - sleep 10
-    - curl --fail http://localhost:8090/skiutc || (docker logs app && exit 1)
+    - docker exec app curl --fail http://localhost:80/skiutc || (docker logs app && exit 1)
     - docker stop app && docker rm app
-  only:
-    - main
