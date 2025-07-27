@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  app:
+    #image: registry.gitlab.utc.fr/skiutc/server-skiut-2026
+    build: .
+    container_name: laravel-app
+    depends_on:
+      - db
+    ports:
+      - "8000:80"     # Penser à modifier la BASE URL dans .env.ci sur son IP (hostname -I) si on veut être accessible
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: skiut
+      DB_USERNAME: skiut_user
+      DB_PASSWORD: skiut_pass
+    networks:
+      - skiut-net
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: skiut
+      MYSQL_USER: skiut_user
+      MYSQL_PASSWORD: skiut_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - skiut-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8081:80"    # Accès web via http://localhost:8081
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root_pass
+    networks:
+      - skiut-net
+
+volumes:
+  db-data:
+
+networks:
+  skiut-net:
