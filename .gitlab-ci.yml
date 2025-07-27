@@ -11,9 +11,10 @@ integration_test:
     - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
     - docker stop app || true
     - docker rm app || true
-    - docker run -d -p 8090:80 --name app "$CI_REGISTRY_IMAGE:latest"
-    - docker cp .env.ci app:/var/www/html/.env
+    - docker run -d -p 8090:80 --name app -v $(pwd)/.env.ci:/var/www/html/.env "$CI_REGISTRY_IMAGE:latest"
+    - docker exec app php artisan jwt:generate
     - sleep 10
-    - curl --fail http://localhost:8090 || (docker logs app && exit 1)
+    - export APP_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' app)
+    - curl --fail "http://$APP_IP/" || (docker logs app && exit 1)
     - docker stop app && docker rm app
 
