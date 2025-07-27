@@ -5,17 +5,13 @@ services:
     #image: registry.gitlab.utc.fr/skiutc/server-skiut-2026
     build: .
     container_name: laravel-app
+    restart: unless-stopped
     depends_on:
       - db
     ports:
-      - "8000:80"     # Penser à modifier la BASE URL dans .env.ci sur son IP (hostname -I) si on veut être accessible
-    environment:
-      DB_CONNECTION: mysql
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: skiut
-      DB_USERNAME: skiut_user
-      DB_PASSWORD: skiut_pass
+      - "8000:80"
+    env_file:
+      - .env.local
     networks:
       - skiut-net
 

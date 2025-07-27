@@ -7,7 +7,34 @@ Le serveur ne possède quasiment aucun endpoint de back-office, ni même de view
 
 Les endpoints de ce serveur ne servent donc qu'au login et au traitement des données de l'application avec la base de données MySQL fournie par le SIMDE.
 
-## Pour commencer :
+## Pour commener : Docker
+
+Pour permettre de dev sur toutes les OS, avec un déploiement facile, et une infra proche de la production, une alternative Docker a été proposée pour le serveur Ski'ut.
+Attention, c'est bien une alternative, rien n'oblige de l'utiliser, mais c'est "mieux" (et surtout c'est super utile d'apprendre à utiliser Docker).
+
+### 1. Installer Docker
+Pour installer Docker, suivre les instructions [ici](https://docs.docker.com/engine/install/).
+
+### 2. Installer Docker Compose
+Docker Compose permet de lancer plusieurs containers en même temps. Il est donc nécessaire de le faire pour pouvoir faire tourner le serveur, la base de données MySQL et phpMyAdmin.
+
+Pour installer Docker Compose, suivre les instructions [ici](https://docs.docker.com/compose/install/).
+
+### 3. Lancer tout ça
+Pour lancer tous les containers, il faut d'abord modifier la config url de laravel pour que le serveur soit accessible depuis l'extérieur. 
+
+Pour cela, il faut modifier la variable APP_URL pour y mettre son IP (hostname -I) dans le fichier .env.local. Le docker-compose utilise ensuite ce fichier pour injecter les variables dans le container php (par défaut l'image Docker a utilisé .env.ci pour construire l'image dans la pipeline GitLab, mais comme l'url est sur localhost on utilise .env.local pour corriger ça. t'inquiètes pas pour la pipeline, on en reparle plus tard).
+
+Ensuite, place-toi dans le dossier du serveur, et lance :
+```bash
+docker compose up -d
+```
+
+Tu trouveras dans docker-commands.md les commandes essentielles avec docker (notamment parce qu'il faut redémarrer les containers pour que les changements dans le code soient pris en compte).
+
+Bilan, ton serveur sera accessible sur l'ip que tu auras mis dans APP_URL dans .env.local, et tu as une interface phpMyAdmin sur http://localhost:8081 pour gérer ta base de données.
+
+## Pour commencer : Php Classique
 ### 1. Installer PHP
 
 Il y a 1 milliard de façon d'installer PHP : avec homebrew sur MAC/Linux, avec chocolatey ou un executable sur Windows...
@@ -50,8 +77,7 @@ composer update --ignore-platform-reqs
 composer install
 ```
 
-## Maintenant que ton projet est prêt, on va config Laravel
-### 1. Base de données
+### 4. Base de données
 Pour faire tourner ton serveur sur une base de données, il faut lui donner une base de données.
 Pour ça, créé une base de données sqlite dans ./database
 ``` bash
@@ -72,17 +98,6 @@ php artisan migrate
 php artisan db:seed
 ```
 _En théorie vous pouvez directement faire $ php artisan migrate sans créer la BDD, il vous proposera de le faire_
-
-### 2. Bypass l'OAuth
-
-Pour éviter de constamment rentrer son CAS pour dev, j'ai mis un système de bypass dans le serveur.
-Pour utiliser ça : 
-
-1. Vérifie que APP_NO_LOGIN=true dans ton .env si tu ne veux pas t'occuper de l'Auth
-
-2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53). Par défaut j'ai mis '1' partout
-
-3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
 
 ### 3. Générer les clés RSA pour les JWT
 
@@ -125,6 +140,16 @@ Cette commande permet de lancer tailwind pour qu'il build bien tes views (les de
 **Attention** : le serveur est configuré pour tourner sur une base URL /skiutc. Concrètement, le serveur commence à te renvoyer des trucs sur http://tonIP/skiutc/.
 Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api
 
+## Bypass l'OAuth
+
+Pour éviter de constamment rentrer son CAS pour dev, j'ai mis un système de bypass dans le serveur.
+Pour utiliser ça : 
+
+1. Vérifie que APP_NO_LOGIN=true dans ton .env (.env.local si t'es en mode Docker) si tu ne veux pas t'occuper de l'Auth
+
+2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53). Par défaut j'ai mis '1' partout
+
+3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
 
 ## Authentification
 ### 1. Authentification avec l'OAuth
@@ -247,6 +272,29 @@ S'il y a peut-être un point important à mentionner c'est que grâce au middlew
 
 ---
 
+## Autres trucs mis en place
+### 1. Tests
+Des tests ont été mis en place pour tester tous les endpoints de l'API ainsi que le Middleware. Ils sont dans le dossier tests/Feature/ et peuvent être lancés avec la commande :
+```bash
+php artisan test
+```
+
+Il pourrait être intéressant de faire des tests pour les Models aussi.
+
+### 2. Seeder et Factory
+Les seeders sont dans le dossier database/seeders/ et permettent de créer des données de base. Ils sont utiles pour créér des données fakes pour le dev.
+Les factories sont dans le dossier database/factories/ et permettent de créer des données fakes pour les tests. (ils sont appelés par les seeders).
+
+### 3. Pipeline GitLab
+Une pipeline GitLab a été mise en place sur le repo.
+Elle s'occupe de : 
+- Lancer tous les tests Laravel sur chaque push sur chaque branche
+- Build et push l'image docker sur le registry gitlab.utc.fr sur chaque push sur la branche main
+- Tester l'intégration du serveur dans le container docker sur le registry gitlab.utc.fr sur chaque push sur la branche main
+
+Pour plus d'informations, tu peux voir le fichier .gitlab-ci.yml
+
+
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
 
@@ -256,7 +304,7 @@ Ensuite, créé de nouvelles clés de chiffrement (le serveur ne pouvant tourner
 ```sh
 mkdir -p storage/app/public storage/app/private
 openssl genrsa -out storage/app/private/private.pem 2048
-openssl rsa -in storage/app/private/private.pem -pubout -out storage/app/public/public.pem
+openssl rsa -in storage/app/private/private.pem -pubout -out storage/app/private/public.pem
 ```
 
 Une fois ça fait, il va falloir préparer des routes pour éxecuter des commandes. En fait le SIMDE ne donne que des accès SFTP et SSH, mais en SSH on a des droits limités. Du coup pour la plupart des commandes tu auras deux solutions : 
