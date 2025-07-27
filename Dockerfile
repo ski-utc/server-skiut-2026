@@ -20,8 +20,8 @@ COPY laravel-start.sh /usr/local/bin/laravel-start.sh
 RUN chmod +x /usr/local/bin/laravel-start.sh
 
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Décale la racine Apache vers le dossier public de Laravel (avec l'index.php)
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public

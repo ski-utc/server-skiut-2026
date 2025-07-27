@@ -60,8 +60,7 @@ integration_test:
     - docker run -d -p 8090:80 --name app "$CI_REGISTRY_IMAGE:latest"
     - docker cp .env.ci app:/var/www/html/.env
     - sleep 10
-    - docker exec app curl --fail http://localhost:8090/skiutc || (docker logs app && exit 1)
+    - curl --fail http://localhost:8090/skiutc || (docker logs app && exit 1)
     - docker stop app && docker rm app
   only:
     - main
-
