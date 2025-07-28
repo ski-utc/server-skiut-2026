@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class UserControllerTest extends TestCase
 {
@@ -32,4 +32,4 @@ class UserControllerTest extends TestCase
         $response = $this->withHeader('Authorization', "Bearer $token")->postJson('/api/save-token', [/* données de test */]);
         $response->assertStatus(200);
     }
-} 
+}

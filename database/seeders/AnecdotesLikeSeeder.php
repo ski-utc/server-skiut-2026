@@ -14,4 +14,4 @@ class AnecdotesLikeSeeder extends Seeder
     {
         AnecdotesLike::factory(50)->create();
     }
-} 
+}

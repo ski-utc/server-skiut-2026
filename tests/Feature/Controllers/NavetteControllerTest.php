@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class NavetteControllerTest extends TestCase
 {
@@ -33,4 +33,4 @@ class NavetteControllerTest extends TestCase
         $response->assertStatus(200);
         // Adapter les assertions selon la structure retournée
     }
-} 
+}

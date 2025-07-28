@@ -21,7 +21,7 @@ class ClassementController extends Controller
                 $totalPoints = $room->challengeProofs->sum(function ($proof) {
                     return $proof->challenge ? $proof->challenge->nbPoints : 0;
                 });
-    
+
                 return [
                     'roomNumber' => $room->name, // car roomNumber risque de pas correspondre à la réalité
                     'totalPoints' => $totalPoints,
@@ -29,11 +29,11 @@ class ClassementController extends Controller
             })
             ->sortByDesc('totalPoints')
             ->values();
-    
+
             $podiumRooms = $rooms->take(3);
-    
+
             $restRooms = $rooms->slice(3);
-    
+
             return response()->json([
                 'success' => true,
                 'podium' => $podiumRooms,
@@ -46,7 +46,7 @@ class ClassementController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Calcule le classement des performances
      */

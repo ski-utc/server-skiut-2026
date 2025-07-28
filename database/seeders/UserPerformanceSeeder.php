@@ -14,4 +14,4 @@ class UserPerformanceSeeder extends Seeder
     {
         UserPerformance::factory(30)->create();
     }
-} 
+}

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Anecdote;
 use App\Models\Challenge;
-use Carbon\Carbon;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -41,12 +41,12 @@ class HomeController extends Controller
             }
 
             $userId = $request->user['id'];
-            $roomId = User::where('id',$userId)->first()->roomID;
-            
+            $roomId = User::where('id', $userId)->first()->roomID;
+
             $randomChallenge = Challenge::whereNot('room_id', $roomId)->inRandomOrder()->first();
 
             $bestAnecdote = Anecdote::withCount('likes')
-                ->where("valid", true)
+                ->where('valid', true)
                 ->orderBy('likes_count', 'desc')
                 ->first();
 

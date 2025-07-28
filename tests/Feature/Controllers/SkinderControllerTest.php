@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Room;
-use Illuminate\Support\Facades\Config;
+use App\Models\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class SkinderControllerTest extends TestCase
 {
@@ -16,7 +16,7 @@ class SkinderControllerTest extends TestCase
     {
         $user = $user ?: User::factory()->create();
         $room = Room::find($user->roomID);
-        if(!$room) {
+        if (!$room) {
             $room = Room::factory()->create(['id' => $user->roomID]);
         }
         $payload = [
@@ -72,4 +72,4 @@ class SkinderControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
-} 
+}

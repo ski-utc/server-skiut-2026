@@ -3,10 +3,10 @@
 namespace Tests\Feature\Middleware;
 
 use App\Models\Room;
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class EnsureTokenIsValidTest extends TestCase
 {
@@ -74,7 +74,7 @@ class EnsureTokenIsValidTest extends TestCase
     {
         $user = User::factory()->create();
         $room = Room::find($user->roomID);
-        if(!$room) {
+        if (!$room) {
             $room = Room::factory()->create(['id' => $user->roomID]);
         }
         $payload = [
@@ -88,4 +88,4 @@ class EnsureTokenIsValidTest extends TestCase
         // On peut aussi vérifier que la réponse contient bien les infos du user
         $response->assertJsonFragment(['id' => $user->id]);
     }
-} 
+}

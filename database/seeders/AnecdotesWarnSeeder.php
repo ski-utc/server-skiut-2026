@@ -14,4 +14,4 @@ class AnecdotesWarnSeeder extends Seeder
     {
         AnecdotesWarn::factory(15)->create();
     }
-} 
+}

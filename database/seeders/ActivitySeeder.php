@@ -14,4 +14,4 @@ class ActivitySeeder extends Seeder
     {
         Activity::factory(25)->create();
     }
-} 
+}

@@ -37,4 +37,4 @@ class RoomFactory extends Factory
             'userID' => null, // Sera assigné après création des users
         ];
     }
-} 
+}

@@ -19,14 +19,14 @@ class AnecdotesLikeFactory extends Factory
         static $index = 0;    // index statique pour éviter les doublons
         $maxUsers = 30;
         $maxAnecdotes = 50;
-        
+
         $user_id = ($index % $maxUsers) + 1;
         $anecdote_id = (int)($index / $maxUsers) + 1;
-        
+
         if ($anecdote_id > $maxAnecdotes) {    // Si on a utilisé toutes les combinaisons possibles, on arrête
             $anecdote_id = fake()->numberBetween(1, $maxAnecdotes);
         }
-        
+
         $index++;
 
         return [
@@ -34,4 +34,4 @@ class AnecdotesLikeFactory extends Factory
             'anecdote_id' => $anecdote_id,
         ];
     }
-} 
+}

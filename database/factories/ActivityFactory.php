@@ -45,4 +45,4 @@ class ActivityFactory extends Factory
             'payant' => fake()->boolean(30),
         ];
     }
-} 
+}

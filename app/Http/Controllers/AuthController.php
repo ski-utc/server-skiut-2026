@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Room;
-use Illuminate\Http\Request;
-use League\OAuth2\Client\Provider\GenericProvider;
+use App\Models\User;
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use UnexpectedValueException;
-use LogicException;
-use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
+use Illuminate\Http\Request;
+use League\OAuth2\Client\Provider\GenericProvider;
+use LogicException;
+use UnexpectedValueException;
 
 class AuthController extends Controller
 {
@@ -27,13 +27,13 @@ class AuthController extends Controller
     {
         // Initialisation du fournisseur OAuth2 avec les valeurs de configuration des variables d'environnement
         $this->provider = new GenericProvider([
-            'clientId'                => config("services.oauth.client_id"),
-            'clientSecret'            => config("services.oauth.client_secret"),
-            'redirectUri'             => config("services.oauth.redirect_uri"),
-            'urlAuthorize'            => config("services.oauth.authorize_url"),
-            'urlAccessToken'          => config("services.oauth.access_token_url"),
-            'urlResourceOwnerDetails' => config("services.oauth.owner_details_url"),
-            'scopes'                  => config("services.oauth.scopes"),
+            'clientId'                => config('services.oauth.client_id'),
+            'clientSecret'            => config('services.oauth.client_secret'),
+            'redirectUri'             => config('services.oauth.redirect_uri'),
+            'urlAuthorize'            => config('services.oauth.authorize_url'),
+            'urlAccessToken'          => config('services.oauth.access_token_url'),
+            'urlResourceOwnerDetails' => config('services.oauth.owner_details_url'),
+            'scopes'                  => config('services.oauth.scopes'),
         ]);
     }
 
@@ -43,13 +43,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (config('auth.app_no_login', false)) {
-            $userId=env('USER_ID');
+            $userId = env('USER_ID');
             try {
                 $accessTokenPayload = [
                     'key' => $userId,
                     'exp' => now()->addMinutes(60)->timestamp,
                 ];
-                $privateKey = config("services.crypt.private");
+                $privateKey = config('services.crypt.private');
                 $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
                 $refreshTokenPayload = [
@@ -58,7 +58,7 @@ class AuthController extends Controller
                 ];
                 $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
 
-                return redirect()->route('api-connected',[
+                return redirect()->route('api-connected', [
                     'access_token' => $accessToken,
                     'refresh_token' => $refreshToken,
                 ]);
@@ -103,9 +103,9 @@ class AuthController extends Controller
                 abort(401, 'Compte supprimé ou désactivé');
             }
 
-            $user=User::where('email',$userDetails['email'])->first();  // Si le user n'existe pas => ielle n'a pas de pack Ski'Ut
+            $user = User::where('email', $userDetails['email'])->first();  // Si le user n'existe pas => ielle n'a pas de pack Ski'Ut
             if (!$user) {
-                abort(401,"Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée. Veuillez utiliser le mail utilisé lors de votre achat de la place");
+                abort(401, "Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée. Veuillez utiliser le mail utilisé lors de votre achat de la place");
             }
 
             if ($userDetails['provider'] != 'cas') {
@@ -116,7 +116,7 @@ class AuthController extends Controller
                 'key' => $user->id,
                 'exp' => now()->addMinutes(60)->timestamp,
             ];
-            $privateKey = config("services.crypt.private");
+            $privateKey = config('services.crypt.private');
             $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
             $refreshTokenPayload = [
@@ -125,13 +125,13 @@ class AuthController extends Controller
             ];
             $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
 
-            return redirect()->route('api-connected',[
+            return redirect()->route('api-connected', [
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
             ]);
         } catch (\Exception $e) {
-            return redirect()->route('api-not-connected',[
-                'message' => "Callback error : " . $e->getMessage()
+            return redirect()->route('api-not-connected', [
+                'message' => 'Callback error : ' . $e->getMessage()
             ]);
         }
     }
@@ -144,14 +144,14 @@ class AuthController extends Controller
         $publicKey = config('services.crypt.public');
         $token = $request->bearerToken();
         if (!$token) {
-            return response()->json(['message'=>"Refresh JWT absent pour l'authentification",'JWT_ERROR'=>true],400);
+            return response()->json(['message' => "Refresh JWT absent pour l'authentification",'JWT_ERROR' => true], 400);
         }
-        try{
+        try {
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-        }catch(ExpiredException){
-            return response()->json(['message'=>'Refresh JWT expiré','JWT_ERROR'=>true],401);
-        }catch(SignatureInvalidException){
-            return response()->json(['message'=>'Signature invalide pour le refresh JWT envoyé','JWT_ERROR'=>true],401);
+        } catch (ExpiredException) {
+            return response()->json(['message' => 'Refresh JWT expiré','JWT_ERROR' => true], 401);
+        } catch (SignatureInvalidException) {
+            return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé','JWT_ERROR' => true], 401);
         } catch (LogicException $e) {
             return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
         } catch (UnexpectedValueException $e) {
@@ -160,17 +160,17 @@ class AuthController extends Controller
         $id = $decoded->key;
         $user = User::find($id);
         if (!$user) {
-            return response()->json(['message' => "Utilisateur non trouvé pour le refresh token fourni", 'JWT_ERROR' => true], 404);
+            return response()->json(['message' => 'Utilisateur non trouvé pour le refresh token fourni', 'JWT_ERROR' => true], 404);
         }
 
         $accessTokenPayload = [
             'key' => $id,
             'exp' => now()->addMinutes(60)->timestamp,
         ];
-        $privateKey = config("services.crypt.private");
+        $privateKey = config('services.crypt.private');
         $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
-        return response()->json(['access_token'=>$accessToken]);
+        return response()->json(['access_token' => $accessToken]);
     }
 
     /**
@@ -181,32 +181,32 @@ class AuthController extends Controller
         $token = $request->bearerToken();
 
         try {
-            $publicKey = config("services.crypt.public");
+            $publicKey = config('services.crypt.public');
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
 
             $id = $decoded->key;
 
             $user = User::where('id', $id)->first();
             if (!$user) {
-                return response()->json(['success' => 'false', 'message'=>'Utilisateur non trouvé'], 404);
+                return response()->json(['success' => 'false', 'message' => 'Utilisateur non trouvé'], 404);
             }
 
             $room = Room::where('id', $user->roomID)->first();
             if (!$room) {
-                return response()->json(['success' => 'false', 'message'=>'Chambre non trouvée'], 404);
+                return response()->json(['success' => 'false', 'message' => 'Chambre non trouvée'], 404);
             }
 
             return response()->json([
-                'success'=>true,
-                'id'=> $user->id,
-                'name'=> $user->firstName,
-                'lastName'=> $user->lastName,
-                'room'=>$room->roomNumber,
-                'roomName' =>$room->name ? $room->name : null,
-                'admin'=> $user->admin
+                'success' => true,
+                'id' => $user->id,
+                'name' => $user->firstName,
+                'lastName' => $user->lastName,
+                'room' => $room->roomNumber,
+                'roomName' => $room->name ? $room->name : null,
+                'admin' => $user->admin
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => 'false', 'message'=>'Erreur lors de la récupération des users infos : '.$e], 401);
+            return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : '.$e], 401);
         }
     }
 

@@ -1,14 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\EnsureTokenIsValid;
-use App\Http\Middleware\AdminMiddleware;
-use App\Http\Controllers\DefisController;
-use App\Http\Controllers\AnecdoteController;
-use App\Http\Controllers\SkinderController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UserPerformanceController;
+use App\Http\Controllers\AnecdoteController;
 use App\Http\Controllers\ClassementController;
+use App\Http\Controllers\DefisController;
+use App\Http\Controllers\SkinderController;
+use App\Http\Controllers\UserPerformanceController;
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\EnsureTokenIsValid;
+use Illuminate\Support\Facades\Route;
 
 /*
 Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
@@ -17,8 +17,8 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 */
 
 /************************************************************** Login *************************************************************/
-Route::get('/connected', function () { return view("api-connected");})->name('api-connected');
-Route::get('/notConnected', function () { return view("api-not-connected");})->name('api-not-connected');
+Route::get('/connected', function () { return view('api-connected');})->name('api-connected');
+Route::get('/notConnected', function () { return view('api-not-connected');})->name('api-not-connected');
 Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
@@ -39,7 +39,8 @@ Route::get('/challenges', [DefisController::class, 'getChallenges'])->middleware
 Route::post('/challenges/getProofImage', [DefisController::class, 'getProofImage'])->middleware(EnsureTokenIsValid::class);
 Route::post('/challenges/uploadProofImage', [DefisController::class, 'uploadProofImage'])->middleware(EnsureTokenIsValid::class);
 Route::post('/challenges/deleteproofImage', [DefisController::class, 'deleteproofImage'])->middleware(EnsureTokenIsValid::class);
-Route::get('/classement-chambres', [ClassementController::class, 'classementChambres'])->middleware(EnsureTokenIsValid::class);;
+Route::get('/classement-chambres', [ClassementController::class, 'classementChambres'])->middleware(EnsureTokenIsValid::class);
+;
 /**************************************************************************************************************************************/
 
 /************************************************************** Anecdotes *************************************************************/
@@ -97,4 +98,4 @@ Route::post('/rgpd/anonymize-all-data', [\App\Http\Controllers\RgpdController::c
 Route::post('/rgpd/delete-all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
 /**********************************************************************************************************************************************/
 
-// require __DIR__.'/auth.php'; 
+// require __DIR__.'/auth.php';

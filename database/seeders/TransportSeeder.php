@@ -14,4 +14,4 @@ class TransportSeeder extends Seeder
     {
         Transport::factory(20)->create();
     }
-} 
+}

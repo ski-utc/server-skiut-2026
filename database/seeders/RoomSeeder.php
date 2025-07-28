@@ -14,4 +14,4 @@ class RoomSeeder extends Seeder
     {
         Room::factory(15)->create();
     }
-} 
+}

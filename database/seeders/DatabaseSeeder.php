@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -21,16 +20,16 @@ class DatabaseSeeder extends Seeder
             ActivitySeeder::class,
             NotificationSeeder::class,
             TransportSeeder::class,
-            
+
             RoomSeeder::class,
             UserSeeder::class,
             RelationsSeeder::class,
-            
+
             AnecdoteSeeder::class,
             UserPerformanceSeeder::class,
             ChallengeProofSeeder::class,
             PushTokenSeeder::class,
-            
+
             SkinderLikeSeeder::class,
             AnecdotesLikeSeeder::class,
             AnecdotesWarnSeeder::class,

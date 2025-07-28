@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use ZipArchive;
-use App\Models\User;
 use App\Models\Anecdote;
-use App\Models\UserPerformance;
-use App\Models\PushToken;
-use App\Models\ChallengeProof;
-use App\Models\Room;
-use App\Models\SkinderLike;
 use App\Models\AnecdotesLike;
 use App\Models\AnecdotesWarn;
+use App\Models\ChallengeProof;
+use App\Models\PushToken;
+use App\Models\Room;
+use App\Models\SkinderLike;
+use App\Models\User;
+use App\Models\UserPerformance;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class RgpdController extends Controller
 {
@@ -232,7 +232,7 @@ class RgpdController extends Controller
             // Créer le zip
             $zipPath = storage_path('app/temp/mes_infos_' . Carbon::now()->format('Y-m-d-H-i-s') . '.zip');
             $zip = new ZipArchive();
-            if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+            if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
                 $this->addFolderToZip($zip, $tempDir, '');
                 $zip->close();
 
@@ -309,12 +309,12 @@ class RgpdController extends Controller
             $rooms = Room::all();
             foreach ($rooms as $room) {
                 $room->update([
-                    'name' => "Chambre anonymisée_".$room->id,
+                    'name' => 'Chambre anonymisée_'.$room->id,
                     'description' => 'Description anonymisée',
                     'passions' => json_encode([])
                 ]);
             }
-            
+
             // Supprimer toutes les photos de chambres
             $rooms = Room::all();
             foreach ($rooms as $room) {
@@ -420,48 +420,48 @@ class RgpdController extends Controller
     private function formatUserData($user)
     {
         $content = "=== DONNÉES PERSONNELLES ===\n";
-        $content .= "ID: " . $user->id . "\n";
-        $content .= "Prénom: " . $user->firstName . "\n";
-        $content .= "Nom: " . $user->lastName . "\n";
-        $content .= "Email: " . $user->email . "\n";
-        $content .= "CAS: " . $user->cas . "\n";
-        $content .= "Chambre ID: " . $user->roomID . "\n";
-        $content .= "Localisation: " . ($user->location ?? 'Non renseignée') . "\n";
-        $content .= "Admin: " . ($user->admin ? 'Oui' : 'Non') . "\n";
-        $content .= "Alumni/Externe: " . ($user->alumniOrExte ? 'Oui' : 'Non') . "\n";
-        $content .= "Date de création: " . $user->created_at . "\n";
-        $content .= "Dernière modification: " . $user->updated_at . "\n\n";
+        $content .= 'ID: ' . $user->id . "\n";
+        $content .= 'Prénom: ' . $user->firstName . "\n";
+        $content .= 'Nom: ' . $user->lastName . "\n";
+        $content .= 'Email: ' . $user->email . "\n";
+        $content .= 'CAS: ' . $user->cas . "\n";
+        $content .= 'Chambre ID: ' . $user->roomID . "\n";
+        $content .= 'Localisation: ' . ($user->location ?? 'Non renseignée') . "\n";
+        $content .= 'Admin: ' . ($user->admin ? 'Oui' : 'Non') . "\n";
+        $content .= 'Alumni/Externe: ' . ($user->alumniOrExte ? 'Oui' : 'Non') . "\n";
+        $content .= 'Date de création: ' . $user->created_at . "\n";
+        $content .= 'Dernière modification: ' . $user->updated_at . "\n\n";
 
         // Données de la chambre
         if ($user->room) {
             $content .= "=== DONNÉES DE LA CHAMBRE ===\n";
-            $content .= "ID Chambre: " . $user->room->id . "\n";
-            $content .= "Numéro: " . $user->room->roomNumber . "\n";
-            $content .= "Capacité: " . $user->room->capacity . "\n";
-            $content .= "Nom: " . $user->room->name . "\n";
-            $content .= "Description: " . $user->room->description . "\n";
-            $content .= "Passions: " . $user->room->passions . "\n";
-            $content .= "Points totaux: " . $user->room->totalPoints . "\n\n";
+            $content .= 'ID Chambre: ' . $user->room->id . "\n";
+            $content .= 'Numéro: ' . $user->room->roomNumber . "\n";
+            $content .= 'Capacité: ' . $user->room->capacity . "\n";
+            $content .= 'Nom: ' . $user->room->name . "\n";
+            $content .= 'Description: ' . $user->room->description . "\n";
+            $content .= 'Passions: ' . $user->room->passions . "\n";
+            $content .= 'Points totaux: ' . $user->room->totalPoints . "\n\n";
         }
 
         // Anecdotes
         if ($user->anecdotes->count() > 0) {
             $content .= "=== ANECDOTES ===\n";
             foreach ($user->anecdotes as $anecdote) {
-                $content .= "ID: " . $anecdote->id . "\n";
-                $content .= "Texte: " . $anecdote->text . "\n";
-                $content .= "Chambre: " . $anecdote->room . "\n";
-                $content .= "Valide: " . ($anecdote->valid ? 'Oui' : 'Non') . "\n";
-                $content .= "Active: " . ($anecdote->active ? 'Oui' : 'Non') . "\n";
-                $content .= "Date: " . $anecdote->created_at . "\n\n";
+                $content .= 'ID: ' . $anecdote->id . "\n";
+                $content .= 'Texte: ' . $anecdote->text . "\n";
+                $content .= 'Chambre: ' . $anecdote->room . "\n";
+                $content .= 'Valide: ' . ($anecdote->valid ? 'Oui' : 'Non') . "\n";
+                $content .= 'Active: ' . ($anecdote->active ? 'Oui' : 'Non') . "\n";
+                $content .= 'Date: ' . $anecdote->created_at . "\n\n";
             }
         }
 
         // Performances
         if ($user->performances) {
             $content .= "=== PERFORMANCES ===\n";
-            $content .= "Vitesse max: " . $user->performances->max_speed . "\n";
-            $content .= "Distance totale: " . $user->performances->total_distance . "\n\n";
+            $content .= 'Vitesse max: ' . $user->performances->max_speed . "\n";
+            $content .= 'Distance totale: ' . $user->performances->total_distance . "\n\n";
         }
 
         // Preuves de défis
@@ -469,12 +469,12 @@ class RgpdController extends Controller
         if ($proofs->count() > 0) {
             $content .= "=== PREUVES DE DÉFIS ===\n";
             foreach ($proofs as $proof) {
-                $content .= "ID: " . $proof->id . "\n";
-                $content .= "Fichier: " . $proof->file . "\n";
-                $content .= "Défi ID: " . $proof->challenge_id . "\n";
-                $content .= "Chambre ID: " . $proof->room_id . "\n";
-                $content .= "Valide: " . ($proof->valid ? 'Oui' : 'Non') . "\n";
-                $content .= "Date: " . $proof->created_at . "\n\n";
+                $content .= 'ID: ' . $proof->id . "\n";
+                $content .= 'Fichier: ' . $proof->file . "\n";
+                $content .= 'Défi ID: ' . $proof->challenge_id . "\n";
+                $content .= 'Chambre ID: ' . $proof->room_id . "\n";
+                $content .= 'Valide: ' . ($proof->valid ? 'Oui' : 'Non') . "\n";
+                $content .= 'Date: ' . $proof->created_at . "\n\n";
             }
         }
 
@@ -491,7 +491,7 @@ class RgpdController extends Controller
             if ($file != '.' && $file != '..') {
                 $filePath = $folder . '/' . $file;
                 $zipPath = $relativePath . '/' . $file;
-                
+
                 if (is_dir($filePath)) {
                     $this->addFolderToZip($zip, $filePath, $zipPath);
                 } else {
@@ -510,7 +510,7 @@ class RgpdController extends Controller
             return;
         }
 
-        $files = array_diff(scandir($dir), array('.', '..'));
+        $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
             $path = $dir . '/' . $file;
             if (is_dir($path)) {
@@ -521,4 +521,4 @@ class RgpdController extends Controller
         }
         rmdir($dir);
     }
-} 
+}

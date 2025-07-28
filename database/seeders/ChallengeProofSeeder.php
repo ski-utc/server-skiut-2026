@@ -14,4 +14,4 @@ class ChallengeProofSeeder extends Seeder
     {
         ChallengeProof::factory(40)->create();
     }
-} 
+}

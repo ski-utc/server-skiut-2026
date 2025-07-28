@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Room extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'rooms';
     protected $fillable = ['id', 'roomNumber', 'capacity', 'mood', 'name', 'photoPath', 'description', 'passions', 'totalPoints', 'userID'];
 
@@ -16,7 +16,7 @@ class Room extends Model
     {
         return $this->belongsTo(User::class, 'userID');
     }
-    
+
     public function challengeProofs()
     {
         return $this->hasMany(ChallengeProof::class);
@@ -27,4 +27,3 @@ class Room extends Model
         return $this->hasMany(User::class);
     }
 }
-

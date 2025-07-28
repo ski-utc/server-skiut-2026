@@ -36,4 +36,4 @@ class NotificationFactory extends Factory
             'delete' => fake()->boolean(10),
         ];
     }
-} 
+}
