@@ -21,4 +21,4 @@ class PushTokenFactory extends Factory
             'user_id' => fake()->numberBetween(1, 30),
         ];
     }
-} 
+}

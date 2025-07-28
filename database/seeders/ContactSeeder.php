@@ -14,4 +14,4 @@ class ContactSeeder extends Seeder
     {
         Contact::factory(8)->create();
     }
-} 
+}

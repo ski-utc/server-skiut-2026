@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class UserPerformanceControllerTest extends TestCase
 {
@@ -27,4 +27,4 @@ class UserPerformanceControllerTest extends TestCase
         $response = $this->withHeader('Authorization', "Bearer $token")->postJson('/api/update-performance', ['user_id' => $user->id, 'speed' => 100, 'distance' => 1000]);
         $response->assertStatus(200);
     }
-} 
+}

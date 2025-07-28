@@ -14,4 +14,4 @@ class AnecdoteSeeder extends Seeder
     {
         Anecdote::factory(50)->create();
     }
-} 
+}

@@ -22,4 +22,4 @@ class UserPerformanceFactory extends Factory
             'total_distance' => fake()->randomFloat(2, 0.5, 50.0),
         ];
     }
-} 
+}

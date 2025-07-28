@@ -21,4 +21,4 @@ class SkinderLikeFactory extends Factory
             'room_liked' => fake()->numberBetween(1, 15),
         ];
     }
-} 
+}

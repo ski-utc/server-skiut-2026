@@ -1,6 +1,8 @@
 <?php
+
 namespace App\Http\Controllers;
-use App\Models\User; 
+
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NavetteController extends Controller
@@ -11,7 +13,7 @@ class NavetteController extends Controller
     public function getNavettes(Request $request)
     {
         try {
-            $id = $request->user['id'];            
+            $id = $request->user['id'];
             $user = User::with('transports')->where('id', $id)->first();
 
             if (!$user) {

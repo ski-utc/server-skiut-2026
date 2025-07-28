@@ -29,4 +29,4 @@ class ChallengeProofFactory extends Factory
             'user_id' => fake()->numberBetween(1, 30),
         ];
     }
-} 
+}

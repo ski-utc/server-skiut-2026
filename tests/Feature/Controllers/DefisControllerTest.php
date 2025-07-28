@@ -2,16 +2,15 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Room;
 use App\Models\Challenge;
+use App\Models\Room;
+use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Storage;
 use Firebase\JWT\JWT;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class DefisControllerTest extends TestCase
 {
@@ -19,7 +18,7 @@ class DefisControllerTest extends TestCase
     {
         $user = $user ?: User::factory()->create();
         $room = Room::find($user->roomID);
-        if(!$room) {
+        if (!$room) {
             $room = Room::factory()->create(['id' => $user->roomID]);
         }
         $payload = [
@@ -61,7 +60,7 @@ class DefisControllerTest extends TestCase
                             'defiId' => 1,
                             'image' => $fakeImage,
                         ]);
-        $response->assertStatus(200);        
+        $response->assertStatus(200);
     }
     public function test_delete_proof_image_authenticated()
     {
@@ -75,4 +74,4 @@ class DefisControllerTest extends TestCase
         $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/classement-chambres');
         $response->assertStatus(200);
     }
-} 
+}

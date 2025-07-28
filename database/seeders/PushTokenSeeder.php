@@ -14,4 +14,4 @@ class PushTokenSeeder extends Seeder
     {
         PushToken::factory(25)->create();
     }
-} 
+}

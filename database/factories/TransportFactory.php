@@ -42,4 +42,4 @@ class TransportFactory extends Factory
             'horaire_arrivee' => fake()->time(),
         ];
     }
-} 
+}

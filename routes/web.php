@@ -1,11 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
-
-/* 
-Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas : 
+/*
+Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
     php artisan route:clear
     php artisan route:list
 */
@@ -13,7 +12,7 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 
 
 Route::get('/', function () {
-    return view("welcome");
+    return view('welcome');
 })->name('home');
 
 

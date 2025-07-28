@@ -14,4 +14,4 @@ class SkinderLikeSeeder extends Seeder
     {
         SkinderLike::factory(30)->create();
     }
-} 
+}

@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,9 +12,9 @@ return new class extends Migration
     {
         Schema::create('transports', function (Blueprint $table) {
             $table->id();
-            $table->string('departure'); // Paris / Compiègne / Les 2 Alpes 
-            $table->string('arrival'); // Paris / Compiègne / Les 2 Alpes 
-            $table->string('colour'); 
+            $table->string('departure'); // Paris / Compiègne / Les 2 Alpes
+            $table->string('arrival'); // Paris / Compiègne / Les 2 Alpes
+            $table->string('colour');
             $table->string('type'); // aller / retour
             $table->timestamps();
         });

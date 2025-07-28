@@ -24,4 +24,4 @@ class ContactFactory extends Factory
             'phoneNumber' => fake()->phoneNumber(),
         ];
     }
-} 
+}

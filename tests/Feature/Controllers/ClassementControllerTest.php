@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class ClassementControllerTest extends TestCase
 {
@@ -26,4 +26,4 @@ class ClassementControllerTest extends TestCase
         $response = $this->withHeader('Authorization', "Bearer $token")->getJson('/api/classement-performances');
         $response->assertStatus(200);
     }
-} 
+}

@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Controllers;
 
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Config;
+use Tests\TestCase;
 
 class RgpdControllerTest extends TestCase
 {
@@ -65,4 +65,4 @@ class RgpdControllerTest extends TestCase
         $response = $this->postJson('/api/rgpd/delete-all-data', ['simde_key' => $simdeKey], /* données de test */);
         $response->assertStatus(200);
     }
-} 
+}

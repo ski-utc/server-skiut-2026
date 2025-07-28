@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\ChallengeProof;
 use App\Models\Anecdote;
+use App\Models\ChallengeProof;
 use App\Models\Notification;
-use Illuminate\Http\Request;
+use App\Models\User;
 use App\Services\ExpoPushService;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
@@ -33,7 +33,7 @@ class AdminController extends Controller
     /**
      * Gestion des défis (récupération, validation, suppression)
      */
-     public function getAdminChallenges(Request $request)
+    public function getAdminChallenges(Request $request)
     {
         try {
             // Retrieve filter parameter (optional)
@@ -86,7 +86,7 @@ class AdminController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $challenge,
-                'imagePath'=> asset($challenge->file)
+                'imagePath' => asset($challenge->file)
             ]);
 
         } catch (\Exception $e) {
@@ -104,23 +104,23 @@ class AdminController extends Controller
     {
         try {
             $challenge = ChallengeProof::findOrFail($challengeId);
-            
+
             if ($isValid === null || $isDelete === null) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
                 ], 500);
             }
-            
+
             // Convert parameters to boolean
             $isValid = (bool) $isValid;
             $isDelete = (bool) $isDelete;
-            
+
             // Mise à jour du statut de validation
             $challenge->valid = $isValid;
             $challenge->delete = $isDelete;
             $challenge->save();
-            
+
             // Prépare le message
             if ($isValid && $isDelete) {
                 $message = 'Challenge refusé avec succès';
@@ -131,7 +131,7 @@ class AdminController extends Controller
             } else {
                 $message = 'Challenge mis à jour avec succès';
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -152,40 +152,40 @@ class AdminController extends Controller
         try {
             // Récupération des paramètres de filtre (facultatifs)
             $filter = $request->query('filter', 'all');
-    
+
             // Construire la requête de base
             $query = Anecdote::with(['user', 'likes', 'warns']);
-    
+
             // Appliquer les filtres
             switch ($filter) {
                 case 'pending':
                     $query->where('valid', false);
                     break;
-    
+
                 case 'reported':
                     // Filtrer les anecdotes ayant plus d'un avertissement
-                    $query->whereHas('warns', function($q) {
+                    $query->whereHas('warns', function ($q) {
                         $q->groupBy('anecdote_id')  // Groupement par ID d'anecdote
                         ->havingRaw('COUNT(*) > 0');  // Plus d'un avertissement
                     });
                     break;
-    
+
                 case 'all':
                 default:
                     // Pas de filtre spécifique
                     break;
             }
-    
+
             // Récupérer les anecdotes
             $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
                 ->orderBy('id', 'desc') // Trier par date de création
                 ->get();
-    
+
             // Compter le nombre d'avertissements pour chaque anecdote
             foreach ($anecdotes as $anecdote) {
                 $anecdote->nbWarns = $anecdote->warns()->count();
             }
-    
+
             return response()->json([
                 'success' => true,
                 'data' => $anecdotes,
@@ -197,7 +197,7 @@ class AdminController extends Controller
             ], 500);
         }
     }
-     
+
     /**
      * Récupère les détails d'une anecdote spécifique par son ID
     */
@@ -338,10 +338,10 @@ class AdminController extends Controller
             $body = $request->input('texte');
             $data = (object) [];
             $tokens = \App\Models\PushToken::pluck('token')->toArray();
-            
+
             // Use dependency injection instead of creating new instance
             $expoPushService = app(\App\Services\ExpoPushService::class);
-            
+
             foreach ($tokens as $token) {
                 $expoPushService->sendNotification(
                     $token,
@@ -350,14 +350,14 @@ class AdminController extends Controller
                     $data
                 );
             }
-            
+
             Notification::create([
                 'title' => $title,
                 'description' => $body,
                 'general' => true,
                 'delete' => false,
             ]);
-            
+
             return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
@@ -378,7 +378,7 @@ class AdminController extends Controller
                 'delete' => false,
             ]);
             $notification->save();
-            
+
             return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
         } catch (\Exception $e) {
             return response()->json([

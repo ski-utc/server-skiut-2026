@@ -14,4 +14,4 @@ class ChallengeSeeder extends Seeder
     {
         Challenge::factory(15)->create();
     }
-} 
+}
