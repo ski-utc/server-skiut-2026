@@ -7,53 +7,57 @@ variables:
   PROJECT_IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   PROJECT_IMAGE_LATEST: "$CI_REGISTRY_IMAGE:latest"
 
-php-cs-fixer:
-  stage: test
-  allow_failure: true
+.default_php_job:
+  before_script:
+    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+  image: laravelsail/php83-composer:latest
   tags:
     - linux
+  cache:
+    key:
+      files:
+        - composer.lock
+    paths:
+      - vendor/
+
+php-cs-fixer:
+  extends: .default_php_job
+  stage: test
+  allow_failure: true
   image: laravelsail/php83-composer:latest
   script:
-    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - vendor/bin/php-cs-fixer fix --dry-run --diff         # Pour reformater automatiquement son code, faire vendor/bin/php-cs-fixer fix
     - echo "-------------------- Formatage du code OK ---------------------"
 
 phpstan:
+  extends: .default_php_job
   stage: test
-  tags:
-    - linux
   image: laravelsail/php83-composer:latest
   script:
-    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
-    - php -d memory_limit=512M vendor/bin/phpstan analyse app bootstrap config database public routes tests
+    - vendor/bin/phpstan analyse --memory-limit=512M app bootstrap config database public routes tests
     - echo "-------------------- Pas d'erreur de syntaxe ---------------------"
 
 security-checker:
+  extends: .default_php_job
   stage: test
   allow_failure: true
-  tags:
-    - linux
   image: laravelsail/php83-composer:latest
   script:
-    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - php vendor/bin/security-checker security:check
     - echo "-------------------- Pas de faille de sécurité dans les deps ---------------------"
 
 composer-outdated:
+  extends: .default_php_job
   stage: test
   allow_failure: true
-  tags:
-    - linux
   image: laravelsail/php83-composer:latest
   script:
-    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - composer outdated --direct
     - echo "-------------------- Pas de dépendance obsolète ---------------------"
 
 run-tests:
+  extends: .default_php_job
   stage: test
-  tags:
-    - linux
   image: laravelsail/php83-composer:latest
   services:
     - name: mysql:8.0
@@ -65,7 +69,6 @@ run-tests:
     - apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
     - docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
     - docker-php-ext-install gd
-    - composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
     - cp .env.ci .env
     - php artisan key:generate
     - php artisan jwt:generate
