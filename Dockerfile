@@ -31,7 +31,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod 664 storage/logs/laravel.log
 
 # Décale la racine Apache vers le dossier public de Laravel (avec l'index.php)
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 # On overide les URLs par défaut de Apache pour pointer vers le dossier public de Laravel
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
