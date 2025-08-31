@@ -71,6 +71,7 @@ run-tests:
     - docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
     - docker-php-ext-install gd
     - docker-php-ext-enable apcu
+    - echo "apc.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini
     - cp .env.ci .env
     - php artisan key:generate
     - php artisan jwt:generate
