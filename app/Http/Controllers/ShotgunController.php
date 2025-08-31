@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Models\Shotguns;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class ShotgunController extends Controller
 {
@@ -23,7 +24,11 @@ class ShotgunController extends Controller
     public function submit(Request $request) {
         try {
             $request->validate([
-                'email' => 'required|email',
+                'email' => [
+                    'required',
+                    'email',
+                    'regex:/^[a-zA-Z0-9._%+-]+@etu\.utc\.fr$/',    # /^[a-zA-Z0-9._%+-]+@(etu\.)?utc\.fr$' | /^[a-zA-Z0-9._%+-]+@([a-z0-9-]+\.)?utc\.fr$
+                ],
                 'token' => 'required|string',
             ]);
 
@@ -47,11 +52,16 @@ class ShotgunController extends Controller
             $win = $position <= 420 ? true : false;  // TODO : remplacer avec le nombre de places
 
             return response()->json(['success' => true, 'position' => $position, 'win' => $win, 'new' => true]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Adresse email invalide. Utilisez une adresse @etu.utc.fr.',
+                'details' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             Log::error($e);
             return response()->json([
-                'error' => $e->getMessage()
-            ]);
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }
