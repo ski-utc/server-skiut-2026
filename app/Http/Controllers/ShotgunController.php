@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shotguns;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
-use App\Models\Shotguns;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ShotgunController extends Controller
 {
     // Route GET /game
-    public function showGame() {
+    public function showGame()
+    {
         $token = Str::uuid()->toString();
 
         Cache::put("game_token:$token", true, now()->addMinutes(5));
@@ -21,7 +22,8 @@ class ShotgunController extends Controller
     }
 
     // Route POST /submit
-    public function submit(Request $request) {
+    public function submit(Request $request)
+    {
         try {
             $request->validate([
                 'email' => [
@@ -43,7 +45,7 @@ class ShotgunController extends Controller
                 $win = $position <= 420 ? true : false;  // TODO : remplacer avec le nombre de places
 
                 return response()->json(['success' => true, 'position' => $position, 'win' => $win, 'new' => false]);
-            } 
+            }
 
             $lastPosition = Shotguns::max('position') ?? 0;
             $position = $lastPosition + 1;
