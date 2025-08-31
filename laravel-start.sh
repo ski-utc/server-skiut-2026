@@ -19,4 +19,5 @@ php artisan storage:link || true
 touch database/database.sqlite
 php artisan migrate --force
 
-exec apache2-foreground
+php artisan serve           # Local (permet le hot-reload)
+# exec apache2-foreground   # Production

@@ -1,5 +1,17 @@
 # Bienvenue sur le serveur de Ski'UT 2025 en Laravel
 
+## Petit détour : Shotgun
+
+Si tu prévois de travailler sur le shotgun du serveur, tu vas avoir besoin de cloner la view du shotgun qui est gardée secrète jusqu'au jour du shotgun.
+Pour faire ça, elle est gardée secrète dans un repo prive game-view qui est importé en submodule.
+
+Ainsi, pour modifier et tester le mini-jeu, tu dois récupérer le submodule :
+```bash
+git submodule update --init --recursive
+```
+
+Pour enregistrer tes modifications sur le mini-jeu, tu dois bien penser à push sur le repo privé (il y a un monde où ça se fait automatiquement).
+
 ## Introduction
 Ce serveur est fait pour tourner avec l'application expo de Ski'UT développée en 2025.
 
