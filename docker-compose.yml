@@ -11,7 +11,8 @@ services:
     env_file:
       - .env.local
     volumes:
-      - ./:/var/www/html      # Permet de répliquer toute modif locale dans le container
+      - ./:/var/www/html        # Permet de répliquer toute modif locale dans le container
+      - /var/www/html/storage   # Mais on laisse le container gérer son storage
     networks:
       - skiut-net
 
