@@ -339,6 +339,71 @@ Ensuite, connectes-toi en SSH et fini le nécessaire pour que ton serveur serve 
 
 Ici, pas besoin de faire un php artisan serve : les serveurs du SIMDE vont directement récup ton code sur files.mde.utc et le faire tourner sur leur serveur Apache.
 
+## Des petits trucs pratiques
+
+### Pour analyser la mise en forme du code tu peux faire :
+```bash
+./vendor/bin/php-cs-fixer fix --dry-run --diff
+```
+
+Et pour appliquer les corrections :
+```bash
+./vendor/bin/php-cs-fixer fix
+```
+
+### Pour faciliter la vie, créé des alias : 
+Comme ça au lieu de taper `git commit -m "message"` tu peux taper `gcm "message"` ou `php artisan serve` tu peux taper `serve`
+
+```bash
+echo '########## Alias for git ##########
+alias gs="git status"
+alias ga="git add"
+alias gaa="git add ."
+alias gb="git branch"
+alias gsw="git switch"
+alias gco="git checkout"
+alias gcb="git checkout -b"
+alias gl="git log --oneline --graph --decorate"
+alias gcm="git commit -m"
+alias gca="git commit -am"
+alias gpl="git pull"
+alias gp="git push"
+alias gpo="git push origin"
+alias gcl="git clone"
+alias gdf="git diff"
+alias gstash="git stash"
+alias gsta="git stash apply"
+
+########## Alias for docker ##########
+alias d="docker"
+alias dps="docker ps"
+alias dpsa="docker ps -a"
+alias di="docker images"
+alias drm="docker rm"
+alias drmi="docker rmi"
+alias dstop="docker stop"
+alias dstart="docker start"
+alias dexec="docker exec -it"
+alias dlogs="docker logs -f"
+alias dc="docker compose"
+alias dcu="docker compose up -d"
+alias dcub="docker compose up --build -d"
+alias dcd="docker compose down"
+alias dcb="docker compose build"
+
+########## Alias for Laravel ##########
+if [ -f "./artisan" ]; then
+    alias art="php artisan"
+    alias tinker="php artisan tinker"
+    alias serve="php artisan serve"
+    alias migrate="php artisan migrate"
+    alias seed="php artisan db:seed"
+    alias fresh="php artisan migrate:fresh --seed"
+    alias clear="php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear"
+    alias route="php artisan route:list"
+fi' >> ~/.bashrc
+```
+
 ## Points d'amélioration
 1. Encore mieux rédiger la doc
 2. Bien finir de mettre en forme le serveur (y a des fonctions de Controller assez mal foutus et/ou au mauvaise endroit (typiquement les notif dans Admin)
