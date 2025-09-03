@@ -3,150 +3,161 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anecdote;
+use App\Models\User;
+use App\Models\Room;
 use App\Models\AnecdotesLike;
 use App\Models\AnecdotesWarn;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Illuminate\Support\Facades\Log;
 
 class AnecdoteController extends Controller
 {
-    /**
-     * Récupère les anecdotes d'un utilisateur
-     */
     public function getAnecdotes(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            ;
-
+            $userId = $request->user['id'];;
+    
             $quantity = $request->input('quantity', 10);
-
+    
             if (!is_numeric($quantity) || (int)$quantity <= 0) {
                 return response()->json(['success' => false, 'message' => 'Le paramètre quantity doit être un entier positif.']);
             }
-
+    
             $anecdotes = Anecdote::withCount('likes')
-                ->where('valid', true)
+                ->where("valid", true)
                 ->orderBy('created_at', 'desc') // ou nbLikes
                 ->take((int)$quantity)
                 ->get();
-
+    
             $data = $anecdotes->map(function ($anecdote) use ($userId) {
                 return [
                     'id' => $anecdote->id,
                     'text' => $anecdote->text,
-                    'room' => $anecdote->room,
+                    'room' => Room::where('id',$anecdote->room)->first()->roomNumber,
                     'liked' => $anecdote->likes()->where('user_id', $userId)->exists(),
                     'nbLikes' => $anecdote->likes_count,
                     'warned' => $anecdote->warns()->where('user_id', $userId)->exists(),
                     'authorId' => $anecdote->userId,
                 ];
             });
-
+    
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
-    }
+    }  
+    
 
-    /**
-     * Like d'une anecdote
-     */
     public function likeAnecdote(Request $request)
     {
-        $userId = $request->user['id'];
-        ;
-
-        $anecdoteId = $request->input('anecdoteId');
-
-        $existingLike = AnecdotesLike::where('user_id', $userId)
-            ->where('anecdote_id', $anecdoteId)
-            ->first();
-
-        if ($request->input('like')) {
-            if (!$existingLike) {
-                AnecdotesLike::create(['user_id' => $userId, 'anecdote_id' => $anecdoteId]);
-                return response()->json(['success' => true, 'liked' => true]);
+        try {
+            $userId = $request->user['id'];;
+        
+            $anecdoteId = $request->input('anecdoteId');
+            $anecdote = Anecdote::where('id',$anecdoteId)->first();
+            if(!$anecdote) {
+                return response()->json(['success' => false, 'message' => 'Cette anecdote a été supprimée']);
             }
-        } else {
-            if ($existingLike) {
-                $existingLike->delete();
-                return response()->json(['success' => true, 'liked' => false]);
+        
+            $existingLike = AnecdotesLike::where('user_id', $userId)
+                ->where('anecdote_id', $anecdoteId)
+                ->first();
+        
+            if ($request->input('like')) {
+                if (!$existingLike) {
+                    AnecdotesLike::create(['user_id' => $userId, 'anecdote_id' => $anecdoteId]);
+                    return response()->json(['success' => true, 'liked' => true]);
+                }
+            } else {
+                if ($existingLike) {
+                    $existingLike->delete();
+                    return response()->json(['success' => true, 'liked' => false]);
+                }
             }
+            return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du like : ' . $e->getMessage(),
+            ], 500);
         }
-        return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
     }
 
-    /**
-     * Warn d'une anecdote
-     */
     public function warnAnecdote(Request $request)
     {
-        $userId = $request->user['id'];
-        ;
-
-        $anecdoteId = $request->input('anecdoteId');
-
-        $existingWarn = AnecdotesWarn::where('user_id', $userId)
-            ->where('anecdote_id', $anecdoteId)
-            ->first();
-
-        if ($request->input('warn')) {
-            if (!$existingWarn) {
-                AnecdotesWarn::create(['user_id' => $userId, 'anecdote_id' => $anecdoteId]);
-                return response()->json(['success' => true, 'warn' => true]);
-            }
-        } else {
-            if ($existingWarn) {
-                $existingWarn->delete();
-                return response()->json(['success' => true, 'warn' => false]);
-            }
-        }
-        return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
-    }
-
-    /**
-     * Envoie une anecdote (ajout dans la BDD)
-     */
-    public function sendAnecdote(Request $request)
-    {
         try {
-            $userId = $request->user['id'];
-            $text = $request->input('texte');
-            $room = User::where('id', $userId)->first()->roomID;
-
-            Anecdote::create(['text' => $text, 'room' => $room, 'user_id' => $userId]);
-
-            return response()->json(['success' => true, 'message' => 'Anecdote postée ! Elle sera visible une fois validée par le bureau']);
+            $userId = $request->user['id'];;
+        
+            $anecdoteId = $request->input('anecdoteId');
+            $anecdote = Anecdote::where('id',$anecdoteId)->first();
+            if(!$anecdote) {
+                return response()->json(['success' => false, 'message' => 'Cette anecdote a été supprimée']);
+            }
+        
+            $existingWarn = AnecdotesWarn::where('user_id', $userId)
+                ->where('anecdote_id', $anecdoteId)
+                ->first();
+        
+            if ($request->input('warn')) {
+                if (!$existingWarn) {
+                    AnecdotesWarn::create(['user_id' => $userId, 'anecdote_id' => $anecdoteId]);
+                    return response()->json(['success' => true, 'warn' => true]);
+                }
+            } else {
+                if ($existingWarn) {
+                    $existingWarn->delete();
+                    return response()->json(['success' => true, 'warn' => false]);
+                }
+            }
+            return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur'.$e]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du calcul du signalement : ' . $e->getMessage(),
+            ], 500);
         }
     }
 
-    /**
-     * Supprime une anecdote
-     */
+    public function sendAnecdote(Request $request){
+        try{
+            $userId = $request->user['id'];
+    
+            $text = $request->input('texte');
+
+            $room = User::where('id', $userId)->first()->roomID;
+    
+            Anecdote::create(["text"=>$text, 'room'=>$room, 'userId'=>$userId]);
+            return response()->json(['success' =>true, "message"=>"Anecdote postée ! Elle sera visible une fois validée par le bureau"]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, "message"=>"Erreur".$e]);
+        }    
+    }
+
     public function deleteAnecdote(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            ;
+            $userId = $request->user['id'];;
+    
             $anecdoteId = $request->input('anecdoteId');
+    
             $anecdote = Anecdote::find($anecdoteId);
-
+    
             if (!$anecdote) {
                 return response()->json(['success' => false, 'message' => 'Anecdote introuvable.']);
             }
-
-            if ($anecdote->user_id !== $userId) {
+    
+            if ($anecdote->userId !== $userId) {
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas autorisé à supprimer cette anecdote.']);
             }
-
+    
             $anecdote->delete();
-
+    
             return response()->json(['success' => true, 'message' => "L'anecdote a bien été supprimée"]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
     }
+    
 }

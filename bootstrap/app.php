@@ -23,3 +23,4 @@ $app->singleton(
 $app->loadEnvironmentFrom('.env');
 
 return $app;
+    

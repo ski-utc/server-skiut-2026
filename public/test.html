@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shotguuuuun</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: visible;
+        }
+        #game-canvas {
+            background-color: #076324;
+            border: 10px solid #5d4037;
+            border-radius: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 32px;
+            display: none;
+            z-index: 100;
+        }
+        #emailForm {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+        }
+        #emailInput {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+        #emailForm button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        #emailForm button:hover {
+            background-color: #45a049;
+        }
+        @media (max-width: 850px) {
+            #game-container {
+                transform: rotate(90deg);
+                transform-origin: center;
+                overflow: visible;
+            }
+            #game-over {
+                transform: rotate(-90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="400"></canvas>
+        <div id="game-over">
+            <div>Bravoooooooo ! T'as ton shotguuuun</div>
+            <div id="final-score">Nombre de coups : 0</div>
+            <form id="emailForm">
+                <input type="email" id="emailInput" placeholder="bip.boup@etu.utc.fr" required />
+                <button type="submit">Envoyer</button>
+            </form>
+        </div>
+    </div>
+    <script>
+const t=document.getElementById("game-canvas"),e=t.getContext("2d"),i=document.getElementById("game-over"),n=document.getElementById("final-score"),o=document.getElementById("emailForm");let a=!1,s=0,r=null;function c(){if(window.innerWidth<850){if(window.innerHeight<window.innerWidth){const e=.9*window.innerHeight,i=.9*window.innerWidth;t.width=Math.min(800,e),t.height=Math.min(400,i/2)}else{const e=.9*window.innerWidth,i=.9*window.innerHeight;t.width=Math.min(800,i),t.height=Math.min(400,e/2)}l=Math.min(15,t.width/27)}else t.width=Math.min(800,.8*window.innerWidth),t.height=Math.min(400,.6*window.innerHeight),l=20;F&&(T(),D(),q(),k&&j()&&C())}let h=t.width,d=t.height,l=20,u=25;const y=300,f=50,v=[];let m=[],x=[],g=0,w=f,M=!1,k=!0,p=!0,P=0,E=0,b=!1,F=!1,S=[],I=null;const L=.1,W=.75;function T(){h=t.width,d=t.height,u=Math.min(25,h/32),x=[{x:u,y:u},{x:h/2,y:u/1.5},{x:h-u,y:u},{x:u,y:d-u},{x:h/2,y:d-u/1.5},{x:h-u,y:d-u}]}function B(){0===m.filter((t=>t.id>0&&!t.inPocket)).length&&(b=!0,n.textContent=`Nombre de coups: ${E}`,i.style.display="flex")}function D(){e.fillStyle="#076324",e.fillRect(0,0,h,d),x.forEach((t=>{e.fillStyle="#000",e.beginPath(),e.arc(t.x,t.y,u,0,2*Math.PI),e.fill()})),e.strokeStyle="#5d4037",e.lineWidth=10,e.strokeRect(0,0,h,d)}function q(){m.forEach(((t,i)=>{t.inPocket||(e.fillStyle="rgba(0, 0, 0, 0.3)",e.beginPath(),e.arc(t.x+2,t.y+2,t.radius,0,2*Math.PI),e.fill(),0===t.id?(e.fillStyle=t.color,e.beginPath(),e.arc(t.x,t.y,t.radius,0,2*Math.PI),e.fill()):(e.save(),e.translate(t.x,t.y),e.rotate(S[i]),e.fillStyle="#FFFFFF",e.beginPath(),e.arc(0,0,t.radius,0,2*Math.PI),e.fill(),v[t.id]&&v[t.id].complete?e.drawImage(v[t.id],-t.radius,-t.radius,2*t.radius,2*t.radius):(e.fillStyle="#"+((1<<24)*Math.random()|0).toString(16).padStart(6,"0"),e.beginPath(),e.arc(0,0,.8*t.radius,0,2*Math.PI),e.fill()),e.restore()),e.strokeStyle="#000",e.lineWidth=1,e.beginPath(),e.arc(t.x,t.y,t.radius,0,2*Math.PI),e.stroke(),e.fillStyle="rgba(255, 255, 255, 0.3)",e.beginPath(),e.arc(t.x-t.radius/3,t.y-t.radius/3,t.radius/3,0,2*Math.PI),e.fill())}))}function C(){const t=m.find((t=>0===t.id&&!t.inPocket));if(t&&k&&j()){r&&a&&(g=Math.atan2(r.y-t.y,r.x-t.x));const i=M?w:f,n=t.x+Math.cos(g)*(l+i),o=t.y+Math.sin(g)*(l+i),s=t.x+Math.cos(g)*(l+i+y),c=t.y+Math.sin(g)*(l+i+y);e.strokeStyle="rgba(255, 255, 255, 0.3)",e.lineWidth=1,e.beginPath(),e.moveTo(t.x,t.y),e.lineTo(t.x-500*Math.cos(g),t.y-500*Math.sin(g)),e.stroke(),e.strokeStyle="#8B4513",e.lineWidth=8,e.beginPath(),e.moveTo(n,o),e.lineTo(s,c),e.stroke(),e.strokeStyle="#F5F5DC",e.lineWidth=8,e.beginPath(),e.moveTo(n,o),e.lineTo(n+5*Math.cos(g),o+5*Math.sin(g)),e.stroke()}}function j(){return m.every((t=>t.inPocket||Math.abs(t.vx)<L&&Math.abs(t.vy)<L))}function H(t){const e=m.find((t=>0===t.id));if(e&&k){Math.max(t,40);const i=.5*t;e.vx=-Math.cos(g)*i,e.vy=-Math.sin(g)*i,E++,k=!1,M=!1,r=null}}function R(e){const i=t.getBoundingClientRect(),n=window.innerWidth<850;let o,a;if(e.type.startsWith("touch")){const s=e.touches[0]||e.changedTouches[0],r=s.clientX-i.left,c=s.clientY-i.top;if(n){const e=t.width/i.height,n=t.height/i.width;o=c*e,a=t.height-r*n}else o=r*(t.width/i.width),a=c*(t.height/i.height)}else{const s=e.clientX-i.left,r=e.clientY-i.top;if(n){const e=t.width/i.height,n=t.height/i.width;o=r*e,a=t.height-s*n}else o=s*(t.width/i.width),a=r*(t.height/i.height)}return o=Math.max(0,Math.min(t.width,o)),a=Math.max(0,Math.min(t.height,a)),{x:o,y:a}}function $(t){if(t.preventDefault(),!b)if(k&&j()&&!M){a=!0,s=Date.now();const e=R(t);r=e;const i=m.find((t=>0===t.id&&!t.inPocket));i&&(g=Math.atan2(e.y-i.y,e.x-i.x))}else M&&H(P)}function z(t){if(t.preventDefault(),a&&k&&!M){const e=R(t);r=e;const i=m.find((t=>0===t.id&&!t.inPocket));i&&(g=Math.atan2(e.y-i.y,e.x-i.x))}}function A(t){t.preventDefault(),a&&k&&!M&&(a=!1,Date.now()-s<300?(M=!0,w=f,p=!0):H(50))}function J(t){if(k&&!b&&!M){const e=R(t),i=m.find((t=>0===t.id&&!t.inPocket));i&&(g=Math.atan2(e.y-i.y,e.x-i.x))}}function N(t){b||(k&&!M?(M=!0,w=f,p=!0):M&&H(P))}document.removeEventListener("click",N),document.removeEventListener("mousemove",J),document.removeEventListener("touchstart",$),document.removeEventListener("touchmove",z),document.removeEventListener("touchend",A),document.addEventListener("mousemove",J),document.addEventListener("click",N),document.addEventListener("touchstart",$,{passive:!1}),document.addEventListener("touchmove",z,{passive:!1}),document.addEventListener("touchend",A,{passive:!1}),o.addEventListener("submit",(async function(t){t.preventDefault();const e=document.getElementById("emailInput").value;try{const t=await fetch("/submit-email",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({email:e,token:I})}),i=await t.json();alert(i.success||i.error)}catch(t){console.error("Erreur lors de l'envoi de l'email:",t),alert("Une erreur s'est produite lors de l'envoi de l'email. Veuillez réessayer.")}})),window.addEventListener("resize",c),function(){for(let t=0;t<=7;t++){const e=new Image;e.src=`https://assos.utc.fr/skiutc/public/storage/miniJeu/logo${t}.png`,v.push(e)}}(),c(),function(){m=[],S=[],E=0,b=!1,T(),i.style.display="none",m.push({x:h/4,y:d/2,vx:0,vy:0,color:"#FFFFFF",radius:l,id:0,inPocket:!1}),S.push(0);const t=3*h/4,e=d/2,n=2*l*Math.sqrt(3)/2;let o=1;for(let i=0;i<3;i++)for(let a=0;a<=i;a++)if(o<=7){const s=t+i*n,r=e-i*l+a*l*2;m.push({x:s,y:r,vx:0,vy:0,color:`logo${o}`,radius:l,id:o,inPocket:!1}),S.push(0),o++}k=!0,B(),F=!0;try{fetch("https://assos.utc.fr/skiutc/start-game").then((t=>t.json())).then((t=>{I=t.token})).catch((t=>{console.error("Erreur lors de la récupération du token:",t),I="token-simulation"}))}catch(t){console.error("Erreur lors de la récupération du token:",t),I="token-simulation"}}(),function t(){e.clearRect(0,0,h,d),D(),b||function(){m.forEach(((t,e)=>{if(!t.inPocket){t.x+=t.vx,t.y+=t.vy;const i=Math.sqrt(t.vx*t.vx+t.vy*t.vy);if(i>0){const n=t.vx*t.vy>=0?1:-1;S[e]+=.05*i*n}t.vx*=.985,t.vy*=.985,Math.abs(t.vx)<L&&(t.vx=0),Math.abs(t.vy)<L&&(t.vy=0),t.x-t.radius<0?(t.x=t.radius,t.vx=-t.vx*W):t.x+t.radius>h&&(t.x=h-t.radius,t.vx=-t.vx*W),t.y-t.radius<0?(t.y=t.radius,t.vy=-t.vy*W):t.y+t.radius>d&&(t.y=d-t.radius,t.vy=-t.vy*W),x.forEach((i=>{const n=t.x-i.x,o=t.y-i.y;Math.sqrt(n*n+o*o)<u-t.radius/2&&(t.inPocket=!0,0===t.id?setTimeout((()=>{t.inPocket=!1,t.x=h/4,t.y=d/2,t.vx=0,t.vy=0,S[e]=0,k=!0}),1e3):B())}))}})),M&&(p?(w+=1.5,w>=200&&(p=!1)):(w-=1.5,w<=f&&(p=!0)),P=(w-f)/(200-f)*100);for(let t=0;t<m.length;t++){const e=m[t];if(!e.inPocket)for(let i=t+1;i<m.length;i++){const t=m[i];if(t.inPocket)continue;const n=t.x-e.x,o=t.y-e.y,a=Math.sqrt(n*n+o*o);if(a<e.radius+t.radius){const i=n/a,s=o/a,r=(e.radius+t.radius-a)/2;e.x-=i*r,e.y-=s*r,t.x+=i*r,t.y+=s*r;const c=e.vx*i+e.vy*s,h=2*(t.vx*i+t.vy*s-c)/2*.85;e.vx+=h*i,e.vy+=h*s,t.vx-=h*i,t.vy-=h*s}}}if(j()){const t=m.find((t=>0===t.id));t&&!t.inPocket&&(k=!0)}else k=!1}(),q(),k&&!b&&C(),requestAnimationFrame(t)}();
+    </script>
+</body>

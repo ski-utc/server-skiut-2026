@@ -13,9 +13,15 @@ class User extends Authenticatable
 
     protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'roomID', 'location', 'admin', 'alumniOrExte'];
 
+
     public function anecdotes()
     {
         return $this->hasMany(Anecdote::class);
+    }
+
+    public function statistics()
+    {
+        return $this->hasMany(Statistics::class);
     }
 
     public function room()
