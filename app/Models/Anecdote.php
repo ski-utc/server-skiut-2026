@@ -10,12 +10,13 @@ class Anecdote extends Model
     use HasFactory;
 
     protected $table = 'anecdotes';
-    protected $fillable = ['id', 'text', 'room', 'user_id', 'valid', 'delete', 'active'];
+    protected $fillable = ['id', 'text', 'room', 'userId', 'valid', 'delete', 'active'];
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        return $this->belongsTo(User::class, 'userId', 'id');
     }
+
 
     public function likes()
     {

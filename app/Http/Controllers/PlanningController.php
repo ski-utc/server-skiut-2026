@@ -7,9 +7,6 @@ use Carbon\Carbon;
 
 class PlanningController extends Controller
 {
-    /**
-     * Récupère les activités de la semaine
-     */
     public function getPlanning()
     {
         try {
@@ -18,7 +15,7 @@ class PlanningController extends Controller
                 $endDateTime = Carbon::parse($activity->date . ' ' . $activity->endTime);
                 $startDateTime = Carbon::parse($activity->date . ' ' . $activity->startTime);
 
-                if ($endDateTime->isPast()) {
+                if ($endDateTime->isPast() && $startDateTime->isPast()) {
                     $activityStatus = 'past';
                 } elseif ($startDateTime->isPast() && $endDateTime->isFuture()) {
                     $activityStatus = 'current';
@@ -28,7 +25,7 @@ class PlanningController extends Controller
                     'id' => $activity->id,
                     'activity' => $activity->text,
                     'time' => [
-                        'start' => Carbon::parse($activity->startTime)->format('H:i'),
+                        'start' => Carbon::parse($activity->startTime)->format('H:i'), 
                         'end' => Carbon::parse($activity->endTime)->format('H:i'),
                     ],
                     'payant' => $activity->payant,

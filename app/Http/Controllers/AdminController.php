@@ -2,265 +2,296 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Anecdote;
-use App\Models\ChallengeProof;
-use App\Models\Notification;
+use App\Models\Admin;
 use App\Models\User;
-use App\Services\ExpoPushService;
+use App\Models\ChallengeProof;
+use App\Models\Challenge;
+use App\Models\Anecdote;
+use App\Models\Notification;
 use Illuminate\Http\Request;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use App\Services\ExpoPushService;
 
 class AdminController extends Controller
 {
-    /**
-     * Permet de vérifier si le user est admin
-     */
+    // Permet de vérifier si c'est bien un admin
     public function getAdmin(Request $request)
     {
         try {
-            $userId = $request->user['id'];
+            // en-tête chiffrée à garder pour récupérer l'user
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+            $userId = $decoded->key;
+
+            // Récupère l'utilisateur correspondant à l'ID
             $user = User::find($userId);
 
+            // Vérifie si l'utilisateur existe et s'il est un administrateur
             if ($user && $user->admin) {
                 return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
             } else {
+                // L'utilisateur n'est pas un admin
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
             }
         } catch (\Exception $e) {
+            // Capture d'erreur
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
     }
 
+
     /**
-     * Gestion des défis (récupération, validation, suppression)
+     * Gestion des défis
      */
-    public function getAdminChallenges(Request $request)
-    {
-        try {
-            // Retrieve filter parameter (optional)
-            $filter = $request->query('filter', 'all');
 
-            // Build the base query
-            $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false);
+     public function getAdminChallenges(Request $request)
+{
+    try {
+        // Retrieve filter parameter (optional)
+        $filter = $request->query('filter', 'all');
 
-            // Apply filters
-            switch ($filter) {
-                case 'pending':
-                    $query->where('valid', false);
-                    break;
+        // Build the base query
+        $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false); // Assuming these are the related models
 
-                case 'valid':
-                    $query->where('valid', true);
-                    break;
+        // Apply filters
+        switch ($filter) {
+            case 'pending':
+                $query->where('valid', false);
+                break;
 
-                case 'all':
-                default:
-                    break;
-            }
+            case 'valid':
+                $query->where('valid', true);
+                break;
 
-            // Fetch challenges
-            $challenges = $query->orderBy('id', 'desc')
-                ->get();
+            case 'all':
+            default:
+                break;
+        }
 
-            return response()->json([
-                'success' => true,
-                'data' => $challenges,
-            ]);
-        } catch (\Exception $e) {
+        // Fetch challenges
+        $challenges = $query->orderBy('id', 'desc') // Sort by creation date
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $challenges,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Récupère les détails d'un défi spécifique par son ID
+ */
+public function getChallengeDetails(Request $request, $challengeId)
+{
+    try {
+
+        // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
+        $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
+
+        return response()->json([
+            'success' => true,
+            'data' => $challenge,
+            'imagePath'=> 'https://assos.utc.fr/skiutc/public/'.$challenge->file,
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
+/**
+ * Met à jour le statut de validation d'un challenge (valider ou invalider)
+ */
+public function updateChallengeStatus(Request $request, $challengeId, $isValid, $isDelete)
+{
+    try {
+        $publicKey = config('services.crypt.public');
+        $token = $request->bearerToken();
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        $userId = $decoded->key;
+
+        $challenge = ChallengeProof::findOrFail($challengeId);
+
+        if ($isValid === null || $isDelete === null) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Récupère les détails d'un défi spécifique par son ID
-     */
-    public function getChallengeDetails($challengeId)
-    {
-        try {
-
-            // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
-            $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
-
-            return response()->json([
-                'success' => true,
-                'data' => $challenge,
-                'imagePath' => asset($challenge->file)
+                'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
             ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
-            ], 500);
         }
+
+        // Mise à jour du statut de validation
+        $challenge->valid = $isValid;
+        $challenge->delete = $isDelete;
+        $challenge->save();
+
+
+        // Prépare le message 
+        if ($isValid && $isDelete) {
+            $message = 'Challenge refusé avec succès';
+        } elseif ($isValid && !$isDelete) {
+            $message = 'Challenge validé avec succès';
+        } elseif (!$isValid && !$isDelete) {
+            $message = 'Challenge invalidé avec succès';
+        }
+
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la mise à jour du statut du challenge : ' . $e->getMessage(),
+        ], 500);
     }
+}
+
+
+
+
 
     /**
-     * Met à jour le statut de validation d'un challenge (valider ou invalider)
+     * Gestion des anecdotes
      */
-    public function updateChallengeStatus(Request $request, $challengeId, $isValid, $isDelete)
-    {
-        try {
-            $challenge = ChallengeProof::findOrFail($challengeId);
 
-            if ($isValid === null || $isDelete === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
-                ], 500);
-            }
+     public function getAdminAnecdotes(Request $request)
+     {
+         try {
+             // Récupération des paramètres de filtre (facultatifs)
+             $filter = $request->query('filter', 'all');
+     
+             // Construire la requête de base
+             $query = Anecdote::with(['user', 'likes', 'warns']);
+     
+             // Appliquer les filtres
+             switch ($filter) {
+                 case 'pending':
+                     $query->where('valid', false);
+                     break;
+     
+                 case 'reported':
+                     // Filtrer les anecdotes ayant plus d'un avertissement
+                     $query->whereHas('warns', function($q) {
+                         $q->groupBy('anecdote_id')  // Groupement par ID d'anecdote
+                           ->havingRaw('COUNT(*) > 0');  // Plus d'un avertissement
+                     });
+                     break;
+     
+                 case 'all':
+                 default:
+                     // Pas de filtre spécifique
+                     break;
+             }
+     
+             // Récupérer les anecdotes
+             $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
+                 ->orderBy('id', 'desc') // Trier par date de création
+                 ->get();
+     
+             // Compter le nombre d'avertissements pour chaque anecdote
+             foreach ($anecdotes as $anecdote) {
+                 $anecdote->nbWarns = $anecdote->warns()->count();
+             }
+     
+             return response()->json([
+                 'success' => true,
+                 'data' => $anecdotes,
+             ]);
+         } catch (\Exception $e) {
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Erreur lors de la récupération des anecdotes : ' . $e->getMessage(),
+             ], 500);
+         }
+     }
+     
 
-            // Convert parameters to boolean
-            $isValid = (bool) $isValid;
-            $isDelete = (bool) $isDelete;
 
-            // Mise à jour du statut de validation
-            $challenge->valid = $isValid;
-            $challenge->delete = $isDelete;
-            $challenge->save();
+     /**
+      * Récupère les détails d'une anecdote spécifique par son ID
+      */
+      public function getAnecdoteDetails(Request $request, $id)
+      {
+          try {
 
-            // Prépare le message
-            if ($isValid && $isDelete) {
-                $message = 'Challenge refusé avec succès';
-            } elseif ($isValid && !$isDelete) {
-                $message = 'Challenge validé avec succès';
-            } elseif (!$isValid && !$isDelete) {
-                $message = 'Challenge invalidé avec succès';
-            } else {
-                $message = 'Challenge mis à jour avec succès';
-            }
+              // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
+              $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
+              $nbLikes = $anecdote->likes()->count();
+              $nbWarns = $anecdote->warns()->count();
 
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour du statut du challenge : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+
+              return response()->json([
+                  'success' => true,
+                  'data' => $anecdote,
+                  'nbLikes' => $nbLikes,
+                  'nbWarns' => $nbWarns
+              ]);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Erreur lors de la récupération de l\'anecdote : ' . $e->getMessage(),
+              ], 500);
+          }
+      }
+
+   /**
+      * Met à jour le statut de validation d'une anecdote (valider ou invalider)
+      */
+      public function updateAnecdoteStatus(Request $request, $anecdoteId, $isValid)
+      {
+          try {
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+            $userId = $decoded->key;
+
+              $anecdote = Anecdote::findOrFail($anecdoteId);
+
+              if ($isValid === null) {
+                  return response()->json([
+                      'success' => false,
+                      'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+                  ]);
+              }
+
+              // Mise à jour du statut de validation
+              $anecdote->valid = $isValid;
+              $anecdote->save();
+
+              return response()->json([
+                  'success' => true,
+                  'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
+              ]);
+          } catch (\Exception $e) {
+              return response()->json([
+                  'success' => false,
+                  'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
+              ], 500);
+          }
+      }
+
+
 
     /**
-     * Récupère les détails d'une anecdote spécifique par son ID
-     */
-    public function getAdminAnecdotes(Request $request)
-    {
-        try {
-            // Récupération des paramètres de filtre (facultatifs)
-            $filter = $request->query('filter', 'all');
-
-            // Construire la requête de base
-            $query = Anecdote::with(['user', 'likes', 'warns']);
-
-            // Appliquer les filtres
-            switch ($filter) {
-                case 'pending':
-                    $query->where('valid', false);
-                    break;
-
-                case 'reported':
-                    // Filtrer les anecdotes ayant plus d'un avertissement
-                    $query->whereHas('warns', function ($q) {
-                        $q->groupBy('anecdote_id')  // Groupement par ID d'anecdote
-                        ->havingRaw('COUNT(*) > 0');  // Plus d'un avertissement
-                    });
-                    break;
-
-                case 'all':
-                default:
-                    // Pas de filtre spécifique
-                    break;
-            }
-
-            // Récupérer les anecdotes
-            $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
-                ->orderBy('id', 'desc') // Trier par date de création
-                ->get();
-
-            // Compter le nombre d'avertissements pour chaque anecdote
-            foreach ($anecdotes as $anecdote) {
-                $anecdote->nbWarns = $anecdote->warns()->count();
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => $anecdotes,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération des anecdotes : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Récupère les détails d'une anecdote spécifique par son ID
+     * Gestion des notifications
     */
-    public function getAnecdoteDetails($id)
+
+    public function getAdminNotifications(Request $request)
     {
         try {
-
-            // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
-            $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
-            $nbLikes = $anecdote->likes()->count();
-            $nbWarns = $anecdote->warns()->count();
-
-            return response()->json([
-                'success' => true,
-                'data' => $anecdote,
-                'nbLikes' => $nbLikes,
-                'nbWarns' => $nbWarns
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération de l\'anecdote : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Met à jour le statut de validation d'une anecdote (valider ou invalider)
-    */
-    public function updateAnecdoteStatus($anecdoteId, $isValid)
-    {
-        try {
-            $anecdote = Anecdote::findOrFail($anecdoteId);
-
-            if ($isValid === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
-                ]);
-            }
-
-            // Mise à jour du statut de validation
-            $anecdote->valid = $isValid;
-            $anecdote->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Récupère les notifications
-     */
-    public function getAdminNotifications()
-    {
-        try {
+            // Fetch notifications sorted by creation date
             $notifications = Notification::orderBy('created_at', 'desc')->get();
 
             return response()->json([
@@ -276,11 +307,12 @@ class AdminController extends Controller
     }
 
     /**
-     * Récupère les détails d'une notification spécifique par son ID
+     * Récupère les détails d'un défi spécifique par son ID
      */
-    public function getNotificationDetails($notificationId)
+    public function getNotificationDetails(Request $request, $notificationId)
     {
         try {
+            // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
             $notification = Notification::findOrFail($notificationId);
 
             return response()->json([
@@ -296,10 +328,6 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @deprecated
-     * Envoie une notification à un utilisateur spécifique
-     */
     public function sendNotificationToOne(Request $request)
     {
         try {
@@ -328,20 +356,16 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Envoie une notification à tous les utilisateurs
-     */
     public function sendNotificationToAll(Request $request)
     {
         try {
             $title = $request->input('titre');
             $body = $request->input('texte');
             $data = (object) [];
+
             $tokens = \App\Models\PushToken::pluck('token')->toArray();
 
-            // Use dependency injection instead of creating new instance
-            $expoPushService = app(\App\Services\ExpoPushService::class);
-
+            $expoPushService = new ExpoPushService();
             foreach ($tokens as $token) {
                 $expoPushService->sendNotification(
                     $token,
@@ -364,37 +388,35 @@ class AdminController extends Controller
         }
     }
 
+
     /**
      * Envoie une notification individuelle à un utilisateur spécifique
      */
     public function sendIndividualNotification(Request $request, $userId)
     {
-        try {
-            $notification = new Notification([
-                'title' => $request->title,
-                'description' => $request->texte,
-                'user_id' => $userId,
-                'general' => false,
-                'delete' => false,
-            ]);
-            $notification->save();
+        // Logic to send a notification to a specific user
+        $notification = new Notification([
+            'title' => $request->title,
+            'text' => $request->text,
+            'user_id' => $userId, // Link notification to a specific user
+        ]);
+        $notification->save();
 
-            return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
     }
 
     /**
-     * Supprime une notification
+     * Delete notification
      */
-    public function deleteNotification($notificationId, $delete)
+    public function deleteNotification(Request $request, $notificationId, $delete)
     {
         try {
-            $notification = Notification::findOrFail($notificationId);
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+            $userId = $decoded->key;
+
+            $notification = Notification::findOrFail($notificationId); // Assuming you have a Notification model
 
             if ($delete === null) {
                 return response()->json([
@@ -404,7 +426,7 @@ class AdminController extends Controller
             }
 
             // Mise à jour du statut de suppression
-            $notification->delete = $delete;
+            $notification->delete = $delete; // Assuming there is a 'deleted' field in the Notification model
             $notification->save();
 
             return response()->json([
@@ -418,4 +440,11 @@ class AdminController extends Controller
             ], 500);
         }
     }
-}
+
+    public function getMaxFileSize()
+        {
+            return response()->json(['success' => true, 'data' => 1024*1024*0.1]);
+        }
+
+
+ }

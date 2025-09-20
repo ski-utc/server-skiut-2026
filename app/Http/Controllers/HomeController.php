@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use App\Models\Anecdote;
 use App\Models\Challenge;
-use App\Models\User;
 use Carbon\Carbon;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
@@ -18,35 +19,62 @@ class HomeController extends Controller
     {
         try {
             $currentDate = Carbon::today();
+            $currentTime = Carbon::now()->format('H:i:s');
 
             $closestActivity = Activity::whereDate('date', '>=', $currentDate)
-                ->whereNotNull('startTime')
-                ->orderBy('date', 'ASC')
-                ->orderBy('startTime', 'ASC')
-                ->first();
+            ->where(function ($query) use ($currentDate, $currentTime) {
+                $query->where('date', '>', $currentDate) 
+                      ->orWhere(function ($subQuery) use ($currentDate, $currentTime) {
+                          $subQuery->where('date', '=', $currentDate) 
+                                   ->where('endTime', '>=', $currentTime); 
+                      });
+            })
+            ->whereNotNull('startTime')
+            ->orderBy('date', 'ASC')
+            ->orderBy('startTime', 'ASC')
+            ->first();
 
             if ($closestActivity) {
-
+                // Vérifie et formate startTime et endTime s'ils existent
                 if ($closestActivity->startTime) {
-                    $closestActivity->startTime = Carbon::createFromFormat('H:i', $closestActivity->startTime)->format('H\hi');
+                    if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $closestActivity->startTime)) {
+                        $closestActivity->startTime = Carbon::createFromFormat('H:i:s', $closestActivity->startTime)->format('H\hi');
+                    } else {
+                        $closestActivity->startTime = 'Format invalide';
+                    }
                 } else {
                     $closestActivity->startTime = 'N/A';
                 }
 
                 if ($closestActivity->endTime) {
-                    $closestActivity->endTime = Carbon::createFromFormat('H:i', $closestActivity->endTime)->format('H\hi');
+                    if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $closestActivity->endTime)) {
+                        $closestActivity->endTime = Carbon::createFromFormat('H:i:s', $closestActivity->endTime)->format('H\hi');
+                    } else {
+                        $closestActivity->endTime = 'Format invalide';
+                    }
                 } else {
                     $closestActivity->endTime = 'N/A';
                 }
             }
 
-            $userId = $request->user['id'];
+            // Récupération de l'utilisateur et de sa salle
+            $userId = $request->user['id'] ?? null;
+            if (!$userId) {
+                return response()->json(['success' => false, 'message' => 'Utilisateur non authentifié.']);
+            }
+
             $roomId = User::where('id', $userId)->first()->roomID;
 
-            $randomChallenge = Challenge::whereNot('room_id', $roomId)->inRandomOrder()->first();
+            // Récupération d'un défi aléatoire
+	    $randomChallenge = Challenge::whereDoesntHave('challengeProofs', function ($query) use ($roomId) {
+            	$query->where('room_id', $roomId);
+          	})
+            ->inRandomOrder()
+            ->first();
 
+            // Récupération de la meilleure anecdote
             $bestAnecdote = Anecdote::withCount('likes')
-                ->where('valid', true)
+                ->where("valid", true)
                 ->orderBy('likes_count', 'desc')
                 ->first();
 
@@ -63,3 +91,4 @@ class HomeController extends Controller
         }
     }
 }
+

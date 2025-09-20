@@ -29,8 +29,8 @@ return [
     ],
 
     'oauth' => [
-        'client_id' => env('OAUTH_CLIENT_ID_'),
-        'client_secret' => env('OAUTH_CLIENT_SECRET'),
+        'client_id' => env('OAUTH_CLIENT_ID'), file_get_contents(storage_path('app/public/OAuthClientId.txt')),
+        'client_secret' => file_get_contents(env('OAUTH_CLIENT_SECRET_PATH', storage_path('app/private/OAuthClientSecret.txt'))),
         'redirect_uri' => env('OAUTH_REDIRECT_URI', env('BASE_URL').'skiutc/auth/callback'),
         'scopes' => env('OAUTH_SCOPES', 'users-infos read-memberships'),
         'authorize_url' => env('OAUTH_AUTHORIZE_URL', 'https://auth.assos.utc.fr/oauth/authorize'),
@@ -40,12 +40,8 @@ return [
     ],
 
     'crypt' => [
-        'public' => file_exists(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/public.pem')))
-            ? file_get_contents(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/public.pem')))
-            : null,
-        'private' => file_exists(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem')))
-            ? file_get_contents(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem')))
-            : null,
+        'public' => file_get_contents(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/public/public.pem'))),
+        'private' => file_get_contents(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem'))),
     ],
 
 /*
