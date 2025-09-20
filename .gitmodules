@@ -1,3 +1,3 @@
 [submodule "resources/views/shotgun"]
-    path = resources/views/shotgun
-    url = https://github.com/ski-utc/game-view.git
+	path = resources/views/shotgun
+	url = git@github.com:ski-utc/game-view.git
