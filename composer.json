@@ -13,7 +13,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
-        "league/oauth2-client": "^2.7"
+        "league/oauth2-client": "^2.7",
+        "promphp/prometheus_client_php": "^2.14"
     },
     "require-dev": {
         "enlightn/security-checker": "^2.0",

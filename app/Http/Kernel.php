@@ -8,6 +8,7 @@ class Kernel extends HttpKernel
 {
     protected $middleware = [
         \Illuminate\Http\Middleware\HandleCors::class,
+        \App\Http\Middleware\PrometheusMiddleware::class,
     ];
 
     protected $middlewareGroups = [
