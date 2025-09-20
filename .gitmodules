@@ -1,3 +1,0 @@
-[submodule "resources/views/shotgun"]
-	path = resources/views/shotgun
-	url = git@gitlab.utc.fr:skiutc/game-view.git
