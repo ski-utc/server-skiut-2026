@@ -16,6 +16,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
+RUN git submodule update --init --recursive
+
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --ignore-platform-req=ext-*
 
 COPY laravel-start.sh /usr/local/bin/laravel-start.sh
