@@ -66,6 +66,11 @@ jobs:
     container: laravelsail/php83-composer:latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+      - run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
       - run: apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
       - run: pecl install apcu
       - run: docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
@@ -107,6 +112,7 @@ jobs:
       - name: Run container
         run: |
           docker run -d -p 8090:80 --name app ${{ env.PROJECT_IMAGE_TAG }}
+          docker exec app php artisan jwt:generate
           sleep 10
           docker exec app curl --fail http://localhost:80/skiutc || (docker logs app && exit 1)
           docker stop app && docker rm app

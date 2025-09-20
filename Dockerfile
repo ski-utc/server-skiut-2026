@@ -16,7 +16,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-req=ext-*
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --ignore-platform-req=ext-*
 
 COPY laravel-start.sh /usr/local/bin/laravel-start.sh
 RUN chmod +x /usr/local/bin/laravel-start.sh
