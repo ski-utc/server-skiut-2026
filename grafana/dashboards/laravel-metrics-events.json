@@ -701,6 +701,6 @@
     "refresh": "5s",
     "timezone": "",
     "title": "Laravel Application Metrics - Événementiel (400 req/min)",
-    "uid": "laravel-metrics-complete",
+    "uid": "laravel-metrics-events",
     "version": 1
   }
