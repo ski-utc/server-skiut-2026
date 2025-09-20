@@ -1,5 +1,6 @@
 <?php
 
+use App\Providers\PrometheusServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 return [
@@ -139,6 +140,7 @@ return [
 
     'providers' => ServiceProvider::defaultProviders()->merge([
         App\Providers\RouteServiceProvider::class,
+        PrometheusServiceProvider::class,
     ])->toArray(),
 
 ];
