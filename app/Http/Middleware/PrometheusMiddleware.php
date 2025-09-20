@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use PHPUnit\Runner\DeprecationCollector\Collector;
 use Prometheus\CollectorRegistry;
 
 class PrometheusMiddleware
@@ -41,8 +40,8 @@ class PrometheusMiddleware
         $memoryGauge->set(memory_get_usage());
 
         $this->exceptionCounter = $registry->getOrRegisterCounter(
-            'app', 
-            'exceptions_total', 
+            'app',
+            'exceptions_total',
             'Total number of exceptions'
         );
     }
