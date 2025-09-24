@@ -24,6 +24,35 @@ Les endpoints de ce serveur ne servent donc qu'au login et au traitement des don
 Pour permettre de dev sur toutes les OS, avec un déploiement facile, et une infra proche de la production, une alternative Docker a été proposée pour le serveur Ski'ut.
 Attention, c'est bien une alternative, rien n'oblige de l'utiliser, mais c'est "mieux" (et surtout c'est super utile d'apprendre à utiliser Docker).
 
+### Avant toute chose, c'est quoi Docker ?
+
+En informatique, il arrive souvent qu’une application fonctionne parfaitement sur un ordinateur… mais qu’une fois installée ailleurs (par exemple sur un serveur en ligne), elle ne marche plus.
+Pourquoi ? Parce que l’environnement n’est pas le même :
+* Sur ton PC, tu as peut-être PHP 9.0,
+* alors que sur le serveur, il n’y a que PHP 6.0.
+* Tu pourrais installer PHP 9.0 sur ton serveur, mais qui te dit que tu ne vas pas fumer un autre serveur qui lui tourne sur du PPHP 6.0 ?
+
+#### La solution à ce problème : Docker
+
+Docker sert à éviter ce genre de problème.
+Il permet de créer un environnement indépendant, qui contient tout ce dont ton application a besoin pour fonctionner, peu importe la machine sur laquelle tu l’exécutes.
+
+#### Concrètement, Docker :
+* Crée un espace isolé (comme un dossier spécial).
+* Copie ton application dedans.
+* Installe tout ce qui est nécessaire :
+  * la bonne version de PHP,
+  * les outils en ligne de commande,
+  * les dépendances (par exemple ce qui est listé dans composer.json).
+  * Prépare un point d’accès via un port.
+
+#### Exemple avec un port
+
+Un port, c’est comme une porte d’entrée vers ton application.
+
+Si Docker ouvre le port 8000, tu peux accéder à ton serveur en tapant dans ton navigateur : `http://localhost:8000`
+Grâce à ça, le serveur de Ski'ut tournera aussi bien en ligne que sur nos PCs !
+
 ### 1. Installer Docker
 Pour installer Docker, suivre les instructions [ici](https://docs.docker.com/engine/install/).
 
@@ -41,10 +70,14 @@ Ensuite, place-toi dans le dossier du serveur, et lance :
 ```bash
 docker compose up -d
 ```
+Tu trouveras dans docker-commands.md toutes les commandes essentielles avec docker (notamment parce qu'il faut redémarrer les containers pour que les changements dans le code soient pris en compte).
 
-Tu trouveras dans docker-commands.md les commandes essentielles avec docker (notamment parce qu'il faut redémarrer les containers pour que les changements dans le code soient pris en compte).
+Bilan, tu auras maintenant : 
+* http://localhost:8000 pour le serveur
+* http://localhost:8081 pour phpMyAdmin
+* http://localhost:3000 pour Grafana (une interface web pour suivre la charge sur ton serveur)
 
-Bilan, ton serveur sera accessible sur l'ip que tu auras mis dans APP_URL dans .env.local, et tu as une interface phpMyAdmin sur http://localhost:8081 pour gérer ta base de données.
+Pour permettre à l'application de contacter le serveur, il faudra modifier le fichier `constants/api/apiConfig.ts` pour contacter ton adresse ip (celle que tu obtiens faisant `ip address` ou `ifconfig`).
 
 ## Pour commencer : Php Classique
 ### 1. Installer PHP
