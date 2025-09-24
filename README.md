@@ -436,13 +436,3 @@ if [ -f "./artisan" ]; then
     alias route="php artisan route:list"
 fi' >> ~/.bashrc
 ```
-
-## Points d'amélioration
-1. Encore mieux rédiger la doc
-2. Bien finir de mettre en forme le serveur (y a des fonctions de Controller assez mal foutus et/ou au mauvaise endroit (typiquement les notif dans Admin)
-3. Optimiser les requêtes Eloquent à la BDD
-4. Corriger les bugs du Planning quand un évent est à cheval sur 2 jours (23h-1h) ou carrément tard le soir (00H-02h) (est affiché comme déjà passé)
-5. Trier les activités par heure et non id
-6. Envoyer des notifications aux chambre en cas de match Skinder
-7. Ajouter les perms des membres d'asso dans leur planning
-8. Envoyer des notifications 1h avant la perm de chaque membre d'asso
