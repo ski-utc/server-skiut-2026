@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shotguns;
+use App\Models\ShotgunToken;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -16,7 +16,7 @@ class ShotgunController extends Controller
     {
         $token = Str::uuid()->toString();
 
-        Cache::put("game_token:$token", true, now()->addMinutes(5));
+        ShotgunToken::create(['token' => $token, 'expires_at' => now()->addMinutes(5)]);
 
         return view('shotgun.game', ['token' => $token]);
     }
@@ -35,7 +35,7 @@ class ShotgunController extends Controller
             ]);
 
             $token = $request->input('token');
-            if (! Cache::pull("game_token:$token")) {
+            if (! ShotgunToken::where('token', $token)->where('expires_at', '>', now())->exists()) {
                 return response()->json(['error' => 'Invalid or expired token'], 400);
             }
 
