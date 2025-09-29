@@ -16,7 +16,7 @@ class ShotgunController extends Controller
     {
         $token = Str::uuid()->toString();
 
-        ShotgunToken::create(['token' => $token, 'expires_at' => now()->addMinutes(10)]);
+        ShotgunToken::create(['token' => $token, 'expires_at' => now()->addMinutes(15)]);
 
         return view('shotgun.game', ['token' => $token]);
     }
