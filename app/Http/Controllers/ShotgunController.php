@@ -16,7 +16,7 @@ class ShotgunController extends Controller
     {
         $token = Str::uuid()->toString();
 
-        ShotgunToken::create(['token' => $token, 'expires_at' => now()->addMinutes(5)]);
+        ShotgunToken::create(['token' => $token, 'expires_at' => now()->addMinutes(10)]);
 
         return view('shotgun.game', ['token' => $token]);
     }
@@ -42,7 +42,7 @@ class ShotgunController extends Controller
             $exists = Shotguns::where('email', $request->input('email'));
             if ($exists->exists()) {
                 $position = $exists->first()->position;
-                $win = $position <= 420 ? true : false;  // TODO : remplacer avec le nombre de places
+                $win = $position <= 307 ? true : false;
 
                 return response()->json(['success' => true, 'position' => $position, 'win' => $win, 'new' => false]);
             }
@@ -51,7 +51,7 @@ class ShotgunController extends Controller
             $position = $lastPosition + 1;
             Shotguns::create(['email' => $request->input('email'), 'position' => $position]);
 
-            $win = $position <= 420 ? true : false;  // TODO : remplacer avec le nombre de places
+            $win = $position <= 307 ? true : false;
 
             return response()->json(['success' => true, 'position' => $position, 'win' => $win, 'new' => true]);
         } catch (ValidationException $e) {
