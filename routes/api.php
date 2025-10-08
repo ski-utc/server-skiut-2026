@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AnecdoteController;
 use App\Http\Controllers\ClassementController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DefisController;
 use App\Http\Controllers\SkinderController;
 use App\Http\Controllers\UserPerformanceController;
@@ -24,6 +25,7 @@ Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUse
 
 /************************************************************** Home *************************************************************/
 Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getWeather', [\App\Http\Controllers\HomeController::class, 'getWeather'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
@@ -49,6 +51,10 @@ Route::post('/likeAnecdote', [AnecdoteController::class, 'likeAnecdote'])->middl
 Route::post('/warnAnecdote', [AnecdoteController::class, 'warnAnecdote'])->middleware(EnsureTokenIsValid::class);
 Route::post('/sendAnecdote', [AnecdoteController::class, 'sendAnecdote'])->middleware(EnsureTokenIsValid::class);
 Route::post('/deleteAnecdote', [AnecdoteController::class, 'deleteAnecdote'])->middleware(EnsureTokenIsValid::class);
+/**************************************************************************************************************************************/
+
+/************************************************************** Contacts *************************************************************/
+Route::get('/getContacts', [ContactController::class, 'getContacts'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Navettes *************************************************************/
