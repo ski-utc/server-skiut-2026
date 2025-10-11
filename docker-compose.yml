@@ -10,6 +10,8 @@ services:
       - "8000:80"
     env_file:
       - .env.local
+    volumes:
+      - users-data:/var/www/html/storage/app/private
     networks:
       - skiut-net
 
@@ -69,6 +71,7 @@ services:
 
 volumes:
   db-data:
+  users-data:
 
 networks:
   skiut-net:
