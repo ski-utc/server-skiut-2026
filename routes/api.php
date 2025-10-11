@@ -68,6 +68,7 @@ Route::get('/getMySkinderMatches', [SkinderController::class, 'getMySkinderMatch
 Route::get('/getMyProfilSkinder', [SkinderController::class, 'getMyProfilSkinder'])->middleware(EnsureTokenIsValid::class);
 Route::post('/modifyProfilSkinder', [SkinderController::class, 'modifyProfil'])->middleware(EnsureTokenIsValid::class);
 Route::post('/uploadRoomImage', [SkinderController::class, 'uploadRoomImage'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getRoomDetails/{roomId}', [SkinderController::class, 'getRoomDetails'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Administration *************************************************************/
@@ -83,7 +84,7 @@ Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [AdminController::cl
 
 Route::get('/getAdminNotifications', [AdminController::class, 'getAdminNotifications'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::get('/getNotificationDetails/{notificationId}', [AdminController::class, 'getNotificationDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/deleteNotification/{userId}/{delete}', [AdminController::class, 'deleteNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/displayNotification/{notificationId}/{display}', [AdminController::class, 'displayNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendNotification', [AdminController::class, 'sendNotificationToAll'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendIndividualNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 

@@ -37,12 +37,13 @@ class NavetteController extends Controller
                     'horaire_depart' => $transport->horaire_depart,
                     'horaire_arrivee' => $transport->horaire_arrivee,
                     'colour' => $transport->colour,
+                    'colourName' => $transport->colourName,
                     'type' => $transport->type,
                 ];
 
-                if ($transport->type === 'Aller') {
+                if ($transport->type === 'aller') {
                     $transportsByType['Aller'][] = $formattedTransport;
-                } elseif ($transport->type === 'Retour') {
+                } elseif ($transport->type === 'retour') {
                     $transportsByType['Retour'][] = $formattedTransport;
                 }
             }

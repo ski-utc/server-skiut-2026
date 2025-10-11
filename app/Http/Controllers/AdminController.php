@@ -319,7 +319,7 @@ class AdminController extends Controller
                 'title' => $title,
                 'description' => $body,
                 'general' => false,
-                'delete' => false,
+                'display' => true,
             ]);
 
             return response()->json(['success' => true, 'message' => "Notification envoyée avec succès à l'utilisateurice !"]);
@@ -355,7 +355,7 @@ class AdminController extends Controller
                 'title' => $title,
                 'description' => $body,
                 'general' => true,
-                'delete' => false,
+                'display' => true,
             ]);
 
             return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
@@ -375,7 +375,7 @@ class AdminController extends Controller
                 'description' => $request->texte,
                 'user_id' => $userId,
                 'general' => false,
-                'delete' => false,
+                'display' => true,
             ]);
             $notification->save();
 
@@ -391,25 +391,25 @@ class AdminController extends Controller
     /**
      * Supprime une notification
      */
-    public function deleteNotification($notificationId, $delete)
+    public function displayNotification($notificationId, $display)
     {
         try {
             $notification = Notification::findOrFail($notificationId);
 
-            if ($delete === null) {
+            if ($display === null) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Le paramètre "delete" est requis (1 pour supprimer, 0 pour annuler).',
+                    'message' => 'Le paramètre "display" est requis (1 pour supprimer, 0 pour annuler).',
                 ]);
             }
 
             // Mise à jour du statut de suppression
-            $notification->delete = $delete;
+            $notification->display = $display;
             $notification->save();
 
             return response()->json([
                 'success' => true,
-                'message' => $delete ? 'Notification supprimée avec succès.' : 'Suppression annulée avec succès.',
+                'message' => $display ? 'Notification désactivée avec succès.' : 'Notification activée avec succès.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
