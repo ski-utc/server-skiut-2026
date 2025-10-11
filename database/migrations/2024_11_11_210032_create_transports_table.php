@@ -15,6 +15,7 @@ return new class () extends Migration {
             $table->string('departure'); // Paris / Compiègne / Les 2 Alpes
             $table->string('arrival'); // Paris / Compiègne / Les 2 Alpes
             $table->string('colour');
+            $table->string('colourName');
             $table->string('type'); // aller / retour
             $table->timestamps();
         });

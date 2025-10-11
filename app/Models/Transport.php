@@ -16,6 +16,7 @@ class Transport extends Model
         'departure',
         'arrival',
         'colour',
+        'colourName',
         'type',
         'horaire_depart',
         'horaire_arrivee',

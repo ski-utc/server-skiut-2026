@@ -16,13 +16,20 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --ignore-platform-req=ext-*
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --dev --ignore-platform-req=ext-*
 
 COPY laravel-start.sh /usr/local/bin/laravel-start.sh
 RUN chmod +x /usr/local/bin/laravel-start.sh
 
 RUN mv .env.ci .env \
     && php artisan key:generate
+
+RUN mkdir -p storage/app/private \
+    && openssl genrsa -out storage/app/private/private.pem 2048 \
+    && openssl rsa -in storage/app/private/private.pem -outform PEM -pubout -out storage/app/private/public.pem \
+    && chown -R www-data:www-data storage/app/private \
+    && chmod 600 storage/app/private/private.pem \
+    && chmod 644 storage/app/private/public.pem
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \

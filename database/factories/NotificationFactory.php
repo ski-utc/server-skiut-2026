@@ -33,7 +33,7 @@ class NotificationFactory extends Factory
             'title' => $title,
             'description' => $description,
             'general' => fake()->boolean(70),
-            'delete' => fake()->boolean(10),
+            'display' => fake()->boolean(10),
         ];
     }
 }

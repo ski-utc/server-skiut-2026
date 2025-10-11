@@ -15,7 +15,7 @@ return new class () extends Migration {
             $table->text('title');
             $table->text('description');
             $table->boolean('general');
-            $table->boolean('delete');
+            $table->boolean('display');
             $table->timestamps();
         });
     }
