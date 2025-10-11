@@ -40,11 +40,11 @@ return [
     ],
 
     'crypt' => [
-        'public' => file_exists(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/public.pem')))
-            ? file_get_contents(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/public.pem')))
+        'public' => file_exists(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/keys/public.pem')))
+            ? file_get_contents(storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/keys/public.pem')))
             : null,
-        'private' => file_exists(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem')))
-            ? file_get_contents(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem')))
+        'private' => file_exists(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/keys/private.pem')))
+            ? file_get_contents(storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/keys/private.pem')))
             : null,
     ],
 

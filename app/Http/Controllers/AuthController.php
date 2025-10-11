@@ -44,6 +44,10 @@ class AuthController extends Controller
     {
         if (config('auth.app_no_login', false)) {
             $userId = env('USER_ID');
+            $user = User::find($userId);
+            if (!$user) {
+                response()->json(['message' => 'Il faut au moins créer le user '.$userId.' dans la base de données'], 400);
+            }
             try {
                 $accessTokenPayload = [
                     'key' => $userId,

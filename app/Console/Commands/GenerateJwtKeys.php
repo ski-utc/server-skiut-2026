@@ -11,8 +11,8 @@ class GenerateJwtKeys extends Command
 
     public function handle(): int
     {
-        $privateKeyPath = storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/private.pem'));
-        $publicKeyPath = storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/public.pem'));
+        $privateKeyPath = storage_path(env('JWT_PRIVATE_KEY_PATH', 'app/private/keys/private.pem'));
+        $publicKeyPath = storage_path(env('JWT_PUBLIC_KEY_PATH', 'app/private/keys/public.pem'));
 
         $dir = dirname($privateKeyPath);
         if (!is_dir($dir)) {

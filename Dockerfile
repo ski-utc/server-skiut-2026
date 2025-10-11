@@ -41,15 +41,15 @@ COPY --from=frontend /app/public/build ./public/build
 RUN cp .env.ci .env \
     && php artisan key:generate
 
-RUN mkdir -p storage/app/private storage/logs \
-    && openssl genrsa -out storage/app/private/private.pem 2048 \
-    && openssl rsa -in storage/app/private/private.pem -outform PEM -pubout -out storage/app/private/public.pem \
+RUN mkdir -p storage/app/private/keys storage/logs \
+    && openssl genpkey -algorithm RSA -out storage/app/private/keys/private.pem -pkeyopt rsa_keygen_bits:2048 \
+    && openssl rsa -in storage/app/private/keys/private.pem -pubout -out storage/app/private/keys/public.pem \
     && touch storage/logs/laravel.log
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache \
-    && chmod 600 storage/app/private/private.pem \
-    && chmod 644 storage/app/private/public.pem
+    && chmod 600 storage/app/private/keys/private.pem \
+    && chmod 644 storage/app/private/keys/public.pem
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
