@@ -12,6 +12,8 @@ Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas 
 
 Route::get('/', function () { return view('welcome');})->name('home');
 
+Route::get('/rgpd', function () { return view('rgpd');})->name('rgpd');
+
 Route::get('/metrics', function (CollectorRegistry $registry) {
     $renderer = new RenderTextFormat();
     return response($renderer->render($registry->getMetricFamilySamples()))
