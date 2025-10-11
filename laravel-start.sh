@@ -16,7 +16,9 @@ php artisan optimize --no-interaction
 
 php artisan storage:link || true
 
-touch database/database.sqlite
+if [ ! -f "database/database.sqlite" ]; then
+    touch database/database.sqlite
+fi
 php artisan migrate --force
 
 #php artisan serve           # Local (permet le hot-reload)

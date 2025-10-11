@@ -19,7 +19,7 @@ return new class () extends Migration {
             $table->string('photoPath')->nullable();
             $table->string('description')->nullable();
             $table->json('passions')->nullable();
-            $table->unsignedTinyInteger('totalPoints')->default(0);
+            $table->unsignedInteger('totalPoints')->default(0);
             $table->foreignId('userID')->nullable()->constrained('users', 'id')->onDelete('cascade'); // Foreign key to users table
             $table->timestamps();
         });

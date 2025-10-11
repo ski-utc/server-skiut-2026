@@ -240,4 +240,64 @@ class SkinderController extends Controller
         }
     }
 
+    /**
+     * Récupère les détails complets d'une chambre pour le Skinder
+     */
+    public function getRoomDetails($roomId)
+    {
+        try {
+            $room = Room::find($roomId);
+
+            if (!$room) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chambre introuvable'
+                ], 404);
+            }
+
+            $respUser = User::find($room->userID);
+            $likesReceived = SkinderLike::where('room_liked', $roomId)->count();
+            $likesGiven = SkinderLike::where('room_likeur', $roomId)->count();
+
+            $matches = SkinderLike::where('room_likeur', $roomId)
+                ->whereIn('room_liked', function ($query) use ($roomId) {
+                    $query->select('room_likeur')
+                          ->from('skinder_likes')
+                          ->where('room_liked', $roomId);
+                })
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $room->id,
+                    'roomNumber' => $room->roomNumber,
+                    'name' => $room->name,
+                    'description' => $room->description,
+                    'mood' => $room->mood,
+                    'image' => $room->photoPath ? asset($room->photoPath) : null,
+                    'passions' => json_decode($room->passions, true) ?? [],
+                    'totalPoints' => $room->totalPoints,
+                    'respUser' => $respUser ? [
+                        'id' => $respUser->id,
+                        'firstName' => $respUser->firstName,
+                        'lastName' => $respUser->lastName,
+                        'fullName' => $respUser->firstName . ' ' . $respUser->lastName
+                    ] : null,
+                    'statistics' => [
+                        'likesReceived' => $likesReceived,
+                        'likesGiven' => $likesGiven,
+                        'matches' => $matches
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des détails de la chambre : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

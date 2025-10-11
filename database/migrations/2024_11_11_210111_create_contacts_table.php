@@ -12,8 +12,8 @@ return new class () extends Migration {
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('role'); // prez / resp anim...
+            $table->string('name');
+            $table->string('role')->nullable(); // prez / resp anim...
             $table->string('phoneNumber');
             $table->timestamps();
         });

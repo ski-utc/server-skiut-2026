@@ -12,7 +12,7 @@ class NotificationController extends Controller
     public function getNotifications()
     {
         try {
-            $notifications = Notification::where('delete', false)
+            $notifications = Notification::where('display', true)
             ->orderBy('created_at', 'desc')
             ->get();
 

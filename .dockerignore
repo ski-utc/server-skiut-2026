@@ -1,22 +1,59 @@
-/node_modules
-/public/build
-/storage/app/private
-/database/database.sqlite
+# Assets et build (seront gérés par le multi-stage)
+node_modules/
+public/build/
+public/hot
 
-.env
-.env.example
-.editorconfig
+# Vendor PHP (sera installé dans le container)
+vendor/
 
-.git/
-.github/
-.gitignore
-.gitattributes
-.gitlab-ci.yml
+# Cache et logs Laravel
+storage/app/public/
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+bootstrap/cache/*
 
-.dockerignore
-Dockerfile
-docker-compose.yaml
+# Base de données locale
+database/database.sqlite
 
+# Tests et configuration de développement
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Documentation
+*.md
 README.md
 CONTRIBUTING.md
-LICENSE
+
+# Environnement local
+.env
+.env.local
+.env.example
+
+# Fichiers de configuration de développement
+docker-compose.yml
+docker-compose.override.yml
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs NPM
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Divers
+*.log
+.coverage/

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AnecdoteController;
 use App\Http\Controllers\ClassementController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DefisController;
 use App\Http\Controllers\SkinderController;
 use App\Http\Controllers\UserPerformanceController;
@@ -24,6 +25,7 @@ Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUse
 
 /************************************************************** Home *************************************************************/
 Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getWeather', [\App\Http\Controllers\HomeController::class, 'getWeather'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
@@ -51,6 +53,10 @@ Route::post('/sendAnecdote', [AnecdoteController::class, 'sendAnecdote'])->middl
 Route::post('/deleteAnecdote', [AnecdoteController::class, 'deleteAnecdote'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
+/************************************************************** Contacts *************************************************************/
+Route::get('/getContacts', [ContactController::class, 'getContacts'])->middleware(EnsureTokenIsValid::class);
+/**************************************************************************************************************************************/
+
 /************************************************************** Navettes *************************************************************/
 Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'getNavettes'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
@@ -62,6 +68,7 @@ Route::get('/getMySkinderMatches', [SkinderController::class, 'getMySkinderMatch
 Route::get('/getMyProfilSkinder', [SkinderController::class, 'getMyProfilSkinder'])->middleware(EnsureTokenIsValid::class);
 Route::post('/modifyProfilSkinder', [SkinderController::class, 'modifyProfil'])->middleware(EnsureTokenIsValid::class);
 Route::post('/uploadRoomImage', [SkinderController::class, 'uploadRoomImage'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getRoomDetails/{roomId}', [SkinderController::class, 'getRoomDetails'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Administration *************************************************************/
@@ -77,7 +84,7 @@ Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [AdminController::cl
 
 Route::get('/getAdminNotifications', [AdminController::class, 'getAdminNotifications'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::get('/getNotificationDetails/{notificationId}', [AdminController::class, 'getNotificationDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/deleteNotification/{userId}/{delete}', [AdminController::class, 'deleteNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/displayNotification/{notificationId}/{display}', [AdminController::class, 'displayNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendNotification', [AdminController::class, 'sendNotificationToAll'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendIndividualNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 

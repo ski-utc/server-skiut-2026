@@ -392,34 +392,34 @@ class AdminControllerTest extends TestCase
         $response->assertStatus(403);
     }
 
-    // Tests pour deleteNotification
-    public function test_delete_notification_as_admin()
+    // Tests pour displayNotification
+    public function test_disable_notification_as_admin()
     {
         $token = $this->getToken(true);
-        $notification = Notification::factory()->create(['delete' => false]);
+        $notification = Notification::factory()->create(['display' => false]);
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-                         ->postJson("/api/deleteNotification/{$notification->id}/1");
+                         ->postJson("/api/displayNotification/{$notification->id}/1");
 
         $response->assertStatus(200)
                  ->assertJson([
                      'success' => true,
-                     'message' => 'Notification supprimée avec succès.'
+                     'message' => 'Notification désactivée avec succès.'
                  ]);
 
         $this->assertDatabaseHas('notifications', [
             'id' => $notification->id,
-            'delete' => true
+            'display' => true
         ]);
     }
 
-    public function test_delete_notification_as_non_admin()
+    public function test_disable_notification_as_non_admin()
     {
         $token = $this->getToken(false);
-        $notification = Notification::factory()->create();
+        $notification = Notification::factory()->create(['display' => false]);
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-                         ->postJson("/api/deleteNotification/{$notification->id}/1");
+                         ->postJson("/api/displayNotification/{$notification->id}/1");
 
         $response->assertStatus(403);
     }
