@@ -9,6 +9,15 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Redirect resources to next folder
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^_next/(.*)$ /next/_next/$1 [L]
+    
+    # Redirect logo to next folder
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^logo\.png$ /next/logo.png [L]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
