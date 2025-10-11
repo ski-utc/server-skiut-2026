@@ -30,7 +30,7 @@ class TransportFactory extends Factory
         ];
 
         $route = fake()->randomElement($routes);
-        
+
         // Tableau associatif pour lier les couleurs à leurs noms
         $colourPairs = [
             ['colour' => '#a684ff', 'name' => 'Purple'],
@@ -41,7 +41,7 @@ class TransportFactory extends Factory
             ['colour' => '#fb64b6', 'name' => 'Pink'],
             ['colour' => '#ff8904', 'name' => 'Orange'],
         ];
-        
+
         $selectedColour = fake()->randomElement($colourPairs);
         $types = ['aller', 'retour'];
 

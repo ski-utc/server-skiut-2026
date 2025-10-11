@@ -250,7 +250,7 @@ class SkinderController extends Controller
 
             if (!$room) {
                 return response()->json([
-                    'success' => false, 
+                    'success' => false,
                     'message' => 'Chambre introuvable'
                 ], 404);
             }
@@ -294,7 +294,7 @@ class SkinderController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Erreur lors de la récupération des détails de la chambre : ' . $e->getMessage()
             ], 500);
         }

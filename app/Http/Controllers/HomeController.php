@@ -8,10 +8,10 @@ use App\Models\Challenge;
 use App\Models\ChallengeProof;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\JsonResponse;
 
 class HomeController extends Controller
 {
@@ -35,13 +35,13 @@ class HomeController extends Controller
                 } else {
                     $closestActivity->startTime = 'N/A';
                 }
-            
+
                 if ($closestActivity->endTime) {
                     $closestActivity->endTime = Carbon::parse($closestActivity->endTime)->format('H\hi');
                 } else {
                     $closestActivity->endTime = 'N/A';
                 }
-            }                
+            }
 
             $userId = $request->user['id'];
             $roomId = User::where('id', $userId)->first()->roomID;
@@ -87,7 +87,7 @@ class HomeController extends Controller
         $location = 'Pas de la Case, Andorra';
 
         try {
-            $response = Http::get("https://api.weatherapi.com/v1/forecast.json", [
+            $response = Http::get('https://api.weatherapi.com/v1/forecast.json', [
                 'key' => $apiKey,
                 'q' => $location,
                 'lang' => 'fr',
@@ -136,7 +136,7 @@ class HomeController extends Controller
     private function extractWeatherData(array $fullData): array
     {
         $hourlyData = [];
-        
+
         // Extraction des données horaires (seulement les champs utilisés)
         if (isset($fullData['forecast']['forecastday'][0]['hour'])) {
             foreach ($fullData['forecast']['forecastday'][0]['hour'] as $hour) {
