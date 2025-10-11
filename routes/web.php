@@ -14,6 +14,8 @@ Route::get('/', function () {
     return file_get_contents(public_path('next/index.html'));
 });
 
+Route::get('/rgpd', function () { return view('rgpd');})->name('rgpd');
+
 Route::get('/metrics', function (CollectorRegistry $registry) {
     $renderer = new RenderTextFormat();
     return response($renderer->render($registry->getMetricFamilySamples()))

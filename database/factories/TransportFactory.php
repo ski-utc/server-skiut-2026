@@ -30,13 +30,26 @@ class TransportFactory extends Factory
         ];
 
         $route = fake()->randomElement($routes);
-        $colours = ['Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange', 'Violet', 'Rose', 'Blanc'];
+
+        // Tableau associatif pour lier les couleurs à leurs noms
+        $colourPairs = [
+            ['colour' => '#a684ff', 'name' => 'Purple'],
+            ['colour' => '#ff6467', 'name' => 'Red'],
+            ['colour' => '#fcc800', 'name' => 'Yellow'],
+            ['colour' => '#51a2ff', 'name' => 'Blue'],
+            ['colour' => '#05df72', 'name' => 'Green'],
+            ['colour' => '#fb64b6', 'name' => 'Pink'],
+            ['colour' => '#ff8904', 'name' => 'Orange'],
+        ];
+
+        $selectedColour = fake()->randomElement($colourPairs);
         $types = ['aller', 'retour'];
 
         return [
             'departure' => $route[0],
             'arrival' => $route[1],
-            'colour' => fake()->randomElement($colours),
+            'colour' => $selectedColour['colour'],
+            'colourName' => $selectedColour['name'],
             'type' => fake()->randomElement($types),
             'horaire_depart' => fake()->time(),
             'horaire_arrivee' => fake()->time(),
