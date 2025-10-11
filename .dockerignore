@@ -7,7 +7,6 @@ public/hot
 vendor/
 
 # Cache et logs Laravel
-storage/app/public/
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
