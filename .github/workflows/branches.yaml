@@ -97,10 +97,9 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: false
+          push: true
           tags: |
             ${{ env.PROJECT_IMAGE_TAG }}
-            ${{ env.PROJECT_IMAGE_LATEST }}
 
   integration_test:
     runs-on: ubuntu-latest
