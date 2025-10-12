@@ -11,7 +11,7 @@ services:
     env_file:
       - .env.local
     volumes:
-      - users-data:/var/www/html/storage/app/private
+      - users-data:/var/www/html/storage
     networks:
       - skiut-net
 
