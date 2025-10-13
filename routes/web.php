@@ -14,10 +14,6 @@ Route::get('/', function () {
     return file_get_contents(public_path('next/index.html'));
 });
 
-Route::get('/_next/{path}', function ($path) {
-    return file_get_contents(public_path('next/_next/' . $path));
-})->where('path', '.*');
-
 Route::get('/rgpd', function () { return view('rgpd');})->name('rgpd');
 
 Route::get('/metrics', function (CollectorRegistry $registry) {
