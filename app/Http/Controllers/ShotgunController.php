@@ -26,7 +26,7 @@ class ShotgunController extends Controller
     {
         try {
             $availablePlaces = 316;
-            
+
             $request->validate([
                 'email' => [
                     'required',
@@ -37,9 +37,11 @@ class ShotgunController extends Controller
             ]);
 
             $token = $request->input('token');
-            if (! ShotgunToken::where('token', $token)->where('expires_at', '>', now())->exists()) {
+            $shotgunToken = ShotgunToken::where('token', $token)->where('expires_at', '>', now())->first();
+            if (!$shotgunToken) {
                 return response()->json(['error' => 'Invalid or expired token'], 400);
             }
+            $shotgunToken->delete();
 
             $exists = Shotguns::where('email', $request->input('email'));
             if ($exists->exists()) {
