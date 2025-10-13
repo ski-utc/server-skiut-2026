@@ -25,6 +25,8 @@ class ShotgunController extends Controller
     public function submit(Request $request)
     {
         try {
+            $availablePlaces = 316;
+            
             $request->validate([
                 'email' => [
                     'required',
@@ -42,7 +44,7 @@ class ShotgunController extends Controller
             $exists = Shotguns::where('email', $request->input('email'));
             if ($exists->exists()) {
                 $position = $exists->first()->position;
-                $win = $position <= 307 ? true : false;
+                $win = $position <= $availablePlaces ? true : false;
 
                 return response()->json(['success' => true, 'position' => $position, 'win' => $win, 'new' => false]);
             }
@@ -51,7 +53,7 @@ class ShotgunController extends Controller
             $position = $lastPosition + 1;
             Shotguns::create(['email' => $request->input('email'), 'position' => $position]);
 
-            $win = $position <= 307 ? true : false;
+            $win = $position <= $availablePlaces ? true : false;
 
             return response()->json(['success' => true, 'position' => $position, 'win' => $win, 'new' => true]);
         } catch (ValidationException $e) {
