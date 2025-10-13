@@ -17,7 +17,6 @@ class AnecdoteController extends Controller
     {
         try {
             $userId = $request->user['id'];
-            ;
 
             $quantity = $request->input('quantity', 10);
 
@@ -55,7 +54,6 @@ class AnecdoteController extends Controller
     public function likeAnecdote(Request $request)
     {
         $userId = $request->user['id'];
-        ;
 
         $anecdoteId = $request->input('anecdoteId');
 
@@ -83,7 +81,6 @@ class AnecdoteController extends Controller
     public function warnAnecdote(Request $request)
     {
         $userId = $request->user['id'];
-        ;
 
         $anecdoteId = $request->input('anecdoteId');
 
@@ -130,7 +127,6 @@ class AnecdoteController extends Controller
     {
         try {
             $userId = $request->user['id'];
-            ;
             $anecdoteId = $request->input('anecdoteId');
             $anecdote = Anecdote::find($anecdoteId);
 
