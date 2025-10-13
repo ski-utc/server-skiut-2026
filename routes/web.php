@@ -22,7 +22,7 @@ Route::get('/metrics', function (CollectorRegistry $registry) {
         ->header('Content-Type', RenderTextFormat::MIME_TYPE);
 });
 
-Route::get('/game', [\App\Http\Controllers\ShotgunController::class, 'showGame'])->name('game');
+Route::get('/shotgun', [\App\Http\Controllers\ShotgunController::class, 'showGame'])->name('game');
 Route::post('/submit', [\App\Http\Controllers\ShotgunController::class, 'submit'])->name('submit');
 
 require __DIR__.'/auth.php';
