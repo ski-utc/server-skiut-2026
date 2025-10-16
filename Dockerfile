@@ -46,6 +46,7 @@ RUN cp .env.ci .env && php artisan key:generate
 
 RUN mkdir -p storage/logs storage/framework bootstrap/cache && \
     chown -R www-data:www-data /var/www/html && \
+    chown -R www-data:www-data /var/www/html/storage && \
     chmod -R 775 storage bootstrap/cache
 
 # ---- Nginx configuration ----
