@@ -140,6 +140,7 @@ return [
 
     'providers' => ServiceProvider::defaultProviders()->merge([
         App\Providers\RouteServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
         PrometheusServiceProvider::class,
     ])->toArray(),
 

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ActivitySeeder::class,
             NotificationSeeder::class,
             TransportSeeder::class,
+            ChambreSeeder::class,
 
             RoomSeeder::class,
             UserSeeder::class,

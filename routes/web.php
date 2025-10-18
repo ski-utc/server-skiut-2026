@@ -3,26 +3,34 @@
 use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
+use App\Http\Controllers\ShotgunController;
+use App\Http\Controllers\AuthBackOfficeController;
 
-/*
-Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
-    php artisan route:clear
-    php artisan route:list
-*/
-
-Route::get('/', function () {
-    return file_get_contents(public_path('next/index.html'));
-});
-
-Route::get('/rgpd', function () { return view('rgpd');})->name('rgpd');
-
+/************************************************************** Metrics *************************************************************/
 Route::get('/metrics', function (CollectorRegistry $registry) {
     $renderer = new RenderTextFormat();
     return response($renderer->render($registry->getMetricFamilySamples()))
         ->header('Content-Type', RenderTextFormat::MIME_TYPE);
 });
+/**********************************************************************************************************************************************/
 
-Route::get('/shotgun', [\App\Http\Controllers\ShotgunController::class, 'showGame'])->name('game');
-Route::post('/submit', [\App\Http\Controllers\ShotgunController::class, 'submit'])->name('submit');
+/************************************************************** Website *************************************************************/
+Route::get('/', function () {return file_get_contents(public_path('next/index.html'));});
+/**********************************************************************************************************************************************/
+
+/************************************************************** RGPD *************************************************************/
+Route::get('/rgpd', function () { return view('rgpd');})->name('rgpd');
+/**********************************************************************************************************************************************/
+
+/************************************************************** Shotgun Billetterie *************************************************************/
+Route::get('/shotgun', [ShotgunController::class, 'showGame'])->name('game');
+Route::post('/submit', [ShotgunController::class, 'submit'])->name('submit');
+/***********************************************************************************************************************************************/
+
+/************************************************************** Back-Office Shotgun Chambre ***************************************************/
+Route::get('/auth/shotgun-chambre/login', [AuthBackOfficeController::class, 'login'])->name('backoffice.login');
+Route::get('/auth/shotgun-chambre/callback', [AuthBackOfficeController::class, 'callback'])->name('backoffice.callback');
+Route::get('/auth/shotgun-chambre/logout', [AuthBackOfficeController::class, 'logout'])->name('backoffice.logout');
+/**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';

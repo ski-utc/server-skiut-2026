@@ -11,12 +11,6 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Support\Facades\Route;
 
-/*
-Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
-    php artisan route:clear
-    php artisan route:list
-*/
-
 /************************************************************** Login *************************************************************/
 Route::get('/connected', function () { return view('api-connected');})->name('api-connected');
 Route::get('/notConnected', function () { return view('api-not-connected');})->name('api-not-connected');

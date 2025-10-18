@@ -16,9 +16,10 @@ FROM php:8.3-fpm
 RUN apt-get update && apt-get install -y \
     git zip unzip curl nginx supervisor \
     libzip-dev libpng-dev libonig-dev libxml2-dev libjpeg-dev libfreetype6-dev libssl-dev \
+    libicu-dev \
     && pecl install apcu \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath \
-    && docker-php-ext-enable apcu opcache \
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath intl \
+    && docker-php-ext-enable apcu opcache intl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN echo "opcache.enable=1\n\
@@ -45,6 +46,8 @@ COPY --from=frontend /app/public/build ./public/build
 RUN cp .env.ci .env && php artisan key:generate
 
 RUN mkdir -p storage/logs storage/framework bootstrap/cache && \
+    touch storage/logs/laravel.log && \
+    chmod 666 storage/logs/laravel.log && \
     chown -R www-data:www-data /var/www/html && \
     chown -R www-data:www-data /var/www/html/storage && \
     chmod -R 775 storage bootstrap/cache

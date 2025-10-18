@@ -9,6 +9,7 @@ class Kernel extends ConsoleKernel
 {
     protected $commands = [
         Commands\GenerateJwtKeys::class,
+        Commands\CleanExpiredLocks::class,
     ];
 
 
@@ -17,7 +18,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Nettoyer les verrous de chambres expirés toutes les minutes
+        $schedule->command('chambres:clean-locks')->everyMinute();
     }
 
     /**
