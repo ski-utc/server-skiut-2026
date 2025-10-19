@@ -13,12 +13,12 @@ class CleanExpiredLocks extends Command
     public function handle()
     {
         $expiredLocks = Chambre::where('locked_until', '<', now())->get();
-        
+
         foreach ($expiredLocks as $chambre) {
             $chambre->unlock();
             $this->info("Chambre {$chambre->numero} débloquée");
         }
-        
+
         $this->info("Nettoyage terminé. {$expiredLocks->count()} chambres débloquées.");
     }
 }

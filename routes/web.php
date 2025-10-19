@@ -1,10 +1,10 @@
 <?php
 
+use App\Http\Controllers\AuthBackOfficeController;
+use App\Http\Controllers\ShotgunController;
 use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
-use App\Http\Controllers\ShotgunController;
-use App\Http\Controllers\AuthBackOfficeController;
 
 /************************************************************** Metrics *************************************************************/
 Route::get('/metrics', function (CollectorRegistry $registry) {

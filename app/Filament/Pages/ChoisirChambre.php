@@ -3,13 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Models\Chambre;
-use App\Models\Shotguns;
 use App\Models\ChambreUser;
-use Filament\Forms\Components\Select;
+use App\Models\Shotguns;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -59,7 +58,7 @@ class ChoisirChambre extends Page
                                             $chambre = Chambre::find($state);
                                             if ($chambre) {
                                                 $set('nb_places', $chambre->nb_places);
-                                                
+
                                                 // Créer les champs pour les emails
                                                 $emails = [];
                                                 for ($i = 0; $i < $chambre->nb_places; $i++) {
@@ -72,14 +71,14 @@ class ChoisirChambre extends Page
                                             }
                                         }
                                     }),
-                                
+
                                 TextInput::make('nb_places')
                                     ->label('Nombre de places')
                                     ->disabled()
                                     ->dehydrated(false),
                             ])
                             ->columns(2),
-                
+
                 Section::make('Participants de la chambre')
                     ->schema([
                         Repeater::make('emails')
@@ -92,7 +91,7 @@ class ChoisirChambre extends Page
                                     })
                                     ->searchable()
                                     ->required(),
-                                
+
                                 Select::make('is_responsable')
                                     ->label('Responsable')
                                     ->options([
@@ -111,7 +110,7 @@ class ChoisirChambre extends Page
                             ->disabled(fn ($get) => $get('chambre_id')),
                     ])
                     ->visible(fn ($get) => $get('chambre_id')),
-                
+
                 Section::make('Configuration de la chambre')
                     ->schema([
                         Select::make('ambiance')
@@ -133,34 +132,34 @@ class ChoisirChambre extends Page
     public function save(): void
     {
         $data = $this->form->getState();
-        
+
         try {
             DB::beginTransaction();
-            
+
             // Vérifier que la chambre est toujours disponible
             $chambre = Chambre::find($data['chambre_id']);
             if (!$chambre->isAvailable()) {
                 throw new \Exception('Cette chambre n\'est plus disponible');
             }
-            
+
             // Bloquer la chambre
             $chambre->lock('system');
-            
+
             // Vérifier que tous les emails existent dans Shotguns
             $emails = collect($data['emails'])->pluck('email');
             $existingEmails = Shotguns::whereIn('email', $emails)->pluck('email');
             $missingEmails = $emails->diff($existingEmails);
-            
+
             if ($missingEmails->isNotEmpty()) {
                 throw new \Exception('Les emails suivants ne sont pas inscrits : ' . $missingEmails->implode(', '));
             }
-            
+
             // Vérifier qu'il y a exactement un responsable
             $responsables = collect($data['emails'])->where('is_responsable', true)->count();
             if ($responsables !== 1) {
                 throw new \Exception('Il doit y avoir exactement un responsable de chambre');
             }
-            
+
             // Créer les associations chambre-utilisateur
             foreach ($data['emails'] as $emailData) {
                 ChambreUser::create([
@@ -168,30 +167,30 @@ class ChoisirChambre extends Page
                     'email' => $emailData['email'],
                 ]);
             }
-            
+
             // Mettre à jour le responsable de chambre et l'ambiance
             $responsableEmail = collect($data['emails'])->where('is_responsable', true)->first()['email'];
             $chambre->update([
                 'responsable_chambre' => $responsableEmail,
                 'ambiance' => $data['ambiance']
             ]);
-            
+
             // Débloquer la chambre
             $chambre->unlock();
-            
+
             DB::commit();
-            
+
             Notification::make()
                 ->title('Réservation réussie')
                 ->success()
                 ->send();
-            
+
             $this->form->fill();
             $this->selectedChambreId = null;
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Notification::make()
                 ->title('Erreur lors de la réservation')
                 ->body($e->getMessage())

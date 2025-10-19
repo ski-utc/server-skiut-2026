@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ShotgunChambresAdmin;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -36,7 +35,7 @@ class AuthBackOfficeController extends Controller
         $authorizationUrl = $this->provider->getAuthorizationUrl([
             'state' => $state
         ]);
-        
+
         return redirect($authorizationUrl);
     }
 
@@ -44,25 +43,25 @@ class AuthBackOfficeController extends Controller
      * Gère le callback de l'OAuth du SiMDE pour le back-office
      */
     public function callback(Request $request)
-    {        
+    {
         $storedState = $request->session()->pull('oauth2state_backoffice');
 
         if (!$request->has('state') || $request->get('state') !== $storedState) {
             abort(400, 'Invalid state: ' . $request->get('state') . ' VS ' . $storedState);
         }
-        
+
         if (!$request->has('code')) {
             abort(400, 'No authorization code');
         }
 
-        try {            
+        try {
             $accessToken = $this->provider->getAccessToken('authorization_code', [
                 'code' => $request->get('code'),
             ]);
-            
+
             $resourceOwner = $this->provider->getResourceOwner($accessToken);
             $userDetails = $resourceOwner->toArray();
-            
+
             if ($userDetails['deleted_at'] != null || $userDetails['active'] != 1) {
                 abort(401, 'Compte supprimé ou désactivé');
             }

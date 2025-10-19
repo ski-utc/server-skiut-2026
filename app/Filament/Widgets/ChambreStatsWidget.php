@@ -22,17 +22,17 @@ class ChambreStatsWidget extends BaseWidget
                 ->description('Chambres créées')
                 ->descriptionIcon('heroicon-m-home')
                 ->color('primary'),
-            
+
             Stat::make('Chambres disponibles', $chambresDisponibles)
                 ->description('Prêtes à être réservées')
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success'),
-            
+
             Stat::make('Chambres complètes', $chambresCompletes)
                 ->description('Toutes les places occupées')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('warning'),
-            
+
             Stat::make('Chambres bloquées', $chambresBloquees)
                 ->description('En cours de réservation')
                 ->descriptionIcon('heroicon-m-lock-closed')

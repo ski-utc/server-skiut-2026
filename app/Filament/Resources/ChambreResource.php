@@ -4,20 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChambreResource\Pages;
 use App\Models\Chambre;
-use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
-use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class ChambreResource extends Resource
 {
@@ -44,7 +41,7 @@ class ChambreResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        
+
                         TextInput::make('nb_places')
                             ->label('Nombre de places')
                             ->required()
@@ -64,16 +61,16 @@ class ChambreResource extends Resource
                     ->label('Numéro')
                     ->searchable()
                     ->sortable(),
-                
+
                 TextColumn::make('nb_places')
                     ->label('Places')
                     ->sortable(),
-                
+
                 // TextColumn::make('users_count')
                 //     ->label('Occupées')
                 //     ->counts('users')
                 //     ->sortable(),
-                
+
                 BadgeColumn::make('ambiance')
                     ->label('Ambiance')
                     ->colors([
@@ -86,12 +83,12 @@ class ChambreResource extends Resource
                         return ucfirst($state);
                     })
                     ->placeholder('Non défini'),
-                
+
                 TextColumn::make('responsable_chambre')
                     ->label('Responsable')
                     ->searchable()
                     ->placeholder('Non défini'),
-                
+
                 BadgeColumn::make('status')
                     ->label('Statut')
                     ->getStateUsing(function (Chambre $record): string {
@@ -108,7 +105,7 @@ class ChambreResource extends Resource
                         'warning' => 'Complète',
                         'success' => 'Disponible',
                     ]),
-                
+
                 TextColumn::make('locked_until')
                     ->label('Bloquée jusqu\'à')
                     ->dateTime()
@@ -123,7 +120,7 @@ class ChambreResource extends Resource
                         'petite night' => 'Petite night',
                         'calme' => 'Calme',
                     ]),
-                
+
                 Tables\Filters\TernaryFilter::make('is_available')
                     ->label('Disponible')
                     ->queries(

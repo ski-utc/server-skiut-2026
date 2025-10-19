@@ -4,22 +4,18 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChambreSelectionResource\Pages;
 use App\Models\Chambre;
-use App\Models\Shotguns;
 use App\Models\ChambreUser;
-use Filament\Forms;
-use Filament\Forms\Form;
+use App\Models\Shotguns;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Actions\Action;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
-use Filament\Notifications\Notification;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
 class ChambreSelectionResource extends Resource
@@ -51,17 +47,19 @@ class ChambreSelectionResource extends Resource
                             ->prefix('Chambre ')
                             ->weight('bold')
                             ->size('lg'),
-    
+
                         TextColumn::make('nb_places')
                             ->label('Places')
                             ->suffix(' places'),
-    
+
                         TextColumn::make('status')
                             ->label('Statut')
-                            ->getStateUsing(fn (Chambre $record) => 
+                            ->getStateUsing(
+                                fn (Chambre $record) =>
                                 $record->isLockedByOther(session('email')) ? 'En cours de réservation' : 'Disponible'
                             )
-                            ->color(fn (Chambre $record) => 
+                            ->color(
+                                fn (Chambre $record) =>
                                 $record->isLockedByOther(session('email')) ? 'warning' : 'success'
                             ),
                     ]),
@@ -81,7 +79,7 @@ class ChambreSelectionResource extends Resource
                 ->form(fn (Chambre $record) => self::getSelectionFormSchema($record))
                 ->action(function (array $data, Chambre $record) {
                     $email = session('email');
-            
+
                     if (ChambreUser::where('email', $email)->exists()) {
                         Notification::make()
                             ->title('Vous êtes déjà dans une chambre.')
@@ -90,11 +88,11 @@ class ChambreSelectionResource extends Resource
                             ->send();
                         return;
                     }
-            
+
                     Chambre::where('locked_by_email', $email)
                         ->where('id', '!=', $record->id)
                         ->update(['locked_by_email' => null, 'locked_until' => null]);
-            
+
                     if (!$record->lock($email)) {
                         Notification::make()
                             ->title('Chambre déjà en cours de réservation')
@@ -102,9 +100,9 @@ class ChambreSelectionResource extends Resource
                             ->send();
                         return;
                     }
-            
+
                     self::handleSelection($data, $record);
-                })                      
+                })
             ])
             ->emptyStateHeading('Aucune chambre disponible')
             ->emptyStateDescription('Aucune chambre n\'est disponible pour le moment')
@@ -116,7 +114,7 @@ class ChambreSelectionResource extends Resource
     {
         $nbSlots = $record ? max($record->nb_places - 1, 0) : 0;
         $email = session('email');
-            
+
         if (ChambreUser::where('email', $email)->exists()) {
             Notification::make()
                 ->title('Vous êtes déjà dans une chambre.')
@@ -137,7 +135,7 @@ class ChambreSelectionResource extends Resource
                 ->send();
             return [];
         }
-    
+
         return [
             Section::make('Informations de la chambre')
                 ->schema([
@@ -145,7 +143,7 @@ class ChambreSelectionResource extends Resource
                         ->label('Chambre sélectionnée')
                         ->default(fn (Chambre $record) => "Chambre {$record->numero} - {$record->nb_places} places")
                         ->dehydrated(false),
-    
+
                     Select::make('ambiance')
                         ->label('Ambiance de la chambre')
                         ->options([
@@ -158,7 +156,7 @@ class ChambreSelectionResource extends Resource
                         ->required(),
                 ])
                 ->columns(2),
-    
+
             Section::make('Participant·e·s')
                 ->schema([
                     Select::make('responsable_email')
@@ -167,11 +165,11 @@ class ChambreSelectionResource extends Resource
                         ->searchable()
                         ->required()
                         ->default(session('email')),
-    
+
                     Grid::make(3)
                         ->schema(array_map(
                             fn ($i) => Select::make("participants.$i.email")
-                                ->label("Participant·e " . ($i + 1))
+                                ->label('Participant·e ' . ($i + 1))
                                 ->options(fn () => Shotguns::pluck('email', 'email'))
                                 ->searchable()
                                 ->required(),
@@ -179,7 +177,7 @@ class ChambreSelectionResource extends Resource
                         )),
                 ]),
         ];
-    }    
+    }
 
     protected static function handleSelection(array $data, Chambre $record): void
     {

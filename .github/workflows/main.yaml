@@ -39,7 +39,7 @@ jobs:
     container: laravelsail/php83-composer:latest
     steps:
       - uses: actions/checkout@v4
-      - run: composer install --no-interaction
+      - run: composer install --no-interaction --ignore-platform-req=ext-intl
       - run: php vendor/bin/security-checker security:check || true
 
   composer-outdated:
@@ -47,7 +47,7 @@ jobs:
     container: laravelsail/php83-composer:latest
     steps:
       - uses: actions/checkout@v4
-      - run: composer install --no-interaction
+      - run: composer install --no-interaction --ignore-platform-req=ext-intl
       - run: composer outdated --direct || true
 
   run-tests:

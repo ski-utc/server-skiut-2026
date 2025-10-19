@@ -3,20 +3,19 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Chambre;
-use Filament\Widgets\Widget;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Actions\Action;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Section;
-use Filament\Notifications\Notification;
-use Illuminate\Support\Facades\DB;
-use App\Models\Shotguns;
 use App\Models\ChambreUser;
+use App\Models\Shotguns;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Facades\DB;
 
 class ChambreDisponibleWidget extends Widget
 {
@@ -39,13 +38,13 @@ class ChambreDisponibleWidget extends Widget
                     ->sortable()
                     ->weight('bold')
                     ->size('lg'),
-                
+
                 TextColumn::make('nb_places')
                     ->label('Places')
                     ->sortable()
                     ->badge()
                     ->color('primary'),
-                
+
                 BadgeColumn::make('status')
                     ->label('Statut')
                     ->getStateUsing(function (Chambre $record): string {
@@ -72,7 +71,7 @@ class ChambreDisponibleWidget extends Widget
                                     ->default(fn (Chambre $record) => "Chambre {$record->numero} - {$record->nb_places} places")
                                     ->disabled()
                                     ->dehydrated(false),
-                                
+
                                 Select::make('ambiance')
                                     ->label('Ambiance de la chambre')
                                     ->options([
@@ -85,7 +84,7 @@ class ChambreDisponibleWidget extends Widget
                                     ->default(fn (Chambre $record) => $record->ambiance),
                             ])
                             ->columns(2),
-                        
+
                         Section::make('Participants de la chambre')
                             ->schema([
                                 Repeater::make('emails')
@@ -98,7 +97,7 @@ class ChambreDisponibleWidget extends Widget
                                             })
                                             ->searchable()
                                             ->required(),
-                                        
+
                                         Select::make('is_responsable')
                                             ->label('Responsable')
                                             ->options([
@@ -121,36 +120,36 @@ class ChambreDisponibleWidget extends Widget
                     ->action(function (array $data, Chambre $record): void {
                         try {
                             DB::beginTransaction();
-                            
+
                             // Vérifier que la chambre est toujours disponible
                             $chambre = Chambre::find($record->id);
                             if (!$chambre->isAvailable()) {
                                 throw new \Exception('Cette chambre n\'est plus disponible');
                             }
-                            
+
                             // Bloquer la chambre
                             $chambre->lock('system');
-                            
+
                             // Vérifier que tous les emails existent dans Shotguns
                             $emails = collect($data['emails'])->pluck('email');
                             $existingEmails = Shotguns::whereIn('email', $emails)->pluck('email');
                             $missingEmails = $emails->diff($existingEmails);
-                            
+
                             if ($missingEmails->isNotEmpty()) {
                                 throw new \Exception('Les emails suivants ne sont pas inscrits : ' . $missingEmails->implode(', '));
                             }
-                            
+
                             // Vérifier qu'il y a exactement un responsable
                             $responsables = collect($data['emails'])->where('is_responsable', true)->count();
                             if ($responsables !== 1) {
                                 throw new \Exception('Il doit y avoir exactement un responsable de chambre');
                             }
-                            
+
                             // Vérifier qu'il y a le bon nombre d'emails
                             if (count($data['emails']) !== $chambre->nb_places) {
                                 throw new \Exception('Il doit y avoir exactement ' . $chambre->nb_places . ' participants');
                             }
-                            
+
                             // Créer les associations chambre-utilisateur
                             foreach ($data['emails'] as $emailData) {
                                 ChambreUser::create([
@@ -158,27 +157,27 @@ class ChambreDisponibleWidget extends Widget
                                     'email' => $emailData['email'],
                                 ]);
                             }
-                            
+
                             // Mettre à jour le responsable de chambre et l'ambiance
                             $responsableEmail = collect($data['emails'])->where('is_responsable', true)->first()['email'];
                             $chambre->update([
                                 'responsable_chambre' => $responsableEmail,
                                 'ambiance' => $data['ambiance']
                             ]);
-                            
+
                             // Débloquer la chambre
                             $chambre->unlock();
-                            
+
                             DB::commit();
-                            
+
                             Notification::make()
                                 ->title('Réservation réussie')
                                 ->success()
                                 ->send();
-                                
+
                         } catch (\Exception $e) {
                             DB::rollBack();
-                            
+
                             Notification::make()
                                 ->title('Erreur lors de la réservation')
                                 ->body($e->getMessage())
