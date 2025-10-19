@@ -6,9 +6,9 @@ use Filament\Pages\Page;
 
 class Dashboard extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationIcon = 'heroicon-o-information-circle';
     protected static string $view = 'filament.pages.dashboard';
-    protected static ?string $title = 'Tableau de bord';
+    protected static ?string $title = '';
     protected static ?string $navigationLabel = 'Tableau de bord';
 
     public static function canAccess(): bool

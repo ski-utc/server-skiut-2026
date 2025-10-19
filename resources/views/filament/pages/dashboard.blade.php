@@ -1,11 +1,11 @@
 <x-filament-panels::page>
     <div class="space-y-6">
         <div class="text-center">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Bienvenue sur le système de réservation de chambres
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+                Bienvenue sur le système de réservation de chambres pour Ski'UT ! 
             </h1>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-                Gérez vos chambres et réservez votre place pour le voyage
+            <p class="mt-2 text-gray-600 dark:text-gray-400 mb-8">
+                Rendez-vous dans l'onglet "Choisir ma chambre" pour shotgun votre chambre pour le voyage
             </p>
         </div>
         

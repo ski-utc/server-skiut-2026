@@ -30,6 +30,11 @@ class Chambre extends Model
         return $this->locked_until && $this->locked_until->isFuture();
     }
 
+    public function isLockedByOther(string $email): bool
+    {
+        return $this->isLocked() && $this->locked_by_email !== $email;
+    }
+
     public function isFull(): bool
     {
         return $this->users()->count() >= $this->nb_places;
@@ -40,11 +45,16 @@ class Chambre extends Model
         return !$this->isLocked() && !$this->isFull();
     }
 
-    public function lock(string $email): void
+    public function lock(string $email): bool
     {
+        if ($this->isLockedByOther($email)) {
+            return false;
+        }
+
         $this->locked_until = now()->addMinutes(5);
         $this->locked_by_email = $email;
         $this->save();
+        return true;
     }
 
     public function unlock(): void

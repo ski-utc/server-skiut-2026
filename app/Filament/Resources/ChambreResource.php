@@ -22,15 +22,10 @@ use Filament\Forms\Components\Section;
 class ChambreResource extends Resource
 {
     protected static ?string $model = Chambre::class;
-
-    protected static ?string $navigationIcon = 'heroicon-o-home';
-
+    protected static ?string $navigationIcon = 'heroicon-o-numbered-list';
     protected static ?string $navigationLabel = 'Gestion des chambres';
-
     protected static ?string $modelLabel = 'Chambre';
-
     protected static ?string $pluralModelLabel = 'Chambres';
-
     protected static ?string $navigationGroup = 'Administration';
 
     public static function canViewAny(): bool
@@ -149,7 +144,10 @@ class ChambreResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->emptyStateHeading('Aucune chambre disponible')
+            ->emptyStateDescription('Aucune chambre n\'est disponible pour le moment')
+            ->emptyStateIcon('heroicon-o-face-frown');
     }
 
     public static function getRelations(): array
