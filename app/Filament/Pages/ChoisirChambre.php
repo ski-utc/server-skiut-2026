@@ -2,9 +2,9 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Chambre;
-use App\Models\ChambreUser;
+use App\Models\Room;
 use App\Models\Shotguns;
+use App\Models\User;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -23,7 +23,7 @@ class ChoisirChambre extends Page
     protected static ?string $navigationGroup = 'Réservation';
 
     public ?array $data = [];
-    public ?int $selectedChambreId = null;
+    public ?int $selectedRoomId = null;
 
     public function mount(): void
     {
@@ -36,32 +36,32 @@ class ChoisirChambre extends Page
             ->schema([
                         Section::make('Sélection de chambre')
                             ->schema([
-                                Select::make('chambre_id')
+                                Select::make('room_id')
                                     ->label('Chambre')
                                     ->options(function () {
-                                        return Chambre::whereDoesntHave('users')
+                                        return Room::whereDoesntHave('users')
                                             ->where(function ($query) {
                                                 $query->whereNull('locked_until')
                                                     ->orWhere('locked_until', '<=', now());
                                             })
                                             ->get()
-                                            ->mapWithKeys(function ($chambre) {
-                                                return [$chambre->id => "Chambre {$chambre->numero} - {$chambre->nb_places} places"];
+                                            ->mapWithKeys(function ($room) {
+                                                return [$room->id => "Chambre {$room->roomNumber} - {$room->capacity} places"];
                                             });
                                     })
                                     ->required()
                                     ->searchable()
                                     ->live()
                                     ->afterStateUpdated(function ($state, callable $set) {
-                                        $this->selectedChambreId = $state;
+                                        $this->selectedRoomId = $state;
                                         if ($state) {
-                                            $chambre = Chambre::find($state);
-                                            if ($chambre) {
-                                                $set('nb_places', $chambre->nb_places);
+                                            $room = Room::find($state);
+                                            if ($room) {
+                                                $set('capacity', $room->capacity);
 
                                                 // Créer les champs pour les emails
                                                 $emails = [];
-                                                for ($i = 0; $i < $chambre->nb_places; $i++) {
+                                                for ($i = 0; $i < $room->capacity; $i++) {
                                                     $emails[] = [
                                                         'email' => '',
                                                         'is_responsable' => $i === 0,
@@ -72,7 +72,7 @@ class ChoisirChambre extends Page
                                         }
                                     }),
 
-                                TextInput::make('nb_places')
+                                TextInput::make('capacity')
                                     ->label('Nombre de places')
                                     ->disabled()
                                     ->dehydrated(false),
@@ -107,13 +107,13 @@ class ChoisirChambre extends Page
                             ->reorderable(false)
                             ->collapsible(false)
                             ->itemLabel(fn (array $state): ?string => $state['email'] ?? null)
-                            ->disabled(fn ($get) => $get('chambre_id')),
+                            ->disabled(fn ($get) => $get('room_id')),
                     ])
-                    ->visible(fn ($get) => $get('chambre_id')),
+                    ->visible(fn ($get) => $get('room_id')),
 
                 Section::make('Configuration de la chambre')
                     ->schema([
-                        Select::make('ambiance')
+                        Select::make('mood')
                             ->label('Ambiance de la chambre')
                             ->options([
                                 'mega grosse night' => 'Mega grosse night',
@@ -121,10 +121,10 @@ class ChoisirChambre extends Page
                                 'petite night' => 'Petite night',
                                 'calme' => 'Calme',
                             ])
-                            ->required()
+                            ->nullable()
                             ->default('calme'),
                     ])
-                    ->visible(fn ($get) => $get('chambre_id')),
+                    ->visible(fn ($get) => $get('room_id')),
             ])
             ->statePath('data');
     }
@@ -137,13 +137,13 @@ class ChoisirChambre extends Page
             DB::beginTransaction();
 
             // Vérifier que la chambre est toujours disponible
-            $chambre = Chambre::find($data['chambre_id']);
-            if (!$chambre->isAvailable()) {
+            $room = Room::find($data['room_id']);
+            if (!$room->isAvailable()) {
                 throw new \Exception('Cette chambre n\'est plus disponible');
             }
 
             // Bloquer la chambre
-            $chambre->lock('system');
+            $room->lock('system');
 
             // Vérifier que tous les emails existent dans Shotguns
             $emails = collect($data['emails'])->pluck('email');
@@ -160,23 +160,24 @@ class ChoisirChambre extends Page
                 throw new \Exception('Il doit y avoir exactement un responsable de chambre');
             }
 
-            // Créer les associations chambre-utilisateur
+            // Assigner les utilisateurs à la room
             foreach ($data['emails'] as $emailData) {
-                ChambreUser::create([
-                    'chambre_id' => $chambre->id,
-                    'email' => $emailData['email'],
-                ]);
+                $user = User::where('email', $emailData['email'])->first();
+                if ($user) {
+                    $user->update(['roomID' => $room->id]);
+                }
             }
 
             // Mettre à jour le responsable de chambre et l'ambiance
             $responsableEmail = collect($data['emails'])->where('is_responsable', true)->first()['email'];
-            $chambre->update([
-                'responsable_chambre' => $responsableEmail,
-                'ambiance' => $data['ambiance']
+            $responsableUser = User::where('email', $responsableEmail)->first();
+            $room->update([
+                'userID' => $responsableUser ? $responsableUser->id : null,
+                'mood' => $data['mood'] ?? null
             ]);
 
             // Débloquer la chambre
-            $chambre->unlock();
+            $room->unlock();
 
             DB::commit();
 
@@ -186,7 +187,7 @@ class ChoisirChambre extends Page
                 ->send();
 
             $this->form->fill();
-            $this->selectedChambreId = null;
+            $this->selectedRoomId = null;
 
         } catch (\Exception $e) {
             DB::rollBack();

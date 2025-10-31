@@ -62,9 +62,9 @@ class DefisController extends Controller
     }
 
     /**
-     * Récupère l'image de preuve d'un défi
+     * Récupère le média de preuve d'un défi (image ou vidéo)
      */
-    public function getProofImage(Request $request)
+    public function getProofMedia(Request $request)
     {
         try {
             $id = $request->user['id'];
@@ -87,7 +87,8 @@ class DefisController extends Controller
 
             return response()->json([
                 'success' => true,
-                'image' => asset($proof->file),
+                'media' => asset($proof->file),
+                'mediaType' => $proof->media_type ?? 'image',
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e]);
@@ -95,9 +96,9 @@ class DefisController extends Controller
     }
 
     /**
-     * Envoie une preuve d'un défi
+     * Envoie une preuve d'un défi (image ou vidéo)
      */
-    public function uploadProofImage(Request $request)
+    public function uploadProofMedia(Request $request)
     {
         $id = $request->user['id'];
         $user = User::with('room')->where('id', $id)->first();
@@ -109,26 +110,62 @@ class DefisController extends Controller
 
         $defiId = $request->input('defiId');
 
-        if (!$request->hasFile('image')) {
-            return response()->json(['success' => false, 'message' => 'Aucune image fournie'], 400);
+        if (!$request->hasFile('media')) {
+            return response()->json(['success' => false, 'message' => 'Aucun média fourni'], 400);
         }
 
-        $file = $request->file('image');
+        $file = $request->file('media');
+        $mediaType = $request->input('mediaType', 'image');
 
-        if (!$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
+        // Types de fichiers supportés
+        $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo']; // mp4, mov, avi
+        $allowedTypes = array_merge($allowedImageTypes, $allowedVideoTypes);
+
+        if (!$file->isValid() || !in_array($file->getMimeType(), $allowedTypes)) {
             return response()->json(['success' => false, 'message' => 'Fichier invalide ou non pris en charge'], 400);
         }
 
+        // Déterminer le type de média réel basé sur le MIME type
+        $actualMediaType = in_array($file->getMimeType(), $allowedVideoTypes) ? 'video' : 'image';
+
+        // Déterminer l'extension et le dossier
+        $isVideo = ($actualMediaType === 'video');
+        $extension = $isVideo ? '.mp4' : '.jpg';
+        $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
+
+        // Vérifier les tailles de fichiers
+        $maxSize = $isVideo ? 15 * 1024 * 1024 : 5 * 1024 * 1024; // 15MB pour vidéos, 5MB pour images
+        if ($file->getSize() > $maxSize) {
+            $maxSizeText = $isVideo ? '15MB' : '5MB';
+            return response()->json(['success' => false, 'message' => "Fichier trop volumineux (max: {$maxSizeText})"], 400);
+        }
+
         try {
-            $filePath = $file->storeAs('defiProofImages', "challenge_{$defiId}_room_{$userRoomId}.jpg", 'public');
-            ChallengeProof::create(
-                [
-                    'file' => 'storage/' . $filePath,
-                    'challenge_id' => $defiId,
-                    'room_id' => $userRoomId,
-                    'user_id' => $id
-                ]
-            );
+            // Supprimer l'ancienne preuve si elle existe
+            $existingProof = ChallengeProof::where('challenge_id', $defiId)
+                ->where('room_id', $userRoomId)
+                ->first();
+
+            if ($existingProof) {
+                // Supprimer l'ancien fichier
+                $oldPath = str_replace('storage/', '', $existingProof->file);
+                if (\Storage::disk('public')->exists($oldPath)) {
+                    \Storage::disk('public')->delete($oldPath);
+                }
+                $existingProof->delete();
+            }
+
+            $filename = "challenge_{$defiId}_room_{$userRoomId}_" . time() . $extension;
+            $filePath = $file->storeAs($folder, $filename, 'public');
+
+            ChallengeProof::create([
+                'file' => 'storage/' . $filePath,
+                'media_type' => $actualMediaType,
+                'challenge_id' => $defiId,
+                'room_id' => $userRoomId,
+                'user_id' => $id
+            ]);
 
             return response()->json(['success' => true, 'message' => 'Défi envoyé avec succès !']);
         } catch (\Exception $e) {
@@ -137,9 +174,9 @@ class DefisController extends Controller
     }
 
     /**
-     * Supprime une preuve d'un défi
+     * Supprime une preuve d'un défi (image ou vidéo)
      */
-    public function deleteProofImage(Request $request)
+    public function deleteProofMedia(Request $request)
     {
         try {
             $id = $request->user['id'];
@@ -163,21 +200,21 @@ class DefisController extends Controller
                 ]);
             }
 
-            $photoPath = $proof->file;
+            $mediaPath = $proof->file;
 
-            if (!$photoPath) {
+            if (!$mediaPath) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pas de photo associée à ce défi',
+                    'message' => 'Pas de média associé à ce défi',
                 ]);
             }
 
-            $relativePath = str_replace('storage/', '', $photoPath);
+            $relativePath = str_replace('storage/', '', $mediaPath);
 
             if (!Storage::disk('public')->exists($relativePath)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Photo introuvable dans le stockage',
+                    'message' => 'Média introuvable dans le stockage',
                 ]);
             }
 
@@ -188,7 +225,7 @@ class DefisController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Défi supprimée avec succès',
+                'message' => 'Défi supprimé avec succès',
             ]);
         } catch (\Exception $e) {
             return response()->json([

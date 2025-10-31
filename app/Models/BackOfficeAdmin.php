@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ShotgunChambresAdmin extends Model
+class BackOfficeAdmin extends Model
 {
-    protected $table = 'shotgun_chambres_admin';
+    protected $table = 'back_office_admin';
 
     protected $fillable = [
         'email',

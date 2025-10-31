@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChambreResource\Pages;
-use App\Models\Chambre;
+use App\Models\Room;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -18,12 +18,12 @@ use Filament\Tables\Table;
 
 class ChambreResource extends Resource
 {
-    protected static ?string $model = Chambre::class;
+    protected static ?string $model = Room::class;
     protected static ?string $navigationIcon = 'heroicon-o-numbered-list';
     protected static ?string $navigationLabel = 'Gestion des chambres';
     protected static ?string $modelLabel = 'Chambre';
     protected static ?string $pluralModelLabel = 'Chambres';
-    protected static ?string $navigationGroup = 'Administration';
+    protected static ?string $navigationGroup = 'Gestion Pré-voyage';
 
     public static function canViewAny(): bool
     {
@@ -36,18 +36,28 @@ class ChambreResource extends Resource
             ->schema([
                 Section::make('Informations de la chambre')
                     ->schema([
-                        TextInput::make('numero')
+                        TextInput::make('roomNumber')
                             ->label('Numéro de chambre')
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->maxLength(255),
+                            ->numeric(),
 
-                        TextInput::make('nb_places')
+                        TextInput::make('capacity')
                             ->label('Nombre de places')
                             ->required()
                             ->numeric()
                             ->minValue(1)
-                            ->maxValue(10)
+                            ->maxValue(10),
+
+                        TextInput::make('name')
+                            ->label('Nom de la chambre')
+                            ->maxLength(255)
+                            ->nullable(),
+
+                        TextInput::make('mood')
+                            ->label('Ambiance')
+                            ->maxLength(255)
+                            ->nullable()
                     ])
                     ->columns(2),
             ]);
@@ -57,21 +67,26 @@ class ChambreResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('numero')
+                TextColumn::make('roomNumber')
                     ->label('Numéro')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('nb_places')
+                TextColumn::make('name')
+                    ->label('Nom')
+                    ->searchable()
+                    ->placeholder('Non défini'),
+
+                TextColumn::make('capacity')
                     ->label('Places')
                     ->sortable(),
 
-                // TextColumn::make('users_count')
-                //     ->label('Occupées')
-                //     ->counts('users')
-                //     ->sortable(),
+                TextColumn::make('users_count')
+                    ->label('Occupées')
+                    ->counts('users')
+                    ->sortable(),
 
-                BadgeColumn::make('ambiance')
+                BadgeColumn::make('mood')
                     ->label('Ambiance')
                     ->colors([
                         'danger' => 'mega grosse night',
@@ -84,14 +99,14 @@ class ChambreResource extends Resource
                     })
                     ->placeholder('Non défini'),
 
-                TextColumn::make('responsable_chambre')
+                TextColumn::make('respUser.email')
                     ->label('Responsable')
                     ->searchable()
                     ->placeholder('Non défini'),
 
                 BadgeColumn::make('status')
                     ->label('Statut')
-                    ->getStateUsing(function (Chambre $record): string {
+                    ->getStateUsing(function (Room $record): string {
                         if ($record->isLocked()) {
                             return 'Bloquée';
                         }
@@ -113,7 +128,7 @@ class ChambreResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('ambiance')
+                Tables\Filters\SelectFilter::make('mood')
                     ->options([
                         'mega grosse night' => 'Mega grosse night',
                         'grosse night' => 'Grosse night',

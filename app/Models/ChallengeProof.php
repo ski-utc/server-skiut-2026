@@ -10,7 +10,7 @@ class ChallengeProof extends Model
     use HasFactory;
 
     protected $table = 'challenge_proofs';
-    protected $fillable = ['id', 'file', 'nb_likes', 'valid', 'alert', 'delete', 'room_id', 'user_id', 'challenge_id'];
+    protected $fillable = ['id', 'file', 'media_type', 'nb_likes', 'valid', 'alert', 'delete', 'room_id', 'user_id', 'challenge_id'];
 
     public function room()
     {

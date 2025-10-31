@@ -23,20 +23,38 @@ Route::get('/getWeather', [\App\Http\Controllers\HomeController::class, 'getWeat
 /**********************************************************************************************************************************/
 
 /************************************************************** Notifications *************************************************************/
-Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(EnsureTokenIsValid::class);
+// Routes notifications pour utilisateurs
+Route::middleware(EnsureTokenIsValid::class)->group(function () {
+    Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+});
+
+// Routes notifications pour admin (nouvelles)
+Route::middleware([EnsureTokenIsValid::class, AdminMiddleware::class])->group(function () {
+    Route::post('/createNotification', [\App\Http\Controllers\NotificationController::class, 'createNotification']);
+    Route::post('/notifications/{id}/toggle-display', [\App\Http\Controllers\NotificationController::class, 'toggleDisplay']);
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'deleteNotification']);
+    Route::get('/getRecipientsData', [\App\Http\Controllers\NotificationController::class, 'getRecipientsData']);
+});
 /**************************************************************************************************************************************/
 
 /************************************************************** Planning *************************************************************/
 Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(EnsureTokenIsValid::class);
+Route::get('/getUserPermanences', [\App\Http\Controllers\PlanningController::class, 'getUserPermanences'])->middleware(EnsureTokenIsValid::class);
 /**************************************************************************************************************************************/
 
 /************************************************************** Défis *************************************************************/
 Route::get('/challenges', [DefisController::class, 'getChallenges'])->middleware(EnsureTokenIsValid::class);
-Route::post('/challenges/getProofImage', [DefisController::class, 'getProofImage'])->middleware(EnsureTokenIsValid::class);
-Route::post('/challenges/uploadProofImage', [DefisController::class, 'uploadProofImage'])->middleware(EnsureTokenIsValid::class);
-Route::post('/challenges/deleteproofImage', [DefisController::class, 'deleteproofImage'])->middleware(EnsureTokenIsValid::class);
+// Nouvelles routes pour support vidéo
+Route::post('/challenges/getProofMedia', [DefisController::class, 'getProofMedia'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/uploadProofMedia', [DefisController::class, 'uploadProofMedia'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/deleteProofMedia', [DefisController::class, 'deleteProofMedia'])->middleware(EnsureTokenIsValid::class);
+// Anciennes routes pour compatibilité
+Route::post('/challenges/getProofImage', [DefisController::class, 'getProofMedia'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/uploadProofImage', [DefisController::class, 'uploadProofMedia'])->middleware(EnsureTokenIsValid::class);
+Route::post('/challenges/deleteproofImage', [DefisController::class, 'deleteProofMedia'])->middleware(EnsureTokenIsValid::class);
+
 Route::get('/classement-chambres', [ClassementController::class, 'classementChambres'])->middleware(EnsureTokenIsValid::class);
-;
 /**************************************************************************************************************************************/
 
 /************************************************************** Anecdotes *************************************************************/
@@ -76,18 +94,56 @@ Route::get('/getAdminAnecdotes', [AdminController::class, 'getAdminAnecdotes'])-
 Route::get('/getAnecdoteDetails/{anecdoteId}', [AdminController::class, 'getAnecdoteDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [AdminController::class, 'updateAnecdoteStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
-Route::get('/getAdminNotifications', [AdminController::class, 'getAdminNotifications'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::get('/getAdminNotifications', [\App\Http\Controllers\NotificationController::class, 'getAdminNotifications'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::get('/getNotificationDetails/{notificationId}', [AdminController::class, 'getNotificationDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/displayNotification/{notificationId}/{display}', [AdminController::class, 'displayNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendNotification', [AdminController::class, 'sendNotificationToAll'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendIndividualNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
+// Routes pour la gestion des utilisateurs et membres
+Route::get('/getUsers', [AdminController::class, 'getUsers'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/updateUserMemberStatus', [AdminController::class, 'updateUserMemberStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+
 Route::get('/getMaxFileSize', [\App\Http\Controllers\UserController::class, 'getMaxFileSize'])->middleware([EnsureTokenIsValid::class]);
 Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([EnsureTokenIsValid::class]);
+
+// Routes pour les permanences (membres uniquement)
+Route::middleware([EnsureTokenIsValid::class])->group(function () {
+    Route::get('/permanences/my', [\App\Http\Controllers\PermanenceController::class, 'getUserPermanences']);
+});
+
+// Routes pour les permanences (admin uniquement)
+Route::middleware([EnsureTokenIsValid::class, AdminMiddleware::class])->group(function () {
+    Route::get('/permanences', [\App\Http\Controllers\PermanenceController::class, 'getAllPermanences']);
+    Route::post('/permanences', [\App\Http\Controllers\PermanenceController::class, 'createPermanence']);
+    Route::put('/permanences/{id}', [\App\Http\Controllers\PermanenceController::class, 'updatePermanence']);
+    Route::delete('/permanences/{id}', [\App\Http\Controllers\PermanenceController::class, 'deletePermanence']);
+    Route::get('/permanences/members', [\App\Http\Controllers\PermanenceController::class, 'getAssociationMembers']);
+    Route::post('/permanences/send-reminders', [\App\Http\Controllers\PermanenceController::class, 'sendReminders']);
+});
+
+// Routes pour les tournées de chambres (membres uniquement)
+Route::middleware([EnsureTokenIsValid::class])->group(function () {
+    Route::get('/room-tours/my-tour', [\App\Http\Controllers\RoomTourController::class, 'getUserTour']);
+    Route::get('/room-tours/status', [\App\Http\Controllers\RoomTourController::class, 'getTourStatusForTraveler']);
+    Route::post('/room-tours/mark-visited', [\App\Http\Controllers\RoomTourController::class, 'markRoomVisited']);
+    Route::post('/room-tours/reorder-rooms', [\App\Http\Controllers\RoomTourController::class, 'reorderRooms']);
+});
+
+// Routes pour les tournées de chambres (admin uniquement)
+Route::middleware([EnsureTokenIsValid::class, AdminMiddleware::class])->group(function () {
+    Route::get('/room-tours', [\App\Http\Controllers\RoomTourController::class, 'getAllTours']);
+    Route::post('/room-tours', [\App\Http\Controllers\RoomTourController::class, 'createTour']);
+    Route::post('/room-tours/{tourId}/toggle', [\App\Http\Controllers\RoomTourController::class, 'toggleTour']);
+    Route::delete('/room-tours/{tourId}', [\App\Http\Controllers\RoomTourController::class, 'deleteTour']);
+    Route::get('/room-tours/available-rooms', [\App\Http\Controllers\RoomTourController::class, 'getAvailableRooms']);
+});
 /*********************************************************************************************************************************************/
 
 /************************************************************** Vitesse de glisse *************************************************************/
 Route::post('/update-performance', [UserPerformanceController::class, 'updatePerformance'])->middleware(EnsureTokenIsValid::class);
+Route::get('/user-performances', [UserPerformanceController::class, 'getUserPerformances'])->middleware(EnsureTokenIsValid::class);
+Route::post('/delete-performance-session', [UserPerformanceController::class, 'deletePerformanceSession'])->middleware(EnsureTokenIsValid::class);
 Route::get('/classement-performances', [ClassementController::class, 'classementPerformances'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 

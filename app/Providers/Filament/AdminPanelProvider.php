@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureBackOfficeAuthenticated;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -52,6 +53,13 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 EnsureBackOfficeAuthenticated::class,
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Déconnexion')
+                    ->icon('heroicon-o-arrow-right-on-rectangle')
+                    ->url('/auth/shotgun-chambre/logout')
+                    ->sort(999),
             ]);
     }
 }

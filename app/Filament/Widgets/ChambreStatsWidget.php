@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Chambre;
+use App\Models\Room;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -10,12 +10,12 @@ class ChambreStatsWidget extends BaseWidget
 {
     protected function getStats(): array
     {
-        $totalChambres = Chambre::count();
-        $chambresDisponibles = Chambre::whereDoesntHave('users')->count();
-        $chambresCompletes = Chambre::whereHas('users', function ($query) {
-            $query->havingRaw('COUNT(*) >= chambres.nb_places');
+        $totalChambres = Room::count();
+        $chambresDisponibles = Room::whereDoesntHave('users')->count();
+        $chambresCompletes = Room::whereHas('users', function ($query) {
+            $query->havingRaw('COUNT(*) >= rooms.capacity');
         })->count();
-        $chambresBloquees = Chambre::where('locked_until', '>', now())->count();
+        $chambresBloquees = Room::where('locked_until', '>', now())->count();
 
         return [
             Stat::make('Total des chambres', $totalChambres)

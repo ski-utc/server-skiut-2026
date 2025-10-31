@@ -19,6 +19,7 @@ return new class () extends Migration {
             $table->foreignId('roomID'); //->constrained('rooms', 'id')->onDelete('cascade');
             $table->string('location')->nullable();  // pas encore sûre - pour la géolocalisation
             $table->boolean('admin'); // true if team info
+            $table->boolean('member')->default(false);
             $table->boolean('alumniOrExte');
             $table->timestamps();
         });

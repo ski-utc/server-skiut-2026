@@ -3,9 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ChambreSelectionResource\Pages;
-use App\Models\Chambre;
-use App\Models\ChambreUser;
+use App\Models\Room;
 use App\Models\Shotguns;
+use App\Models\User;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class ChambreSelectionResource extends Resource
 {
-    protected static ?string $model = Chambre::class;
+    protected static ?string $model = Room::class;
     protected static ?string $navigationIcon = 'heroicon-o-home';
     protected static ?string $navigationLabel = 'Choisir ma chambre';
     protected static ?string $modelLabel = 'Chambre';
@@ -42,31 +42,31 @@ class ChambreSelectionResource extends Resource
             ->columns([
                 Tables\Columns\Layout\Split::make([
                     Tables\Columns\Layout\Stack::make([
-                        TextColumn::make('numero')
+                        TextColumn::make('roomNumber')
                             ->label('Chambre')
                             ->prefix('Chambre ')
                             ->weight('bold')
                             ->size('lg'),
 
-                        TextColumn::make('nb_places')
+                        TextColumn::make('capacity')
                             ->label('Places')
                             ->suffix(' places'),
 
                         TextColumn::make('status')
                             ->label('Statut')
                             ->getStateUsing(
-                                fn (Chambre $record) =>
+                                fn (Room $record) =>
                                 $record->isLockedByOther(session('email')) ? 'En cours de réservation' : 'Disponible'
                             )
                             ->color(
-                                fn (Chambre $record) =>
+                                fn (Room $record) =>
                                 $record->isLockedByOther(session('email')) ? 'warning' : 'success'
                             ),
                     ]),
                 ])
             ])
             ->query(
-                Chambre::query()
+                Room::query()
                     ->whereDoesntHave('users')
             )
             ->actions([
@@ -74,13 +74,14 @@ class ChambreSelectionResource extends Resource
                 ->label('Choisir cette chambre')
                 ->icon('heroicon-o-check')
                 ->color('success')
-                ->visible(fn (Chambre $record) => !$record->isLockedByOther(session('email')))
+                ->visible(fn (Room $record) => !$record->isLockedByOther(session('email')))
                 //->requiresConfirmation()
-                ->form(fn (Chambre $record) => self::getSelectionFormSchema($record))
-                ->action(function (array $data, Chambre $record) {
+                ->form(fn (Room $record) => self::getSelectionFormSchema($record))
+                ->action(function (array $data, Room $record) {
                     $email = session('email');
 
-                    if (ChambreUser::where('email', $email)->exists()) {
+                    $user = User::where('email', $email)->first();
+                    if ($user && $user->roomID) {
                         Notification::make()
                             ->title('Vous êtes déjà dans une chambre.')
                             ->body('Impossible de réserver une nouvelle chambre.')
@@ -89,7 +90,7 @@ class ChambreSelectionResource extends Resource
                         return;
                     }
 
-                    Chambre::where('locked_by_email', $email)
+                    Room::where('locked_by_email', $email)
                         ->where('id', '!=', $record->id)
                         ->update(['locked_by_email' => null, 'locked_until' => null]);
 
@@ -110,12 +111,13 @@ class ChambreSelectionResource extends Resource
             ->paginated(false);
     }
 
-    protected static function getSelectionFormSchema(?Chambre $record = null): array
+    protected static function getSelectionFormSchema(?Room $record = null): array
     {
-        $nbSlots = $record ? max($record->nb_places - 1, 0) : 0;
+        $nbSlots = $record ? max($record->capacity - 1, 0) : 0;
         $email = session('email');
 
-        if (ChambreUser::where('email', $email)->exists()) {
+        $user = User::where('email', $email)->first();
+        if ($user && $user->roomID) {
             Notification::make()
                 ->title('Vous êtes déjà dans une chambre.')
                 ->body('Impossible de réserver une nouvelle chambre.')
@@ -124,7 +126,7 @@ class ChambreSelectionResource extends Resource
             return [];
         }
 
-        Chambre::where('locked_by_email', $email)
+        Room::where('locked_by_email', $email)
             ->where('id', '!=', $record->id)
             ->update(['locked_by_email' => null, 'locked_until' => null]);
 
@@ -141,10 +143,10 @@ class ChambreSelectionResource extends Resource
                 ->schema([
                     TextInput::make('chambre_info')
                         ->label('Chambre sélectionnée')
-                        ->default(fn (Chambre $record) => "Chambre {$record->numero} - {$record->nb_places} places")
+                        ->default(fn (Room $record) => "Chambre {$record->roomNumber} - {$record->capacity} places")
                         ->dehydrated(false),
 
-                    Select::make('ambiance')
+                    Select::make('mood')
                         ->label('Ambiance de la chambre')
                         ->options([
                             'mega grosse night' => 'Mega grosse night',
@@ -152,7 +154,11 @@ class ChambreSelectionResource extends Resource
                             'petite night' => 'Petite night',
                             'calme' => 'Calme',
                         ])
-                        ->default(fn (Chambre $record) => $record->ambiance)
+                        ->default(fn (Room $record) => $record->mood)
+                        ->nullable(),
+
+                    TextInput::make('name')
+                        ->label('Nom de la chambre')
                         ->required(),
                 ])
                 ->columns(2),
@@ -169,7 +175,7 @@ class ChambreSelectionResource extends Resource
                     Grid::make(3)
                         ->schema(array_map(
                             fn ($i) => Select::make("participants.$i.email")
-                                ->label('Participant·e ' . ($i + 1))
+                                ->label('Participant·e ' . ($i + 2))
                                 ->options(fn () => Shotguns::pluck('email', 'email'))
                                 ->searchable()
                                 ->required(),
@@ -179,20 +185,21 @@ class ChambreSelectionResource extends Resource
         ];
     }
 
-    protected static function handleSelection(array $data, Chambre $record): void
+    protected static function handleSelection(array $data, Room $record): void
     {
         try {
-            if (ChambreUser::where('email', session('email'))->exists()) {
+            $currentUser = User::where('email', session('email'))->first();
+            if ($currentUser && $currentUser->roomID) {
                 Notification::make()
                     ->title('Vous êtes déjà dans une chambre.')
-                    ->body('Vous êtes déjà inscrit·e dans une chambre. Impossible d’en choisir une autre.')
+                    ->body('Vous êtes déjà inscrit(e) dans une chambre. Impossible d\'en choisir une autre.')
                     ->danger()
                     ->send();
                 return;
             }
 
-            $chambre = Chambre::find($record->id);
-            if (!$chambre->isAvailable()) {
+            $room = Room::find($record->id);
+            if (!$room->isAvailable()) {
                 Notification::make()
                     ->title('Cette chambre n\'est plus disponible.')
                     ->body('Cette chambre n\'est plus disponible pour le moment.')
@@ -213,33 +220,30 @@ class ChambreSelectionResource extends Resource
             }
 
             // Vérification du nombre d'emails
-            if ($emails->count() !== $chambre->nb_places) {
+            if ($emails->count() !== $room->capacity) {
                 Notification::make()
-                    ->title("Il faut exactement {$chambre->nb_places} participant.e.s.")
-                    ->body("Il faut exactement {$chambre->nb_places} participant.e.s.")
+                    ->title("Il faut exactement {$room->capacity} participant.e.s.")
+                    ->body("Il faut exactement {$room->capacity} participant.e.s.")
                     ->danger()
                     ->send();
                 return;
             }
 
-            // Ajout resp
-            ChambreUser::create([
-                'chambre_id' => $chambre->id,
-                'email' => $data['responsable_email'],
-            ]);
-
-            // Ajout des autres
-            foreach ($data['participants'] as $p) {
-                ChambreUser::create([
-                    'chambre_id' => $chambre->id,
-                    'email' => $p['email'],
-                ]);
+            // Mise à jour des utilisateurs avec cette room
+            foreach ($emails as $email) {
+                $user = User::where('email', $email)->first();
+                if ($user) {
+                    $user->update(['roomID' => $room->id]);
+                }
             }
 
+            // Mise à jour du responsable dans la room
+            $responsibleUser = User::where('email', $data['responsable_email'])->first();
+
             // Mise à jour de la chambre
-            $chambre->update([
-                'responsable_chambre' => $data['responsable_email'],
-                'ambiance' => $data['ambiance'],
+            $room->update([
+                'userID' => $responsibleUser ? $responsibleUser->id : null,
+                'mood' => $data['mood'] ?? null,
                 'locked_until' => null,
                 'locked_by_email' => null,
             ]);

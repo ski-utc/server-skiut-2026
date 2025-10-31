@@ -34,6 +34,11 @@ class DatabaseSeeder extends Seeder
             SkinderLikeSeeder::class,
             AnecdotesLikeSeeder::class,
             AnecdotesWarnSeeder::class,
+
+            // Nouvelles fonctionnalités 2025
+            PerformanceSeeder::class,       // Sessions de performance
+            PermanenceSeeder::class,        // Permanences des membres
+            RoomTourSeeder::class,          // Tournées des chambres
         ]);
     }
 }

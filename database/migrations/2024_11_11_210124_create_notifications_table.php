@@ -12,6 +12,13 @@ return new class () extends Migration {
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('sender_id')->nullable();
+            $table->enum('type', ['global', 'targeted', 'room_based'])->default('global');
+            $table->json('target_users')->nullable();
+            $table->json('target_rooms')->nullable();
+            $table->boolean('push_sent')->default(false);
+            $table->timestamp('scheduled_at')->nullable();
+            $table->json('firebase_response')->nullable();
             $table->text('title');
             $table->text('description');
             $table->boolean('general');

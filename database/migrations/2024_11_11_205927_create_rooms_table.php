@@ -14,12 +14,14 @@ return new class () extends Migration {
             $table->id('id');
             $table->unsignedInteger('roomNumber')->unique();
             $table->unsignedTinyInteger('capacity'); // 4 ou 6
-            $table->string('name')->unique();
-            $table->string('mood');
+            $table->string('name')->unique()->nullable();
+            $table->string('mood')->nullable();
             $table->string('photoPath')->nullable();
             $table->string('description')->nullable();
             $table->json('passions')->nullable();
             $table->unsignedInteger('totalPoints')->default(0);
+            $table->timestamp('locked_until')->nullable();
+            $table->string('locked_by_email')->nullable();
             $table->foreignId('userID')->nullable()->constrained('users', 'id')->onDelete('cascade'); // Foreign key to users table
             $table->timestamps();
         });

@@ -11,7 +11,7 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'roomID', 'location', 'admin', 'alumniOrExte'];
+    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'roomID', 'location', 'admin', 'member', 'alumniOrExte'];
 
     public function anecdotes()
     {
@@ -31,5 +31,15 @@ class User extends Authenticatable
     public function performances()
     {
         return $this->hasOne(UserPerformance::class);
+    }
+
+    public function responsiblePermanences()
+    {
+        return $this->hasMany(Permanence::class, 'responsible_user_id');
+    }
+
+    public function allPermanences()
+    {
+        return Permanence::forUser($this->id);
     }
 }

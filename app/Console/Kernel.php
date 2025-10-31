@@ -7,19 +7,16 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-    protected $commands = [
-        Commands\GenerateJwtKeys::class,
-        Commands\CleanExpiredLocks::class,
-    ];
-
-
     /**
      * Define the application's command schedule.
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Nettoyer les verrous de chambres expirés toutes les minutes
-        $schedule->command('chambres:clean-locks')->everyMinute();
+        // Envoyer les rappels de permanences toutes les 10 minutes
+        $schedule->command('permanence:send-reminders')
+                 ->everyTenMinutes()
+                 ->withoutOverlapping()
+                 ->runInBackground();
     }
 
     /**

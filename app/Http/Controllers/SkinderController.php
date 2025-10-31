@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\Room;
 use App\Models\SkinderLike;
 use App\Models\User;
+use App\Models\UserNotification;
+use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -87,10 +90,15 @@ class SkinderController extends Controller
             if ($reverseLike) {
                 $otherRoom = Room::where('id', $roomLiked)->first();
                 $otherRoomResp = User::where('id', $otherRoom->userID)->first();
+                $myRoom = Room::where('id', $roomLikeur)->first();
+
+                // Envoyer des notifications aux occupants des deux chambres
+                $this->sendMatchNotifications($myRoom, $otherRoom);
+
                 return response()->json([
                     'success' => true,
                     'match' => $reverseLike,
-                    'myRoomImage' => asset(Room::where('id', $roomLikeur)->first()->photoPath),
+                    'myRoomImage' => asset($myRoom->photoPath),
                     'otherRoomImage' => asset($otherRoom->photoPath),
                     'otherRoomNumber' => $otherRoom->roomNumber,
                     'respRoom' => $otherRoomResp ? $otherRoomResp->firstName . ' ' . $otherRoomResp->lastName : null
@@ -297,6 +305,65 @@ class SkinderController extends Controller
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des détails de la chambre : ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Envoie des notifications aux occupants des deux chambres qui ont matché
+     */
+    private function sendMatchNotifications(Room $room1, Room $room2)
+    {
+        try {
+            // Récupérer tous les occupants des deux chambres
+            $room1Occupants = User::where('roomID', $room1->roomNumber)->get();
+            $room2Occupants = User::where('roomID', $room2->roomNumber)->get();
+            $allOccupants = $room1Occupants->merge($room2Occupants);
+
+            if ($allOccupants->isEmpty()) {
+                return;
+            }
+
+            // Créer la notification
+            $notification = Notification::create([
+                'title' => '💕 Nouveau match Skinder !',
+                'description' => "Les chambres {$room1->roomNumber} et {$room2->roomNumber} ont matché ! C'est le moment de faire connaissance et de se rencontrer. Bonne chance ! 🎉",
+                'sender_id' => null, // Notification système
+                'type' => 'targeted',
+                'target_users' => $allOccupants->pluck('id')->toArray(),
+                'target_rooms' => [],
+                'general' => false,
+                'display' => true,
+                'push_sent' => true
+            ]);
+
+            // Créer les enregistrements user_notifications pour chaque occupant
+            foreach ($allOccupants as $user) {
+                UserNotification::create([
+                    'user_id' => $user->id,
+                    'notification_id' => $notification->id,
+                    'read' => false
+                ]);
+            }
+
+            // Envoyer les notifications push
+            $firebaseService = app(FirebaseNotificationService::class);
+            $userIds = $allOccupants->pluck('id')->toArray();
+
+            $firebaseService->sendNotification(
+                $userIds,
+                '💕 Nouveau match Skinder !',
+                "Les chambres {$room1->roomNumber} et {$room2->roomNumber} ont matché ! Venez vous rencontrer ! 🎉",
+                [
+                    'type' => 'skinder_match',
+                    'room1_number' => $room1->roomNumber,
+                    'room2_number' => $room2->roomNumber,
+                    'notification_id' => $notification->id
+                ]
+            );
+
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas faire échouer le match
+            \Log::error('Erreur lors de l\'envoi des notifications de match Skinder: ' . $e->getMessage());
         }
     }
 

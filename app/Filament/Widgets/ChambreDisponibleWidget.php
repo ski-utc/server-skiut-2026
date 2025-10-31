@@ -2,8 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Chambre;
-use App\Models\ChambreUser;
+use App\Models\Room;
 use App\Models\Shotguns;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -26,20 +25,26 @@ class ChambreDisponibleWidget extends Widget
     {
         return $table
             ->query(
-                Chambre::query()->where(function ($query) {
+                Room::query()->where(function ($query) {
                     $query->whereDoesntHave('users')
                         ->orWhere('locked_until', '>', now());
                 })
             )
             ->columns([
-                TextColumn::make('numero')
+                TextColumn::make('roomNumber')
                     ->label('Chambre')
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
                     ->size('lg'),
 
-                TextColumn::make('nb_places')
+                TextColumn::make('name')
+                    ->label('Nom')
+                    ->searchable()
+                    ->placeholder('Sans nom')
+                    ->color('gray'),
+
+                TextColumn::make('capacity')
                     ->label('Places')
                     ->sortable()
                     ->badge()
@@ -47,7 +52,7 @@ class ChambreDisponibleWidget extends Widget
 
                 BadgeColumn::make('status')
                     ->label('Statut')
-                    ->getStateUsing(function (Chambre $record): string {
+                    ->getStateUsing(function (Room $record): string {
                         if ($record->isLocked()) {
                             return 'En cours de réservation';
                         }

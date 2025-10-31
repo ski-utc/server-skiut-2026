@@ -13,6 +13,7 @@ return new class () extends Migration {
         Schema::create('challenge_proofs', function (Blueprint $table) {
             $table->id('id');
             $table->string('file'); // File path for jpg, png, mp4, etc.
+            $table->string('media_type')->default('image');
             $table->unsignedInteger('nb_likes')->default(0);
             $table->boolean('valid')->default(false);
             $table->unsignedTinyInteger('alert')->default(0); // Number of alerts

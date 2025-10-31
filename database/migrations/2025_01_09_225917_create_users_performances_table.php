@@ -16,6 +16,10 @@ class CreateUsersPerformancesTable extends Migration
             $table->unsignedBigInteger('user_id'); // Référence à l'utilisateur
             $table->float('max_speed'); // Vitesse maximale (en km/h)
             $table->float('total_distance'); // Distance totale parcourue (en km)
+            $table->integer('duration')->default(0);
+            $table->decimal('average_speed', 8, 2)->default(0);
+            $table->string('session_id')->nullable();
+            $table->timestamp('session_date')->nullable();
             $table->timestamps();
 
             // Contraintes

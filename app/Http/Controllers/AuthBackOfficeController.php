@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ShotgunChambresAdmin;
+use App\Models\BackOfficeAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -66,7 +66,7 @@ class AuthBackOfficeController extends Controller
                 abort(401, 'Compte supprimé ou désactivé');
             }
 
-            $isAdmin = ShotgunChambresAdmin::isAdmin($userDetails['email']) ? true : false;
+            $isAdmin = BackOfficeAdmin::isAdmin($userDetails['email']) ? true : false;
 
             session(['admin' => $isAdmin]);
             session(['email' => $userDetails['email']]);
