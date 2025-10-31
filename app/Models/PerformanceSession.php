@@ -18,6 +18,7 @@ class PerformanceSession extends Model
         'average_speed',
         'distance',
         'duration',
+        'session_date',
         'speed_history',
         'accuracy'
     ];
@@ -27,6 +28,7 @@ class PerformanceSession extends Model
         'average_speed' => 'float',
         'distance' => 'float',
         'duration' => 'integer',
+        'session_date' => 'datetime',
         'speed_history' => 'array',
         'accuracy' => 'float'
     ];

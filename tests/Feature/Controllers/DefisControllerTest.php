@@ -49,7 +49,7 @@ class DefisControllerTest extends TestCase
     public function test_upload_proof_image_authenticated()
     {
         $now = Carbon::now();
-        Challenge::create(['title' => 'Test'.$now, 'nbPoints' => 10]);
+        $challenge = Challenge::create(['title' => 'Test'.$now, 'nbPoints' => 10]);
         Storage::fake('public');
         $token = $this->getToken();
 
@@ -57,8 +57,8 @@ class DefisControllerTest extends TestCase
 
         $response = $this->withHeader('Authorization', "Bearer $token")
                         ->post('/api/challenges/uploadProofImage', [
-                            'defiId' => 1,
-                            'image' => $fakeImage,
+                            'defiId' => $challenge->id,
+                            'media' => $fakeImage,
                         ]);
         $response->assertStatus(200);
     }

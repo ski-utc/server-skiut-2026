@@ -49,6 +49,7 @@ class UserPerformanceController extends Controller
                 'average_speed' => $averageSpeed,
                 'distance' => $distance,
                 'duration' => $duration,
+                'session_date' => now(),
             ]);
 
             // Rechercher ou créer la performance globale pour l'utilisateur
