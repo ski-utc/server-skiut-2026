@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Room;
 use App\Models\Shotguns;
+use App\Models\User;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -73,7 +74,7 @@ class ChambreDisponibleWidget extends Widget
                             ->schema([
                                 TextInput::make('chambre_info')
                                     ->label('Chambre sélectionnée')
-                                    ->default(fn (Chambre $record) => "Chambre {$record->numero} - {$record->nb_places} places")
+                                    ->default(fn (Room $record) => "Chambre {$record->roomNumber} - {$record->capacity} places")
                                     ->disabled()
                                     ->dehydrated(false),
 
@@ -86,7 +87,7 @@ class ChambreDisponibleWidget extends Widget
                                         'calme' => 'Calme',
                                     ])
                                     ->required()
-                                    ->default(fn (Chambre $record) => $record->ambiance),
+                                    ->default(fn (Room $record) => $record->mood),
                             ])
                             ->columns(2),
 
@@ -118,22 +119,22 @@ class ChambreDisponibleWidget extends Widget
                                     ->reorderable(false)
                                     ->collapsible(false)
                                     ->itemLabel(fn (array $state): ?string => $state['email'] ?? null)
-                                    ->defaultItems(fn (Chambre $record) => $record->nb_places)
-                                    ->disabled(fn (Chambre $record) => $record->nb_places),
+                                    ->defaultItems(fn (Room $record) => $record->capacity)
+                                    ->disabled(fn (Room $record) => $record->capacity),
                             ])
                     ])
-                    ->action(function (array $data, Chambre $record): void {
+                    ->action(function (array $data, Room $record): void {
                         try {
                             DB::beginTransaction();
 
                             // Vérifier que la chambre est toujours disponible
-                            $chambre = Chambre::find($record->id);
-                            if (!$chambre->isAvailable()) {
+                            $room = Room::find($record->id);
+                            if (!$room->isAvailable()) {
                                 throw new \Exception('Cette chambre n\'est plus disponible');
                             }
 
                             // Bloquer la chambre
-                            $chambre->lock('system');
+                            $room->lock('system');
 
                             // Vérifier que tous les emails existent dans Shotguns
                             $emails = collect($data['emails'])->pluck('email');
@@ -151,27 +152,28 @@ class ChambreDisponibleWidget extends Widget
                             }
 
                             // Vérifier qu'il y a le bon nombre d'emails
-                            if (count($data['emails']) !== $chambre->nb_places) {
-                                throw new \Exception('Il doit y avoir exactement ' . $chambre->nb_places . ' participants');
+                            if (count($data['emails']) !== $room->capacity) {
+                                throw new \Exception('Il doit y avoir exactement ' . $room->capacity . ' participants');
                             }
 
                             // Créer les associations chambre-utilisateur
                             foreach ($data['emails'] as $emailData) {
-                                ChambreUser::create([
-                                    'chambre_id' => $record->id,
+                                User::create([
+                                    'roomID' => $record->id,
                                     'email' => $emailData['email'],
                                 ]);
                             }
 
                             // Mettre à jour le responsable de chambre et l'ambiance
                             $responsableEmail = collect($data['emails'])->where('is_responsable', true)->first()['email'];
-                            $chambre->update([
-                                'responsable_chambre' => $responsableEmail,
-                                'ambiance' => $data['ambiance']
+                            $responsableUser = User::where('email', $responsableEmail)->first();
+                            $room->update([
+                                'userID' => $responsableUser ? $responsableUser->id : null,
+                                'mood' => $data['mood'] ?? null,
                             ]);
 
                             // Débloquer la chambre
-                            $chambre->unlock();
+                            $room->unlock();
 
                             DB::commit();
 

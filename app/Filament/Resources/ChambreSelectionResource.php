@@ -249,7 +249,7 @@ class ChambreSelectionResource extends Resource
             ]);
 
             DB::commit();
-            $chambre->unlock();
+            $room->unlock();
 
             Notification::make()
                 ->title('Réservation confirmée')
@@ -257,7 +257,7 @@ class ChambreSelectionResource extends Resource
                 ->send();
         } catch (\Exception $e) {
             DB::rollBack();
-            $chambre->unlock();
+            $room->unlock();
 
             Notification::make()
                 ->title('Erreur')

@@ -150,8 +150,8 @@ class DefisController extends Controller
             if ($existingProof) {
                 // Supprimer l'ancien fichier
                 $oldPath = str_replace('storage/', '', $existingProof->file);
-                if (\Storage::disk('public')->exists($oldPath)) {
-                    \Storage::disk('public')->delete($oldPath);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
                 }
                 $existingProof->delete();
             }
