@@ -2,9 +2,7 @@
 
 namespace Tests\Feature\Controllers;
 
-use App\Models\PerformanceSession;
 use App\Models\User;
-use App\Models\UserPerformance;
 use Firebase\JWT\JWT;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
@@ -25,7 +23,7 @@ class UserPerformanceControllerTest extends TestCase
     public function test_update_performance_authenticated()
     {
         [$user, $token] = $this->getToken();
-        
+
         $response = $this->withHeader('Authorization', "Bearer $token")
             ->postJson('/api/update-performance', [
                 'speed' => 100,
@@ -33,7 +31,7 @@ class UserPerformanceControllerTest extends TestCase
                 'duration' => 3600,
                 'average_speed' => 80
             ]);
-        
+
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
@@ -47,14 +45,14 @@ class UserPerformanceControllerTest extends TestCase
         $response->assertJson([
             'success' => true
         ]);
-        
+
         // Vérifier que la session a été créée
         $this->assertDatabaseHas('performance_sessions', [
             'user_id' => $user->id,
             'max_speed' => 100.0,
             'distance' => 1000.0
         ]);
-        
+
         // Vérifier que la performance globale a été créée/mise à jour
         $this->assertDatabaseHas('users_performances', [
             'user_id' => $user->id,
