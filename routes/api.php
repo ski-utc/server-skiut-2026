@@ -7,6 +7,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DefisController;
 use App\Http\Controllers\SkinderController;
 use App\Http\Controllers\UserPerformanceController;
+use App\Http\Controllers\MonoprutController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Support\Facades\Route;
@@ -145,6 +146,15 @@ Route::post('/update-performance', [UserPerformanceController::class, 'updatePer
 Route::get('/user-performances', [UserPerformanceController::class, 'getUserPerformances'])->middleware(EnsureTokenIsValid::class);
 Route::post('/delete-performance-session', [UserPerformanceController::class, 'deletePerformanceSession'])->middleware(EnsureTokenIsValid::class);
 Route::get('/classement-performances', [ClassementController::class, 'classementPerformances'])->middleware(EnsureTokenIsValid::class);
+/**********************************************************************************************************************************************/
+
+/************************************************************** Monoprut *************************************************************/
+Route::get('/getArticles', [MonoprutController::class, 'getArticles'])->middleware(EnsureTokenIsValid::class);
+Route::post('/createArticle', [MonoprutController::class, 'createArticle'])->middleware(EnsureTokenIsValid::class);
+Route::post('/shotgunArticle', [MonoprutController::class, 'shotgunArticle'])->middleware(EnsureTokenIsValid::class);
+Route::get('/myGivenArticles', [MonoprutController::class, 'myGivenArticles'])->middleware(EnsureTokenIsValid::class);
+Route::get('/myReceivedArticles', [MonoprutController::class, 'myReceivedArticles'])->middleware(EnsureTokenIsValid::class);
+Route::post('/deleteArticle', [MonoprutController::class, 'deleteArticle'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 
 /************************************************************** RGPD *************************************************************/
