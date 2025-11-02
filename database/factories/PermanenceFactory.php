@@ -59,7 +59,7 @@ class PermanenceFactory extends Factory
             'status' => $this->faker->randomElement(['scheduled', 'in_progress', 'completed', 'cancelled']),
             'responsible_user_id' => User::factory(),
             'notes' => $this->faker->optional(0.3)->paragraph(),
-            'notified' => $this->faker->boolean(20), // 20% de chance d'avoir été notifié
+            'notification_sent' => $this->faker->boolean(20), // 20% de chance d'avoir été notifié
         ];
     }
 
@@ -71,7 +71,7 @@ class PermanenceFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'scheduled',
             'start_datetime' => $this->faker->dateTimeBetween('+1 day', '+30 days'),
-            'notified' => false,
+            'notification_sent' => false,
         ]);
     }
 
@@ -89,7 +89,7 @@ class PermanenceFactory extends Factory
                 'status' => 'in_progress',
                 'start_datetime' => $startTime,
                 'end_datetime' => $endTime,
-                'notified' => true,
+                'notification_sent' => true,
             ];
         });
     }
@@ -107,7 +107,7 @@ class PermanenceFactory extends Factory
                 'status' => 'completed',
                 'start_datetime' => $startTime,
                 'end_datetime' => $endTime,
-                'notified' => true,
+                'notification_sent' => true,
                 'notes' => $this->faker->optional(0.7)->paragraph(),
             ];
         });
@@ -137,7 +137,7 @@ class PermanenceFactory extends Factory
                 'start_datetime' => $startTime,
                 'end_datetime' => $endTime,
                 'status' => 'scheduled',
-                'notified' => false,
+                'notification_sent' => false,
             ];
         });
     }

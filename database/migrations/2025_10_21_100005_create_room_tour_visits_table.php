@@ -9,8 +9,8 @@ return new class () extends Migration {
     {
         Schema::create('room_tour_visits', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('tour_binome_id');
-            $table->string('room_id');
+            $table->foreignId('tour_binome_id')->constrained('tour_binomes')->onDelete('cascade');
+            $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade');
             $table->boolean('visited')->default(false);
             $table->timestamp('visited_at')->nullable();
             $table->integer('visit_order');

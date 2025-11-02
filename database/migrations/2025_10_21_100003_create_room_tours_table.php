@@ -11,7 +11,6 @@ return new class () extends Migration {
             $table->id();
             $table->date('tour_date');
             $table->boolean('is_active')->default(false);
-            $table->json('room_assignments');
             $table->timestamps();
         });
     }

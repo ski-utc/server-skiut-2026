@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Room;
 use App\Models\RoomTour;
 use App\Models\RoomTourVisit;
 use App\Models\TourBinome;
@@ -32,22 +33,19 @@ class RoomTourSeeder extends Seeder
             return;
         }
 
-        // Générer une liste de chambres fictives
-        $allRooms = [];
-        for ($floor = 1; $floor <= 4; $floor++) {
-            for ($room = 1; $room <= 25; $room++) {
-                $allRooms[] = sprintf('%d%02d', $floor, $room);
-            }
+        // Récupérer toutes les chambres existantes
+        $allRooms = Room::all();
+
+        if ($allRooms->isEmpty()) {
+            $this->command->warn('Aucune chambre trouvée pour créer les tournées');
+            return;
         }
 
-        // Mélanger et limiter les chambres
-        $allRooms = fake()->randomElements($allRooms, 60);
-
         // 1. Créer une tournée pour aujourd'hui (active)
-        $todayTour = $this->createTour(now()->format('Y-m-d'), true, $members, $allRooms);
+        $this->createTour(now()->format('Y-m-d'), true, $members, $allRooms);
 
         // 2. Créer une tournée pour demain
-        $tomorrowTour = $this->createTour(now()->addDay()->format('Y-m-d'), false, $members, $allRooms);
+        $this->createTour(now()->addDay()->format('Y-m-d'), false, $members, $allRooms);
 
         // 3. Créer quelques tournées passées
         for ($i = 1; $i <= 5; $i++) {
@@ -64,53 +62,52 @@ class RoomTourSeeder extends Seeder
         $this->command->info('Tournées de chambres créées avec succès !');
     }
 
-    private function createTour(string $date, bool $isActive, $members, array $allRooms, bool $isPast = false): RoomTour
+    private function createTour(string $date, bool $isActive, $members, $allRooms, bool $isPast = false): RoomTour
     {
         // Créer la tournée
         $tour = RoomTour::create([
             'tour_date' => $date,
-            'is_active' => $isActive,
-            'room_assignments' => [], // Sera rempli après création des binômes
+            'is_active' => $isActive
         ]);
 
         // Définir le nombre de binômes (2-4)
-        $binomeCount = fake()->numberBetween(2, 4);
+        $binomeCount = min(fake()->numberBetween(2, 4), floor($members->count() / 2));
         $binomeNames = ['Binôme A', 'Binôme B', 'Binôme C', 'Binôme D'];
 
-        $assignments = [];
         $usedMembers = [];
-        $remainingRooms = $allRooms;
+        $availableRooms = $allRooms->shuffle();
+        $roomIndex = 0;
 
         for ($i = 0; $i < $binomeCount; $i++) {
-            // Sélectionner les membres pour ce binôme (2-3 membres)
-            $binomeMemberCount = fake()->numberBetween(2, 3);
+            // Sélectionner EXACTEMENT 2 membres pour ce binôme
             $availableMembers = $members->whereNotIn('id', $usedMembers);
 
-            if ($availableMembers->count() < $binomeMemberCount) {
+            if ($availableMembers->count() < 2) {
                 break; // Plus assez de membres
             }
 
-            $binomeMembers = $availableMembers->random(min($binomeMemberCount, $availableMembers->count()));
-            $memberIds = $binomeMembers->pluck('id')->toArray();
-            $usedMembers = array_merge($usedMembers, $memberIds);
-
-            // Assigner des chambres à ce binôme
-            $roomsPerBinome = intval(count($remainingRooms) / ($binomeCount - $i));
-            $roomsPerBinome = max(8, min(20, $roomsPerBinome)); // Entre 8 et 20 chambres
-
-            $assignedRooms = array_splice($remainingRooms, 0, $roomsPerBinome);
+            $binomeMembers = $availableMembers->random(2);
+            $member1 = $binomeMembers[0];
+            $member2 = $binomeMembers[1];
+            
+            $usedMembers[] = $member1->id;
+            $usedMembers[] = $member2->id;
 
             // Créer le binôme
             $binome = TourBinome::create([
                 'room_tour_id' => $tour->id,
                 'binome_name' => $binomeNames[$i],
-                'member_ids' => $memberIds,
-                'assigned_rooms' => $assignedRooms,
-                'visited_rooms' => [],
+                'member_1_id' => $member1->id,
+                'member_2_id' => $member2->id
             ]);
 
+            // Assigner 5-8 chambres à ce binôme
+            $roomsPerBinome = min(fake()->numberBetween(5, 8), $availableRooms->count() - $roomIndex);
+            $assignedRooms = $availableRooms->slice($roomIndex, $roomsPerBinome);
+            $roomIndex += $roomsPerBinome;
+
             // Créer les visites pour chaque chambre
-            foreach ($assignedRooms as $index => $roomId) {
+            foreach ($assignedRooms as $index => $room) {
                 $visited = false;
                 $visitedAt = null;
                 $notes = null;
@@ -124,7 +121,7 @@ class RoomTourSeeder extends Seeder
                     }
                 }
                 // Si c'est la tournée active d'aujourd'hui, simuler quelques visites
-                elseif ($isActive && $index < count($assignedRooms) * 0.4) {
+                elseif ($isActive && $index < $assignedRooms->count() * 0.4) {
                     $visited = fake()->boolean(60);
                     if ($visited) {
                         $visitedAt = fake()->dateTimeBetween('today 09:00', 'now');
@@ -134,34 +131,14 @@ class RoomTourSeeder extends Seeder
 
                 RoomTourVisit::create([
                     'tour_binome_id' => $binome->id,
-                    'room_id' => $roomId,
+                    'room_id' => $room->id, // Utiliser l'ID de la room, pas le roomNumber
                     'visited' => $visited,
                     'visited_at' => $visitedAt,
                     'visit_order' => $index + 1,
-                    'notes' => $notes,
+                    'notes' => $notes
                 ]);
             }
-
-            // Mettre à jour visited_rooms si nécessaire
-            if ($visited ?? false) {
-                $visitedRooms = RoomTourVisit::where('tour_binome_id', $binome->id)
-                    ->where('visited', true)
-                    ->pluck('room_id')
-                    ->toArray();
-
-                $binome->update(['visited_rooms' => $visitedRooms]);
-            }
-
-            // Préparer les données d'assignment
-            $assignments[] = [
-                'name' => $binomeNames[$i],
-                'member_ids' => $memberIds,
-                'assigned_rooms' => $assignedRooms,
-            ];
         }
-
-        // Mettre à jour les room_assignments de la tournée
-        $tour->update(['room_assignments' => $assignments]);
 
         return $tour;
     }

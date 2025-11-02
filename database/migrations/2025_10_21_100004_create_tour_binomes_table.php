@@ -9,11 +9,10 @@ return new class () extends Migration {
     {
         Schema::create('tour_binomes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('room_tour_id');
+            $table->foreignId('room_tour_id')->constrained('room_tours')->onDelete('cascade');
             $table->string('binome_name');
-            $table->json('member_ids');
-            $table->json('assigned_rooms');
-            $table->json('visited_rooms');
+            $table->foreignId('member_1_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('member_2_id')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

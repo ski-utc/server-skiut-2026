@@ -147,18 +147,18 @@ class PermanenceSeeder extends Seeder
 
                 // Déterminer le statut selon la date
                 $status = 'scheduled';
-                $notified = false;
+                $notificationSent = false;
 
                 if ($startDateTime->isPast()) {
                     if ($endDateTime->isPast()) {
                         $status = fake()->randomElement(['completed', 'completed', 'completed', 'cancelled']);
-                        $notified = true;
+                        $notificationSent = true;
                     } else {
                         $status = 'in_progress';
-                        $notified = true;
+                        $notificationSent = true;
                     }
                 } elseif ($startDateTime->diffInHours(now()) <= 2) {
-                    $notified = fake()->boolean(80); // 80% de chance d'avoir été notifié
+                    $notificationSent = fake()->boolean(80); // 80% de chance d'avoir été notifié
                 }
 
                 $permanence = Permanence::create([
@@ -170,7 +170,7 @@ class PermanenceSeeder extends Seeder
                     'status' => $status,
                     'responsible_user_id' => $responsibleMember->id,
                     'notes' => $status === 'completed' ? fake()->optional(0.4)->paragraph() : null,
-                    'notified' => $notified,
+                    'notification_sent' => $notificationSent,
                 ]);
 
                 $createdPermanences++;
@@ -192,7 +192,7 @@ class PermanenceSeeder extends Seeder
                 'status' => 'scheduled',
                 'responsible_user_id' => $members->random()->id,
                 'notes' => null,
-                'notified' => false,
+                'notification_sent' => false,
             ]);
 
             $createdPermanences++;

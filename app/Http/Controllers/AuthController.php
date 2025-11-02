@@ -46,7 +46,7 @@ class AuthController extends Controller
             $userId = env('USER_ID');
             $user = User::find($userId);
             if (!$user) {
-                response()->json(['message' => 'Il faut au moins créer le user '.$userId.' dans la base de données'], 400);
+                return response()->json(['message' => 'Il faut au moins créer le user '.$userId.' dans la base de données'], 400);
             }
             try {
                 $accessTokenPayload = [
@@ -207,7 +207,8 @@ class AuthController extends Controller
                 'lastName' => $user->lastName,
                 'room' => $room->roomNumber,
                 'roomName' => $room->name ? $room->name : null,
-                'admin' => $user->admin
+                'admin' => $user->admin,
+                'member' => $user->member
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : '.$e], 401);

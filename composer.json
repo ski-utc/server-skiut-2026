@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "fakerphp/faker": "^1.24",
         "filament/filament": "^3.2",
         "filament/spatie-laravel-settings-plugin": "^3.3",
         "guzzlehttp/guzzle": "^7.9",
@@ -20,7 +21,6 @@
     },
     "require-dev": {
         "enlightn/security-checker": "^2.0",
-        "fakerphp/faker": "^1.23",
         "firebase/php-jwt": "^6.11",
         "friendsofphp/php-cs-fixer": "^3.84",
         "laravel/pint": "^1.13",

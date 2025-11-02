@@ -50,15 +50,14 @@ class PlanningController extends Controller
 
             // Ajouter les permanences si l'utilisateur est membre
             if ($user && $user->member) {
-                // Récupérer les permanences pour les 30 prochains jours
+                // Récupérer les permanences assignées à cet utilisateur
                 $startDate = now()->subDays(1);
                 $endDate = now()->addDays(30);
 
                 $permanences = Permanence::forUser($userId)
                     ->inPeriod($startDate, $endDate)
-                    ->with('responsibleUser')
                     ->get()
-                    ->map(function ($permanence) use ($userId) {
+                    ->map(function ($permanence) {
                         $status = 'future';
                         if ($permanence->end_datetime->isPast()) {
                             $status = 'past';
@@ -68,7 +67,7 @@ class PlanningController extends Controller
 
                         return [
                             'id' => 'permanence_' . $permanence->id,
-                            'activity' => '🛠️ ' . $permanence->name,
+                            'activity' => $permanence->name,
                             'time' => [
                                 'start' => $permanence->start_datetime->format('H:i'),
                                 'end' => $permanence->end_datetime->format('H:i'),
@@ -83,10 +82,7 @@ class PlanningController extends Controller
                                 'name' => $permanence->name,
                                 'description' => $permanence->description,
                                 'location' => $permanence->location,
-                                'is_responsible' => $permanence->responsible_user_id === $userId,
-                                'responsible_name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName,
-                                'status' => $permanence->status,
-                                'duration_minutes' => $permanence->getDurationInMinutes()
+                                'status' => $permanence->status
                             ]
                         ];
                     });
@@ -111,72 +107,7 @@ class PlanningController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Récupérer les permanences d'un utilisateur membre
-     */
-    public function getUserPermanences(Request $request)
-    {
-        try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
-
-            if (!$user || !$user->member) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Accès réservé aux membres de l\'association'
-                ], 403);
-            }
-
-            $startDate = $request->input('start_date', now()->format('Y-m-d'));
-            $endDate = $request->input('end_date', now()->addDays(30)->format('Y-m-d'));
-
-            $permanences = Permanence::forUser($userId)
-                ->inPeriod($startDate, $endDate)
-                ->with('responsibleUser')
-                ->orderBy('start_datetime')
-                ->get();
-
-            $data = $permanences->map(function ($permanence) use ($userId) {
-                $allMembers = $permanence->getAllMembers();
-
-                return [
-                    'id' => $permanence->id,
-                    'name' => $permanence->name,
-                    'description' => $permanence->description,
-                    'start_datetime' => $permanence->start_datetime->toISOString(),
-                    'end_datetime' => $permanence->end_datetime->toISOString(),
-                    'location' => $permanence->location,
-                    'status' => $permanence->status,
-                    'is_responsible' => $permanence->responsible_user_id === $userId,
-                    'responsible' => [
-                        'id' => $permanence->responsibleUser->id,
-                        'name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName
-                    ],
-                    'all_members' => $allMembers->map(function ($member) {
-                        return [
-                            'id' => $member->id,
-                            'name' => $member->firstName . ' ' . $member->lastName
-                        ];
-                    }),
-                    'duration_minutes' => $permanence->getDurationInMinutes(),
-                    'notes' => $permanence->notes
-                ];
-            });
-
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de la récupération du planning: ' . $e->getMessage()
             ], 500);
         }
     }

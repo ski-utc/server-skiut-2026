@@ -12,15 +12,8 @@ class TourBinome extends Model
     protected $fillable = [
         'room_tour_id',
         'binome_name',
-        'member_ids',
-        'assigned_rooms',
-        'visited_rooms'
-    ];
-
-    protected $casts = [
-        'member_ids' => 'array',
-        'assigned_rooms' => 'array',
-        'visited_rooms' => 'array'
+        'member_1_id',
+        'member_2_id'
     ];
 
     public function roomTour()
@@ -33,23 +26,32 @@ class TourBinome extends Model
         return $this->hasMany(RoomTourVisit::class);
     }
 
-    public function members()
+    public function member1()
     {
-        return $this->belongsToMany(User::class, 'tour_binome_members', 'tour_binome_id', 'user_id');
+        return $this->belongsTo(User::class, 'member_1_id');
+    }
+
+    public function member2()
+    {
+        return $this->belongsTo(User::class, 'member_2_id');
     }
 
     /**
-     * Récupère les membres de ce binôme
+     * Récupère les 2 membres du binôme
      */
-    public function getMembersAttribute()
+    public function getMembers()
     {
-        if (empty($this->member_ids)) {
-            return collect([]);
+        $members = collect();
+        
+        if ($this->member1) {
+            $members->push($this->member1);
         }
-
-        return User::whereIn('id', $this->member_ids)
-                  ->select('id', 'firstName', 'lastName')
-                  ->get();
+        
+        if ($this->member2) {
+            $members->push($this->member2);
+        }
+        
+        return $members;
     }
 
     /**
@@ -57,7 +59,8 @@ class TourBinome extends Model
      */
     public function scopeForUser($query, $userId)
     {
-        return $query->whereJsonContains('member_ids', $userId);
+        return $query->where('member_1_id', $userId)
+                    ->orWhere('member_2_id', $userId);
     }
 
     /**
@@ -65,7 +68,7 @@ class TourBinome extends Model
      */
     public function hasMember($userId)
     {
-        return in_array($userId, $this->member_ids ?: []);
+        return $this->member_1_id == $userId || $this->member_2_id == $userId;
     }
 
     /**
@@ -109,13 +112,6 @@ class TourBinome extends Model
                 'notes' => $notes
             ]);
 
-            // Mettre à jour la liste des chambres visitées
-            $visitedRooms = $this->visited_rooms ?: [];
-            if (!in_array($roomId, $visitedRooms)) {
-                $visitedRooms[] = $roomId;
-                $this->update(['visited_rooms' => $visitedRooms]);
-            }
-
             return true;
         }
 
@@ -127,21 +123,10 @@ class TourBinome extends Model
      */
     public function reorderRooms($newOrder)
     {
-        // $newOrder est un tableau avec room_id => ordre
         foreach ($newOrder as $roomId => $order) {
             $this->visits()
                  ->where('room_id', $roomId)
                  ->update(['visit_order' => $order]);
         }
-
-        // Mettre à jour assigned_rooms avec le nouvel ordre
-        $orderedRooms = collect($newOrder)
-                       ->sortBy(function ($order, $roomId) {
-                           return $order;
-                       })
-                       ->keys()
-                       ->toArray();
-
-        $this->update(['assigned_rooms' => $orderedRooms]);
     }
 }

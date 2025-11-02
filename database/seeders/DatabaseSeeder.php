@@ -21,13 +21,14 @@ class DatabaseSeeder extends Seeder
             NotificationSeeder::class,
             TransportSeeder::class,
             ChambreSeeder::class,
+            ShotgunsSeeder::class,
+            BackOfficeAdminSeeder::class,
 
             RoomSeeder::class,
             UserSeeder::class,
             RelationsSeeder::class,
 
             AnecdoteSeeder::class,
-            UserPerformanceSeeder::class,
             ChallengeProofSeeder::class,
             PushTokenSeeder::class,
 
@@ -35,10 +36,10 @@ class DatabaseSeeder extends Seeder
             AnecdotesLikeSeeder::class,
             AnecdotesWarnSeeder::class,
 
-            // Nouvelles fonctionnalités 2025
-            PerformanceSeeder::class,       // Sessions de performance
-            PermanenceSeeder::class,        // Permanences des membres
-            RoomTourSeeder::class,          // Tournées des chambres
+            MonoprutSeeder::class,
+            PerformanceSeeder::class,
+            PermanenceSeeder::class,
+            RoomTourSeeder::class,
         ]);
     }
 }

@@ -16,10 +16,10 @@ return new class () extends Migration {
             $table->string('quantity');
             $table->enum('type', ['fruit', 'veggie', 'drink', 'sweet', 'snack', 'dairy', 'bread', 'meat', 'fish', 'grain', 'other'])->default('other');
             $table->foreignId('giver_room_id')->constrained('rooms')->onDelete('cascade');
-            $table->foreignId('receiver_room_id')->constrained('rooms')->onDelete('cascade')->nullable()->default(null);
+            $table->foreignId('receiver_room_id')->nullable()->constrained('rooms')->onDelete('set null');
+            $table->boolean('retrieved')->default(false);
             $table->timestamps();
         });
-
     }
 
     /**
@@ -30,16 +30,3 @@ return new class () extends Migration {
         Schema::dropIfExists('monoprut');
     }
 };
-
-
-// fruit	apple	    Fruits, pommes, etc.
-// drink	cup-soda	Boissons
-// sweet	candy	    Sucreries
-// snack	sandwich	Snacks / encas
-// dairy	milk	    Produits laitiers
-// bread	bread	    Pain
-// meat	    drumstick	Viande
-// veggie	carrot	    Légumes
-// fish	    fish	    Poisson
-// grain	wheat	    Céréales, riz, pâtes
-// other	package	    Divers / autre

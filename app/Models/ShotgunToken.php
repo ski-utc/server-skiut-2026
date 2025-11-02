@@ -15,4 +15,18 @@ class ShotgunToken extends Model
     protected $keyType = 'string';
 
     protected $fillable = ['token', 'expires_at'];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at->isPast();
+    }
+
+    public function isValid(): bool
+    {
+        return !$this->isExpired();
+    }
 }

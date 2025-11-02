@@ -59,10 +59,10 @@ class PerformanceSeeder extends Seeder
 
             // Créer ou mettre à jour UserPerformance
             UserPerformance::updateOrCreate(
-                ['userID' => $user->id],
+                ['user_id' => $user->id],
                 [
-                    'maxSpeed' => $maxSpeedOverall,
-                    'totalDistance' => round($totalDistance, 2),
+                    'max_speed' => $maxSpeedOverall,
+                    'total_distance' => round($totalDistance, 2),
                     'duration' => $totalDuration,
                     'average_speed' => round($globalAverageSpeed, 2),
                     'session_id' => $sessions[0]->session_id, // Dernière session
@@ -92,11 +92,11 @@ class PerformanceSeeder extends Seeder
             ]);
 
             // Mettre à jour UserPerformance avec les nouvelles données
-            $userPerf = UserPerformance::where('userID', $user->id)->first();
+            $userPerf = UserPerformance::where('user_id', $user->id)->first();
             if ($userPerf) {
                 $userPerf->update([
-                    'maxSpeed' => max($userPerf->maxSpeed, $exceptionalMaxSpeed),
-                    'totalDistance' => $userPerf->totalDistance + $exceptionalDistance,
+                    'max_speed' => max($userPerf->max_speed, $exceptionalMaxSpeed),
+                    'total_distance' => $userPerf->total_distance + $exceptionalDistance,
                     'duration' => $userPerf->duration + $exceptionalDuration,
                 ]);
             }

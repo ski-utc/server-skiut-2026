@@ -21,33 +21,9 @@ class RoomTourFactory extends Factory
     {
         $tourDate = $this->faker->dateTimeBetween('-7 days', '+14 days');
 
-        // Générer des assignations de chambres fictives
-        $binomes = [];
-        $binomeNames = ['Binôme A', 'Binôme B', 'Binôme C', 'Binôme D'];
-
-        foreach ($binomeNames as $index => $name) {
-            if ($index >= 2 && $this->faker->boolean(30)) {
-                break;
-            } // Parfois moins de binômes
-
-            $roomCount = $this->faker->numberBetween(8, 15);
-            $rooms = [];
-
-            for ($i = 1; $i <= $roomCount; $i++) {
-                $rooms[] = sprintf('%03d', $this->faker->unique()->numberBetween(100, 999));
-            }
-
-            $binomes[] = [
-                'name' => $name,
-                'member_ids' => $this->faker->numberBetween(2, 4), // Simulé pour la factory
-                'assigned_rooms' => $rooms
-            ];
-        }
-
         return [
             'tour_date' => $tourDate->format('Y-m-d'),
-            'is_active' => $this->faker->boolean(10), // 10% de chance d'être active
-            'room_assignments' => $binomes,
+            'is_active' => $this->faker->boolean(10) // 10% de chance d'être active
         ];
     }
 

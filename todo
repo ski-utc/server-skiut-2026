@@ -1,0 +1,19 @@
+- tournée des chambres widget homePage
+- permamences
+- vérifier vitesse de glisse en arrière plan
+- vérifier les notifications 
+    - classique (push)
+    - skinder
+    - monoprut
+    - perms
+
+ApiCall avec param Get/Post/Put/Delete + Adapter les query et routes du serveur en fonction
+
+back-office
+
+- limiter toutes les response au strict minimum
+- vérifier sur toutes les pages qu'on a bien la page d'erreur ainsi que la page de loading si besoin
+- mettre des request->validate sur absolument chaque controller, et adapter l'app pour utiliser les types définis dans les controllers
+- Faire de tests unit pour absolument toutes les conditions des controllers. On essayera de faire des asserts aussi sur ce qui s'est passé côté BDD aussi si possible
+- mettre en forme toutes les db, surtout les fk au format <nom de la fk>_id ("user_id")
+- faire un uml de la DB

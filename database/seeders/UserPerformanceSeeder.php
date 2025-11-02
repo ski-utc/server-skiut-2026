@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\UserPerformance;
 use Illuminate\Database\Seeder;
 
+/**
+ * DÉPRÉCIÉ: Utilisez PerformanceSeeder à la place
+ * Ce seeder est gardé pour compatibilité mais n'est plus utilisé
+ */
 class UserPerformanceSeeder extends Seeder
 {
     /**
@@ -12,6 +15,6 @@ class UserPerformanceSeeder extends Seeder
      */
     public function run(): void
     {
-        UserPerformance::factory(30)->create();
+        // Vide - les données de performance sont créées par PerformanceSeeder
     }
 }

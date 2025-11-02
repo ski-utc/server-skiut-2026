@@ -12,14 +12,12 @@ class RoomTour extends Model
 
     protected $fillable = [
         'tour_date',
-        'is_active',
-        'room_assignments'
+        'is_active'
     ];
 
     protected $casts = [
         'tour_date' => 'date',
-        'is_active' => 'boolean',
-        'room_assignments' => 'array'
+        'is_active' => 'boolean'
     ];
 
     public function binomes()
@@ -44,11 +42,24 @@ class RoomTour extends Model
     }
 
     /**
+     * Récupère la tournée d'aujourd'hui (active ou non)
+     */
+    public static function getTodayTour()
+    {
+        return self::today()
+                  ->with(['binomes.member1', 'binomes.member2', 'binomes.visits'])
+                  ->first();
+    }
+
+    /**
      * Récupère la tournée active d'aujourd'hui
      */
     public static function getTodayActiveTour()
     {
-        return self::today()->active()->with('binomes.members', 'binomes.visits')->first();
+        return self::today()
+                  ->active()
+                  ->with(['binomes.member1', 'binomes.member2', 'binomes.visits'])
+                  ->first();
     }
 
     /**
@@ -64,7 +75,6 @@ class RoomTour extends Model
      */
     public function start()
     {
-        // Désactiver toute autre tournée active
         self::where('is_active', true)
             ->where('id', '!=', $this->id)
             ->update(['is_active' => false]);
@@ -87,17 +97,19 @@ class RoomTour extends Model
     {
         $totalRooms = 0;
         $visitedRooms = 0;
+        $binomesCount = $this->binomes->count();
 
         foreach ($this->binomes as $binome) {
-            $totalRooms += $binome->visits->count();
-            $visitedRooms += $binome->visits->where('visited', true)->count();
+            $stats = $binome->getVisitStats();
+            $totalRooms += $stats['total_rooms'];
+            $visitedRooms += $stats['visited_rooms'];
         }
 
         return [
+            'binomes_count' => $binomesCount,
             'total_rooms' => $totalRooms,
             'visited_rooms' => $visitedRooms,
-            'progress_percentage' => $totalRooms > 0 ? round(($visitedRooms / $totalRooms) * 100) : 0,
-            'binomes_count' => $this->binomes->count()
+            'progress_percentage' => $totalRooms > 0 ? round(($visitedRooms / $totalRooms) * 100) : 0
         ];
     }
 }

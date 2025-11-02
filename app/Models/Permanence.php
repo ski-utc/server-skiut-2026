@@ -17,39 +17,21 @@ class Permanence extends Model
         'start_datetime',
         'end_datetime',
         'responsible_user_id',
-        'additional_members',
         'location',
         'status',
-        'notification_sent',
+        'notified',
         'notes'
     ];
 
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
-        'additional_members' => 'array',
-        'notification_sent' => 'boolean'
+        'notified' => 'boolean'
     ];
 
     public function responsibleUser()
     {
         return $this->belongsTo(User::class, 'responsible_user_id');
-    }
-
-    public function getAllMembers()
-    {
-        $memberIds = array_merge(
-            [$this->responsible_user_id],
-            $this->additional_members ?? []
-        );
-
-        return User::whereIn('id', array_unique($memberIds))->get();
-    }
-
-    public function isUserInvolved($userId)
-    {
-        return $this->responsible_user_id == $userId ||
-               in_array($userId, $this->additional_members ?? []);
     }
 
     public function getDurationInMinutes()
@@ -59,7 +41,7 @@ class Permanence extends Model
 
     public function shouldNotify()
     {
-        return !$this->notification_sent &&
+        return !$this->notified &&
                $this->status === 'scheduled' &&
                $this->start_datetime->subHour()->isPast();
     }
@@ -67,8 +49,7 @@ class Permanence extends Model
     // Scope pour récupérer les permanences d'un utilisateur
     public function scopeForUser($query, $userId)
     {
-        return $query->where('responsible_user_id', $userId)
-                    ->orWhereJsonContains('additional_members', $userId);
+        return $query->where('responsible_user_id', $userId);
     }
 
     // Scope pour récupérer les permanences d'une période

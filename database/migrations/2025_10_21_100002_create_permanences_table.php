@@ -13,11 +13,11 @@ return new class () extends Migration {
             $table->text('description')->nullable();
             $table->timestamp('start_datetime');
             $table->timestamp('end_datetime');
+            $table->foreignId('responsible_user_id')->constrained('users')->onDelete('cascade');
             $table->string('location')->nullable();
             $table->enum('status', ['scheduled', 'in_progress', 'completed', 'cancelled'])->default('scheduled');
-            $table->unsignedBigInteger('responsible_user_id');
+            $table->boolean('notification_sent')->default(false);
             $table->text('notes')->nullable();
-            $table->boolean('notified')->default(false);
             $table->timestamps();
         });
     }

@@ -33,7 +33,6 @@ class PermanenceController extends Controller
                 ], 403);
             }
 
-            // Récupérer les permanences de l'utilisateur pour les 30 prochains jours
             $startDate = now();
             $endDate = now()->addDays(30);
 
@@ -44,8 +43,6 @@ class PermanenceController extends Controller
                 ->get();
 
             $data = $permanences->map(function ($permanence) use ($userId) {
-                $allMembers = $permanence->getAllMembers();
-
                 return [
                     'id' => $permanence->id,
                     'name' => $permanence->name,
@@ -59,12 +56,6 @@ class PermanenceController extends Controller
                         'id' => $permanence->responsibleUser->id,
                         'name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName
                     ],
-                    'all_members' => $allMembers->map(function ($member) {
-                        return [
-                            'id' => $member->id,
-                            'name' => $member->firstName . ' ' . $member->lastName
-                        ];
-                    }),
                     'duration_minutes' => $permanence->getDurationInMinutes(),
                     'notes' => $permanence->notes
                 ];
@@ -98,8 +89,6 @@ class PermanenceController extends Controller
                 ->get();
 
             $data = $permanences->map(function ($permanence) {
-                $allMembers = $permanence->getAllMembers();
-
                 return [
                     'id' => $permanence->id,
                     'name' => $permanence->name,
@@ -113,12 +102,6 @@ class PermanenceController extends Controller
                         'id' => $permanence->responsibleUser->id,
                         'name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName
                     ],
-                    'all_members' => $allMembers->map(function ($member) {
-                        return [
-                            'id' => $member->id,
-                            'name' => $member->firstName . ' ' . $member->lastName
-                        ];
-                    }),
                     'duration_minutes' => $permanence->getDurationInMinutes(),
                     'notes' => $permanence->notes
                 ];
@@ -149,8 +132,6 @@ class PermanenceController extends Controller
                 'start_datetime' => 'required|date|after:now',
                 'end_datetime' => 'required|date|after:start_datetime',
                 'responsible_user_id' => 'required|exists:users,id',
-                'additional_members' => 'nullable|array',
-                'additional_members.*' => 'exists:users,id',
                 'location' => 'nullable|string|max:255',
                 'notes' => 'nullable|string'
             ]);
@@ -162,7 +143,6 @@ class PermanenceController extends Controller
                 ], 422);
             }
 
-            // Vérifier que le responsable est membre
             $responsible = User::find($request->responsible_user_id);
             if (!$responsible->member) {
                 return response()->json([
@@ -171,39 +151,19 @@ class PermanenceController extends Controller
                 ], 400);
             }
 
-            // Vérifier que les membres additionnels sont bien membres
-            if ($request->additional_members) {
-                $additionalUsers = User::whereIn('id', $request->additional_members)->get();
-                foreach ($additionalUsers as $user) {
-                    if (!$user->member) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "L'utilisateur {$user->firstName} {$user->lastName} n'est pas membre de l'association"
-                        ], 400);
-                    }
-                }
-            }
-
             $permanence = Permanence::create([
                 'name' => $request->name,
                 'description' => $request->description,
                 'start_datetime' => $request->start_datetime,
                 'end_datetime' => $request->end_datetime,
                 'responsible_user_id' => $request->responsible_user_id,
-                'additional_members' => $request->additional_members ?? [],
                 'location' => $request->location,
                 'notes' => $request->notes,
                 'status' => 'scheduled'
             ]);
 
-            // Envoyer une notification à tous les participants
-            $allMemberIds = array_merge(
-                [$permanence->responsible_user_id],
-                $permanence->additional_members ?? []
-            );
-
             $this->firebaseService->sendNotification(
-                $allMemberIds,
+                [$permanence->responsible_user_id],
                 'Nouvelle permanence assignée',
                 "Permanence '{$permanence->name}' le " . $permanence->start_datetime->format('d/m à H:i'),
                 [
@@ -240,8 +200,6 @@ class PermanenceController extends Controller
                 'start_datetime' => 'sometimes|required|date',
                 'end_datetime' => 'sometimes|required|date|after:start_datetime',
                 'responsible_user_id' => 'sometimes|required|exists:users,id',
-                'additional_members' => 'nullable|array',
-                'additional_members.*' => 'exists:users,id',
                 'location' => 'nullable|string|max:255',
                 'status' => 'sometimes|in:scheduled,in_progress,completed,cancelled',
                 'notes' => 'nullable|string'
@@ -256,8 +214,7 @@ class PermanenceController extends Controller
 
             $permanence->update($request->only([
                 'name', 'description', 'start_datetime', 'end_datetime',
-                'responsible_user_id', 'additional_members', 'location',
-                'status', 'notes'
+                'responsible_user_id', 'location', 'status', 'notes'
             ]));
 
             return response()->json([
@@ -337,7 +294,6 @@ class PermanenceController extends Controller
             $now = now();
             $oneHourFromNow = $now->copy()->addHour();
 
-            // Trouver toutes les permanences qui commencent dans l'heure
             $upcomingPermanences = Permanence::where('status', 'scheduled')
                 ->where('notification_sent', false)
                 ->whereBetween('start_datetime', [$now, $oneHourFromNow])
@@ -346,13 +302,8 @@ class PermanenceController extends Controller
             $notificationsSent = 0;
 
             foreach ($upcomingPermanences as $permanence) {
-                $allMemberIds = array_merge(
-                    [$permanence->responsible_user_id],
-                    $permanence->additional_members ?? []
-                );
-
                 $result = $this->firebaseService->sendNotification(
-                    $allMemberIds,
+                    [$permanence->responsible_user_id],
                     'Rappel de permanence',
                     "Votre permanence '{$permanence->name}' commence dans 1 heure",
                     [

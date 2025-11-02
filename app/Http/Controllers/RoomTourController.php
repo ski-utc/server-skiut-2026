@@ -13,6 +13,8 @@ class RoomTourController extends Controller
 {
     /**
      * Récupère toutes les tournées (admin)
+     * Filtre: uniquement les tournées d'aujourd'hui et futures
+     * Tri: ordre chronologique croissant
      */
     public function getAllTours()
     {
@@ -20,7 +22,8 @@ class RoomTourController extends Controller
             $tours = RoomTour::with(['binomes' => function ($query) {
                 $query->withCount('visits');
             }])
-            ->orderBy('tour_date', 'desc')
+            ->whereDate('tour_date', '>=', now()->toDateString())
+            ->orderBy('tour_date', 'asc')
             ->get()
             ->map(function ($tour) {
                 $stats = $tour->getProgressStats();
@@ -59,7 +62,7 @@ class RoomTourController extends Controller
                 'tour_date' => 'required|date|after_or_equal:today',
                 'binomes' => 'required|array|min:1',
                 'binomes.*.name' => 'required|string|max:255',
-                'binomes.*.member_ids' => 'required|array|min:1',
+                'binomes.*.member_ids' => 'required|array|size:2',
                 'binomes.*.member_ids.*' => 'exists:users,id',
                 'binomes.*.assigned_rooms' => 'required|array|min:1',
                 'binomes.*.assigned_rooms.*' => 'string'
@@ -67,7 +70,6 @@ class RoomTourController extends Controller
 
             DB::beginTransaction();
 
-            // Vérifier qu'il n'y a pas déjà une tournée pour cette date
             $existingTour = RoomTour::where('tour_date', $request->tour_date)->first();
             if ($existingTour) {
                 return response()->json([
@@ -76,24 +78,19 @@ class RoomTourController extends Controller
                 ], 400);
             }
 
-            // Créer la tournée
             $roomTour = RoomTour::create([
                 'tour_date' => $request->tour_date,
-                'is_active' => false,
-                'room_assignments' => $request->binomes
+                'is_active' => false
             ]);
 
-            // Créer les binômes et leurs visites
             foreach ($request->binomes as $binomeData) {
                 $binome = TourBinome::create([
                     'room_tour_id' => $roomTour->id,
                     'binome_name' => $binomeData['name'],
-                    'member_ids' => $binomeData['member_ids'],
-                    'assigned_rooms' => $binomeData['assigned_rooms'],
-                    'visited_rooms' => []
+                    'member_1_id' => $binomeData['member_ids'][0],
+                    'member_2_id' => $binomeData['member_ids'][1]
                 ]);
 
-                // Créer les visites pour chaque chambre
                 foreach ($binomeData['assigned_rooms'] as $index => $roomId) {
                     RoomTourVisit::create([
                         'tour_binome_id' => $binome->id,
@@ -109,7 +106,7 @@ class RoomTourController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Tournée créée avec succès',
-                'data' => $roomTour->load('binomes.visits')
+                'data' => $roomTour->load(['binomes.member1', 'binomes.member2', 'binomes.visits'])
             ]);
 
         } catch (\Exception $e) {
@@ -173,7 +170,7 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Récupère la tournée active d'aujourd'hui pour un utilisateur membre
+     * Récupère la tournée d'aujourd'hui pour un utilisateur membre (active ou non)
      */
     public function getUserTour(Request $request)
     {
@@ -188,20 +185,19 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            $activeTour = RoomTour::getTodayActiveTour();
+            $todayTour = RoomTour::getTodayTour();
 
-            if (!$activeTour) {
+            if (!$todayTour) {
                 return response()->json([
                     'success' => true,
                     'data' => null,
-                    'message' => 'Aucune tournée active aujourd\'hui'
+                    'message' => 'Aucune tournée aujourd\'hui'
                 ]);
             }
 
-            // Trouver le binôme de l'utilisateur
-            $userBinome = $activeTour->binomes()
+            $userBinome = $todayTour->binomes()
                                     ->forUser($userId)
-                                    ->with('visits.roomInfo')
+                                    ->with('visits')
                                     ->first();
 
             if (!$userBinome) {
@@ -214,18 +210,20 @@ class RoomTourController extends Controller
 
             $binomeStats = $userBinome->getVisitStats();
 
+            $members = $userBinome->getMembers()->map(function ($member) {
+                return [
+                    'id' => $member->id,
+                    'name' => $member->firstName . ' ' . $member->lastName
+                ];
+            });
+
             $data = [
-                'tour_id' => $activeTour->id,
-                'tour_date' => $activeTour->tour_date->format('Y-m-d'),
+                'tour_id' => $todayTour->id,
+                'tour_date' => $todayTour->tour_date->format('Y-m-d'),
                 'binome' => [
                     'id' => $userBinome->id,
                     'name' => $userBinome->binome_name,
-                    'members' => $userBinome->members->map(function ($member) {
-                        return [
-                            'id' => $member->id,
-                            'name' => $member->firstName . ' ' . $member->lastName
-                        ];
-                    }),
+                    'members' => $members,
                     'stats' => $binomeStats
                 ],
                 'visits' => $userBinome->visits()
@@ -259,6 +257,7 @@ class RoomTourController extends Controller
 
     /**
      * Récupère le statut de la tournée pour un voyageur (widget home)
+     * N'affiche le widget que si la tournée est active ET la chambre n'a pas encore été visitée
      */
     public function getTourStatusForTraveler(Request $request)
     {
@@ -273,6 +272,7 @@ class RoomTourController extends Controller
                 ], 404);
             }
 
+            // Récupérer uniquement la tournée ACTIVE d'aujourd'hui
             $activeTour = RoomTour::getTodayActiveTour();
 
             if (!$activeTour) {
@@ -282,10 +282,10 @@ class RoomTourController extends Controller
                 ]);
             }
 
-            // Chercher si la chambre de l'utilisateur est dans la tournée
             $roomVisit = null;
             $binomeInfo = null;
 
+            // Trouver la visite de la chambre de l'utilisateur
             foreach ($activeTour->binomes as $binome) {
                 $visit = $binome->visits()->where('room_id', $user->roomID)->first();
                 if ($visit) {
@@ -295,6 +295,7 @@ class RoomTourController extends Controller
                 }
             }
 
+            // Ne pas afficher si la chambre n'est pas dans les visites
             if (!$roomVisit) {
                 return response()->json([
                     'success' => true,
@@ -302,24 +303,35 @@ class RoomTourController extends Controller
                 ]);
             }
 
-            // Calculer la position dans la tournée
-            $totalRooms = $binomeInfo->visits()->count();
+            // Ne pas afficher si la chambre a déjà été visitée
+            if ($roomVisit->visited) {
+                return response()->json([
+                    'success' => true,
+                    'data' => null
+                ]);
+            }
+
+            // Calculer le nombre de chambres non visitées avant celle de l'utilisateur
             $roomsBefore = $binomeInfo->visits()
                                      ->where('visit_order', '<', $roomVisit->visit_order)
+                                     ->where('visited', false)
                                      ->count();
+
+            // Récupérer les membres du binôme avec nom et prénom
+            $members = $binomeInfo->getMembers()->map(function ($member) {
+                return [
+                    'firstName' => $member->firstName,
+                    'lastName' => $member->lastName,
+                    'fullName' => $member->firstName . ' ' . $member->lastName
+                ];
+            })->toArray();
 
             $data = [
                 'tour_active' => true,
-                'room_position' => $roomVisit->visit_order,
-                'total_rooms' => $totalRooms,
                 'rooms_before' => $roomsBefore,
-                'visited' => $roomVisit->visited,
-                'visited_at' => $roomVisit->visited_at,
                 'binome' => [
                     'name' => $binomeInfo->binome_name,
-                    'members' => $binomeInfo->members->map(function ($member) {
-                        return $member->firstName . ' ' . $member->lastName;
-                    })->toArray()
+                    'members' => $members
                 ]
             ];
 
@@ -339,11 +351,10 @@ class RoomTourController extends Controller
     /**
      * Marquer une chambre comme visitée (membres uniquement)
      */
-    public function markRoomVisited(Request $request)
+    public function markRoomVisited(Request $request, $visitId)
     {
         try {
             $request->validate([
-                'visit_id' => 'required|exists:room_tour_visits,id',
                 'notes' => 'nullable|string|max:500'
             ]);
 
@@ -357,10 +368,9 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            $visit = RoomTourVisit::findOrFail($request->visit_id);
+            $visit = RoomTourVisit::findOrFail($visitId);
             $binome = $visit->tourBinome;
 
-            // Vérifier que l'utilisateur fait partie de ce binôme
             if (!$binome->hasMember($userId)) {
                 return response()->json([
                     'success' => false,
@@ -368,7 +378,6 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            // Marquer comme visitée
             $success = $binome->markRoomAsVisited($visit->room_id, $request->notes);
 
             if ($success) {
@@ -392,15 +401,59 @@ class RoomTourController extends Controller
     }
 
     /**
+     * Annuler la visite d'une chambre (membres uniquement)
+     */
+    public function unmarkVisited(Request $request, $visitId)
+    {
+        try {
+            $userId = $request->user['id'];
+            $user = User::find($userId);
+
+            if (!$user || !$user->member) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Accès réservé aux membres de l\'association'
+                ], 403);
+            }
+
+            $visit = RoomTourVisit::findOrFail($visitId);
+            $binome = $visit->tourBinome;
+
+            if (!$binome->hasMember($userId)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous n\'êtes pas autorisé à modifier cette visite'
+                ], 403);
+            }
+
+            $visit->update([
+                'visited' => false,
+                'visited_at' => null,
+                'notes' => null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visite annulée avec succès',
+                'data' => $visit->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'annulation : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Réorganiser l'ordre des chambres pour un binôme (membres uniquement)
      */
     public function reorderRooms(Request $request)
     {
         try {
             $request->validate([
-                'binome_id' => 'required|exists:tour_binomes,id',
-                'room_orders' => 'required|array',
-                'room_orders.*' => 'integer|min:1'
+                'room_order' => 'required|array'
             ]);
 
             $userId = $request->user['id'];
@@ -413,18 +466,25 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            $binome = TourBinome::findOrFail($request->binome_id);
-
-            // Vérifier que l'utilisateur fait partie de ce binôme
-            if (!$binome->hasMember($userId)) {
+            $activeTour = RoomTour::getTodayActiveTour();
+            
+            if (!$activeTour) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Vous n\'êtes pas autorisé à modifier ce binôme'
+                    'message' => 'Aucune tournée active aujourd\'hui'
+                ], 404);
+            }
+
+            $binome = $activeTour->binomes()->forUser($userId)->first();
+
+            if (!$binome) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous ne participez pas à la tournée d\'aujourd\'hui'
                 ], 403);
             }
 
-            // Réorganiser les chambres
-            $binome->reorderRooms($request->room_orders);
+            $binome->reorderRooms($request->room_order);
 
             return response()->json([
                 'success' => true,

@@ -29,6 +29,7 @@ class UserFactory extends Factory
             'roomID' => fake()->numberBetween(1, 15),
             'location' => fake()->optional()->city(),
             'admin' => fake()->boolean(10),
+            'member' => fake()->boolean(30), // 30% chance d'être un membre de l'association
             'alumniOrExte' => fake()->boolean(20),
         ];
     }

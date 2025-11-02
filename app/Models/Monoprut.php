@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
-use App\Models\Room;
 
 class Monoprut extends Model
 {
@@ -13,7 +11,12 @@ class Monoprut extends Model
 
     protected $table = 'monoprut';
 
-    protected $fillable = ['product', 'quantity', 'type', 'giver_room_id', 'receiver_room_id'];
+    protected $fillable = ['product', 'quantity', 'type', 'giver_room_id', 'receiver_room_id', 'retrieved'];
+
+    protected $casts = [
+        'type' => 'string',
+        'retrieved' => 'boolean',
+    ];
 
     public function giver()
     {
@@ -27,7 +30,7 @@ class Monoprut extends Model
 
     public function isGiverRoom(User $user)
     {
-        return $this->giver_room_id == $user->room()->id;
+        return $this->giver_room_id == $user->roomID;
     }
 
     public function isReceiverRoom(User $user)

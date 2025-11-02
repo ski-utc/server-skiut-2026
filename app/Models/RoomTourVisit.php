@@ -37,8 +37,21 @@ class RoomTourVisit extends Model
                     ->select('id', 'firstName', 'lastName', 'roomID')
                     ->get();
 
+        // Récupérer les infos de la chambre (mood et nom)
+        // Note: room_id peut être soit un ID, soit un roomNumber selon comment les données sont stockées
+        $room = Room::where('roomNumber', $this->room_id)
+                   ->orWhere('id', $this->room_id)
+                   ->first();
+
+        // Debug: Log si la chambre n'est pas trouvée
+        if (!$room) {
+            \Log::warning("Chambre non trouvée pour room_id: {$this->room_id}");
+        }
+
         return [
             'room_id' => $this->room_id,
+            'room_name' => $room && $room->name ? $room->name : null,
+            'mood' => $room && $room->mood ? $room->mood : null,
             'occupants' => $users->map(function ($user) {
                 return [
                     'id' => $user->id,

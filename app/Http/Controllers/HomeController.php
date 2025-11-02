@@ -46,7 +46,7 @@ class HomeController extends Controller
             $userId = $request->user['id'];
             $roomId = User::where('id', $userId)->first()->roomID;
 
-            $doneChallenges = ChallengeProof::where('room_id', '!=', $roomId)->inRandomOrder()->get();
+            $doneChallenges = ChallengeProof::where('room_id', $roomId)->get();
             $randomChallenge = Challenge::whereNotIn('id', $doneChallenges->pluck('challenge_id'))->inRandomOrder()->first();
 
             $bestAnecdote = Anecdote::withCount('likes')

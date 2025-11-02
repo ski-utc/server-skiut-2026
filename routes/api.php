@@ -104,6 +104,7 @@ Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'se
 // Routes pour la gestion des utilisateurs et membres
 Route::get('/getUsers', [AdminController::class, 'getUsers'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 Route::post('/updateUserMemberStatus', [AdminController::class, 'updateUserMemberStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+Route::post('/updateUserStatus', [AdminController::class, 'updateUserStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
 
 Route::get('/getMaxFileSize', [\App\Http\Controllers\UserController::class, 'getMaxFileSize'])->middleware([EnsureTokenIsValid::class]);
 Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([EnsureTokenIsValid::class]);
@@ -127,8 +128,9 @@ Route::middleware([EnsureTokenIsValid::class, AdminMiddleware::class])->group(fu
 Route::middleware([EnsureTokenIsValid::class])->group(function () {
     Route::get('/room-tours/my-tour', [\App\Http\Controllers\RoomTourController::class, 'getUserTour']);
     Route::get('/room-tours/status', [\App\Http\Controllers\RoomTourController::class, 'getTourStatusForTraveler']);
-    Route::post('/room-tours/mark-visited', [\App\Http\Controllers\RoomTourController::class, 'markRoomVisited']);
-    Route::post('/room-tours/reorder-rooms', [\App\Http\Controllers\RoomTourController::class, 'reorderRooms']);
+    Route::post('/room-tours/visits/{visitId}/mark-visited', [\App\Http\Controllers\RoomTourController::class, 'markRoomVisited']);
+    Route::post('/room-tours/visits/{visitId}/unmark-visited', [\App\Http\Controllers\RoomTourController::class, 'unmarkVisited']);
+    Route::post('/room-tours/my-tour/reorder', [\App\Http\Controllers\RoomTourController::class, 'reorderRooms']);
 });
 
 // Routes pour les tournées de chambres (admin uniquement)
@@ -154,6 +156,8 @@ Route::post('/createArticle', [MonoprutController::class, 'createArticle'])->mid
 Route::post('/shotgunArticle', [MonoprutController::class, 'shotgunArticle'])->middleware(EnsureTokenIsValid::class);
 Route::get('/myGivenArticles', [MonoprutController::class, 'myGivenArticles'])->middleware(EnsureTokenIsValid::class);
 Route::get('/myReceivedArticles', [MonoprutController::class, 'myReceivedArticles'])->middleware(EnsureTokenIsValid::class);
+Route::post('/markAsRetrieved', [MonoprutController::class, 'markAsRetrieved'])->middleware(EnsureTokenIsValid::class);
+Route::post('/cancelReservation', [MonoprutController::class, 'cancelReservation'])->middleware(EnsureTokenIsValid::class);
 Route::post('/deleteArticle', [MonoprutController::class, 'deleteArticle'])->middleware(EnsureTokenIsValid::class);
 /**********************************************************************************************************************************************/
 
