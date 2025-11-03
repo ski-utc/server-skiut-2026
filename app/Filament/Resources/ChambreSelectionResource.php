@@ -36,6 +36,7 @@ class ChambreSelectionResource extends Resource
     {
         return $table
             ->contentGrid([
+                'default' => 2,
                 'md' => 2,
                 'xl' => 3,
             ])
@@ -71,7 +72,7 @@ class ChambreSelectionResource extends Resource
             )
             ->actions([
                 Action::make('select')
-                ->label('Choisir cette chambre')
+                ->label('Choisir')
                 ->icon('heroicon-o-check')
                 ->color('success')
                 ->visible(fn (Room $record) => !$record->isLockedByOther(session('email')))
