@@ -122,6 +122,12 @@ class RoomShotgunSelectionResource extends Resource
             ->pluck('email')
             ->toArray();
 
+        Notification::make()
+            ->title('Vous avez 5 minutes pour compléter la réservation.')
+            ->body('Au delà de 5 minutes, la chambre sera libérée.')
+            ->info()
+            ->send();
+
         return [
             Section::make('Informations de la chambre')
                 ->schema([
