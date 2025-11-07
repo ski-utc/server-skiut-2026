@@ -79,7 +79,6 @@ class RoomShotgunSelectionResource extends Resource
                 //->requiresConfirmation()
                 ->form(fn (RoomShotgun $record) => self::getSelectionFormSchema($record))
                 ->action(function (array $data, RoomShotgun $record) {
-                    \Log::info('Action called', ['data' => $data]);
                     self::handleSelection($data, $record);
                 })
             ])
@@ -105,6 +104,12 @@ class RoomShotgunSelectionResource extends Resource
             return [];
         }
 
+        foreach (session()->all() as $key => $value) {
+            if (strpos($key, 'room_shotgun_notification_') === 0 && strpos($key, $email) !== false) {
+                session()->forget($key);
+            }
+        }
+
         RoomShotgun::where('locked_by_email', $email)
             ->where('id', '!=', $record->id)
             ->update(['locked_by_email' => null, 'locked_until' => null]);
@@ -122,11 +127,15 @@ class RoomShotgunSelectionResource extends Resource
             ->pluck('email')
             ->toArray();
 
-        Notification::make()
-            ->title('Vous avez 5 minutes pour compléter la réservation.')
-            ->body('Au delà de 5 minutes, la chambre sera libérée.')
-            ->info()
-            ->send();
+        $notificationKey = 'room_shotgun_notification_' . $record->id . '_' . $email;
+        if (!session()->has($notificationKey)) {
+            Notification::make()
+                ->title('Vous avez 5 minutes pour compléter la réservation.')
+                ->body('Au delà de 5 minutes, la chambre sera libérée.')
+                ->info()
+                ->send();
+            session()->put($notificationKey, true);
+        }
 
         return [
             Section::make('Informations de la chambre')
@@ -212,11 +221,6 @@ class RoomShotgunSelectionResource extends Resource
         try {
             DB::beginTransaction();
 
-            \Log::info('HandleSelection started', [
-                'data' => $data,
-                'room_shotgun_id' => $record->id
-            ]);
-
             // Vérifier si l'email est déjà dans une chambre shotgun
             $existingAssignment = UserRoomShotgun::where('email', session('email'))->first();
             if ($existingAssignment) {
@@ -274,7 +278,6 @@ class RoomShotgunSelectionResource extends Resource
                     'email' => $participant['email'],
                     'is_vegetarian' => $participant['is_vegetarian'] ?? false,
                 ]);
-                \Log::info('Participant added', ['email' => $participant['email'], 'room_id' => $room->id]);
             }
 
             // Ajouter le responsable
@@ -283,7 +286,6 @@ class RoomShotgunSelectionResource extends Resource
                 'email' => $data['responsable_email'],
                 'is_vegetarian' => $data['responsable_is_vegetarian'] ?? false,
             ]);
-            \Log::info('Responsable added', ['email' => $data['responsable_email'], 'room_id' => $room->id]);
 
             // Mise à jour de la chambre
             $room->update([
@@ -293,14 +295,7 @@ class RoomShotgunSelectionResource extends Resource
                 'locked_by_email' => null,
             ]);
 
-            \Log::info('RoomShotgun updated', [
-                'room_id' => $room->id,
-                'responsable_chambre' => $data['responsable_email'],
-                'ambiance' => $data['ambiance'] ?? null,
-            ]);
-
             DB::commit();
-            \Log::info('Transaction committed successfully');
             
             $room->unlock();
 
