@@ -26,7 +26,7 @@ class PushTokenSeeder extends Seeder
 
         foreach ($usersWithTokens as $user) {
             $tokenCount = fake()->numberBetween(1, 2);
-            
+
             for ($i = 0; $i < $tokenCount; $i++) {
                 PushToken::factory()->create([
                     'user_id' => $user->id,

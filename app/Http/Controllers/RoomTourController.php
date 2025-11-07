@@ -467,7 +467,7 @@ class RoomTourController extends Controller
             }
 
             $activeTour = RoomTour::getTodayActiveTour();
-            
+
             if (!$activeTour) {
                 return response()->json([
                     'success' => false,

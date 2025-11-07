@@ -6,7 +6,6 @@ use App\Models\Anecdote;
 use App\Models\ChallengeProof;
 use App\Models\Notification;
 use App\Models\User;
-use App\Services\ExpoPushService;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -260,169 +259,169 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Récupère les notifications
-     */
-    public function getAdminNotifications()
-    {
-        try {
-            $notifications = Notification::orderBy('created_at', 'desc')->get();
+    // /**
+    //  * Récupère les notifications
+    //  */
+    // public function getAdminNotifications()
+    // {
+    //     try {
+    //         $notifications = Notification::orderBy('created_at', 'desc')->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $notifications,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error retrieving notifications: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $notifications,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Error retrieving notifications: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
-    /**
-     * Récupère les détails d'une notification spécifique par son ID
-     */
-    public function getNotificationDetails($notificationId)
-    {
-        try {
-            $notification = Notification::findOrFail($notificationId);
+    // /**
+    //  * Récupère les détails d'une notification spécifique par son ID
+    //  */
+    // public function getNotificationDetails($notificationId)
+    // {
+    //     try {
+    //         $notification = Notification::findOrFail($notificationId);
 
-            return response()->json([
-                'success' => true,
-                'data' => $notification
-            ]);
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $notification
+    //         ]);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
-    /**
-     * @deprecated
-     * Envoie une notification à un utilisateur spécifique
-     */
-    public function sendNotificationToOne(Request $request)
-    {
-        try {
-            $title = $request->input('titre');
-            $body = $request->input('texte');
-            $token = $request->input('token');
+    // /**
+    //  * @deprecated
+    //  * Envoie une notification à un utilisateur spécifique
+    //  */
+    // public function sendNotificationToOne(Request $request)
+    // {
+    //     try {
+    //         $title = $request->input('titre');
+    //         $body = $request->input('texte');
+    //         $token = $request->input('token');
 
-            $expoPushService = new ExpoPushService();
-            $expoPushService->sendNotification(
-                $token,
-                $title,
-                $body,
-                $request->input('data', [])
-            );
+    //         $expoPushService = new ExpoPushService();
+    //         $expoPushService->sendNotification(
+    //             $token,
+    //             $title,
+    //             $body,
+    //             $request->input('data', [])
+    //         );
 
-            Notification::create([
-                'title' => $title,
-                'description' => $body,
-                'general' => false,
-                'display' => true,
-            ]);
+    //         Notification::create([
+    //             'title' => $title,
+    //             'description' => $body,
+    //             'general' => false,
+    //             'display' => true,
+    //         ]);
 
-            return response()->json(['success' => true, 'message' => "Notification envoyée avec succès à l'utilisateurice !"]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
-        }
-    }
+    //         return response()->json(['success' => true, 'message' => "Notification envoyée avec succès à l'utilisateurice !"]);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
+    //     }
+    // }
 
-    /**
-     * Envoie une notification à tous les utilisateurs
-     */
-    public function sendNotificationToAll(Request $request)
-    {
-        try {
-            $title = $request->input('titre');
-            $body = $request->input('texte');
-            $data = (object) [];
-            $tokens = \App\Models\PushToken::pluck('token')->toArray();
+    // /**
+    //  * Envoie une notification à tous les utilisateurs
+    //  */
+    // public function sendNotificationToAll(Request $request)
+    // {
+    //     try {
+    //         $title = $request->input('titre');
+    //         $body = $request->input('texte');
+    //         $data = (object) [];
+    //         $tokens = \App\Models\PushToken::pluck('token')->toArray();
 
-            // Use dependency injection instead of creating new instance
-            $expoPushService = app(\App\Services\ExpoPushService::class);
+    //         // Use dependency injection instead of creating new instance
+    //         $expoPushService = app(\App\Services\ExpoPushService::class);
 
-            foreach ($tokens as $token) {
-                $expoPushService->sendNotification(
-                    $token,
-                    $title,
-                    $body,
-                    $data
-                );
-            }
+    //         foreach ($tokens as $token) {
+    //             $expoPushService->sendNotification(
+    //                 $token,
+    //                 $title,
+    //                 $body,
+    //                 $data
+    //             );
+    //         }
 
-            Notification::create([
-                'title' => $title,
-                'description' => $body,
-                'general' => true,
-                'display' => true,
-            ]);
+    //         Notification::create([
+    //             'title' => $title,
+    //             'description' => $body,
+    //             'general' => true,
+    //             'display' => true,
+    //         ]);
 
-            return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
-        }
-    }
+    //         return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
+    //     }
+    // }
 
-    /**
-     * Envoie une notification individuelle à un utilisateur spécifique
-     */
-    public function sendIndividualNotification(Request $request, $user_id)
-    {
-        try {
-            $notification = new Notification([
-                'title' => $request->title,
-                'description' => $request->texte,
-                'user_id' => $user_id,
-                'general' => false,
-                'display' => true,
-            ]);
-            $notification->save();
+    // /**
+    //  * Envoie une notification individuelle à un utilisateur spécifique
+    //  */
+    // public function sendIndividualNotification(Request $request, $user_id)
+    // {
+    //     try {
+    //         $notification = new Notification([
+    //             'title' => $request->title,
+    //             'description' => $request->texte,
+    //             'user_id' => $user_id,
+    //             'general' => false,
+    //             'display' => true,
+    //         ]);
+    //         $notification->save();
 
-            return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
-    /**
-     * Supprime une notification
-     */
-    public function displayNotification(Request $request, $notificationId)
-    {
-        try {
-            $notification = Notification::findOrFail($notificationId);
+    // /**
+    //  * Supprime une notification
+    //  */
+    // public function displayNotification(Request $request, $notificationId)
+    // {
+    //     try {
+    //         $notification = Notification::findOrFail($notificationId);
 
-            $display = $request->input('display_flag');
+    //         $display = $request->input('display_flag');
 
-            if ($display === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Le paramètre "display_flag" est requis (1 pour supprimer, 0 pour annuler).',
-                ]);
-            }
+    //         if ($display === null) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Le paramètre "display_flag" est requis (1 pour supprimer, 0 pour annuler).',
+    //             ]);
+    //         }
 
-            // Mise à jour du statut de suppression
-            $notification->display = $display;
-            $notification->save();
+    //         // Mise à jour du statut de suppression
+    //         $notification->display = $display;
+    //         $notification->save();
 
-            return response()->json([
-                'success' => true,
-                'message' => $display ? 'Notification désactivée avec succès.' : 'Notification activée avec succès.',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $display ? 'Notification désactivée avec succès.' : 'Notification activée avec succès.',
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 }

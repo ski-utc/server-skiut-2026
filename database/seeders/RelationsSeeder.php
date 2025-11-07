@@ -19,7 +19,7 @@ class RelationsSeeder extends Seeder
         }
 
         $transports = Transport::all();
-        
+
         if ($users->isNotEmpty() && $transports->isNotEmpty()) {
             foreach ($users as $user) {
                 $randomTransports = $transports->random(rand(1, min(3, $transports->count())));

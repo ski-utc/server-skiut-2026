@@ -4,8 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoomShotgunSelectionResource\Pages;
 use App\Models\RoomShotgun;
-use App\Models\UserRoomShotgun;
 use App\Models\Shotguns;
+use App\Models\UserRoomShotgun;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -17,7 +18,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
-use Filament\Forms\Components\Checkbox;
+use Illuminate\Support\Facades\Log;
 
 class RoomShotgunSelectionResource extends Resource
 {
@@ -246,7 +247,7 @@ class RoomShotgunSelectionResource extends Resource
 
             // Récupérer les emails des participants (incluant le responsable)
             $emails = collect($data['participants'] ?? [])->pluck('email')->push($data['responsable_email']);
-            
+
             // Vérifier que tous les emails existent dans Shotguns
             $existing = Shotguns::whereIn('email', $emails)->pluck('email');
             $missing = $emails->diff($existing);
@@ -296,7 +297,7 @@ class RoomShotgunSelectionResource extends Resource
             ]);
 
             DB::commit();
-            
+
             $room->unlock();
 
             Notification::make()
@@ -305,7 +306,7 @@ class RoomShotgunSelectionResource extends Resource
                 ->send();
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('HandleSelection error', [
+            Log::error('HandleSelection error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

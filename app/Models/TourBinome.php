@@ -42,15 +42,15 @@ class TourBinome extends Model
     public function getMembers()
     {
         $members = collect();
-        
+
         if ($this->member1) {
             $members->push($this->member1);
         }
-        
+
         if ($this->member2) {
             $members->push($this->member2);
         }
-        
+
         return $members;
     }
 

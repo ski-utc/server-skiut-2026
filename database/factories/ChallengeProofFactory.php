@@ -10,8 +10,8 @@ class ChallengeProofFactory extends Factory
     {
         $fileExtensions = ['jpg', 'png', 'mp4', 'mov', 'avi'];
         $mediaType = fake()->randomElement(['image', 'video']);
-        
-        $extension = $mediaType === 'image' 
+
+        $extension = $mediaType === 'image'
             ? fake()->randomElement(['jpg', 'png'])
             : fake()->randomElement(['mp4', 'mov', 'avi']);
 

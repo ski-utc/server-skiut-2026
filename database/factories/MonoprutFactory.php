@@ -10,9 +10,9 @@ class MonoprutFactory extends Factory
     public function definition(): array
     {
         $types = ['fruit', 'veggie', 'drink', 'sweet', 'snack', 'dairy', 'bread', 'meat', 'fish', 'grain', 'other'];
-        
+
         $hasReceiver = $this->faker->boolean(70);
-        
+
         return [
             'product' => $this->faker->word(),
             'quantity' => (string) $this->faker->numberBetween(1, 50),

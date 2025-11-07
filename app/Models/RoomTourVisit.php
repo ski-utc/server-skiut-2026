@@ -37,10 +37,6 @@ class RoomTourVisit extends Model
                    ->orWhere('id', $this->room_id)
                    ->first();
 
-        if (!$room) {
-            \Log::warning("Chambre non trouvée pour room_id: {$this->room_id}");
-        }
-
         return [
             'room_id' => $this->room_id,
             'room_name' => $room && $room->name ? $room->name : null,

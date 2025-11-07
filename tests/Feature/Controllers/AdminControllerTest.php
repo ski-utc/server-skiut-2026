@@ -6,7 +6,6 @@ use App\Models\Anecdote;
 use App\Models\Challenge;
 use App\Models\ChallengeProof;
 use App\Models\Notification;
-use App\Models\PushToken;
 use App\Models\Room;
 use App\Models\User;
 use Firebase\JWT\JWT;
@@ -422,40 +421,6 @@ class AdminControllerTest extends TestCase
                          ->postJson("/api/displayNotification/{$notification->id}/1");
 
         $response->assertStatus(403);
-    }
-
-    // Tests pour sendNotificationToAll
-    public function test_send_notification_to_all_as_admin()
-    {
-        $token = $this->getToken(true);
-
-        // Créer un token push valide (format Expo)
-        PushToken::factory()->create(['token' => 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]']);
-
-        // Mock du service ExpoPushService pour éviter l'erreur de token invalide
-        $this->mock(\App\Services\ExpoPushService::class, function ($mock) {
-            $mock->shouldReceive('sendNotification')
-                 ->once()
-                 ->andReturn(true);
-        });
-
-        $response = $this->withHeader('Authorization', "Bearer $token")
-                         ->postJson('/api/sendNotification', [
-                             'titre' => 'Test Title',
-                             'texte' => 'Test Body'
-                         ]);
-
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'success' => true,
-                     'message' => 'Notification envoyée à tous les utilisateurs !'
-                 ]);
-
-        $this->assertDatabaseHas('notifications', [
-            'title' => 'Test Title',
-            'description' => 'Test Body',
-            'general' => true
-        ]);
     }
 
     public function test_send_notification_to_all_as_non_admin()

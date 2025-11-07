@@ -74,7 +74,7 @@ class RoomTourSeeder extends Seeder
             $binomeMembers = $availableMembers->random(2);
             $member1 = $binomeMembers[0];
             $member2 = $binomeMembers[1];
-            
+
             $usedMembers[] = $member1->id;
             $usedMembers[] = $member2->id;
 
@@ -98,9 +98,7 @@ class RoomTourSeeder extends Seeder
                     if ($visited) {
                         $visitedAt = fake()->dateTimeBetween($date . ' 09:00', $date . ' 17:00');
                     }
-                }
-
-                elseif ($isActive && $index < $assignedRooms->count() * 0.4) {
+                } elseif ($isActive && $index < $assignedRooms->count() * 0.4) {
                     $visited = fake()->boolean(60);
                     if ($visited) {
                         $visitedAt = fake()->dateTimeBetween('today 09:00', 'now');

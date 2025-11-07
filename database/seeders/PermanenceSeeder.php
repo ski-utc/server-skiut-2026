@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 class PermanenceSeeder extends Seeder
 {
     public function run(): void
-    {   
+    {
         $members = User::where('member', true)->get();
 
         if ($members->isEmpty()) {

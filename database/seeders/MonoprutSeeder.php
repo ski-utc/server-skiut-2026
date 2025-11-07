@@ -47,7 +47,7 @@ class MonoprutSeeder extends Seeder
             $type = fake()->randomElement(array_keys($products));
             $giverRoom = $rooms->random();
             $receiverRoom = $rooms->where('id', '!=', $giverRoom->id)->random();
-            
+
             Monoprut::create([
                 'product' => fake()->randomElement($products[$type]),
                 'quantity' => (string) fake()->numberBetween(1, 10),
@@ -62,7 +62,7 @@ class MonoprutSeeder extends Seeder
             $type = fake()->randomElement(array_keys($products));
             $giverRoom = $rooms->random();
             $receiverRoom = $rooms->where('id', '!=', $giverRoom->id)->random();
-            
+
             Monoprut::create([
                 'product' => fake()->randomElement($products[$type]),
                 'quantity' => (string) fake()->numberBetween(1, 10),

@@ -18,4 +18,3 @@ class RoomShotgunFactory extends Factory
         ];
     }
 }
-

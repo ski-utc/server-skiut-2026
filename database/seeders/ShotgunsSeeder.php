@@ -9,6 +9,6 @@ class ShotgunsSeeder extends Seeder
 {
     public function run(): void
     {
-        Shotguns::factory(50)->create();        
+        Shotguns::factory(50)->create();
     }
 }

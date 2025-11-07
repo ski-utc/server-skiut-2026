@@ -53,7 +53,7 @@ class ClassementController extends Controller
     public function classementPerformances()
     {
         $type = request()->query('type', 'speed');
-        
+
         $orderColumn = match($type) {
             'distance' => 'total_distance',
             'duration' => 'duration',

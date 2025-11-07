@@ -42,7 +42,7 @@ class SyncRoomData extends Command
             if (!$room) {
                 // Créer la chambre si elle n'existe pas
                 $users = User::where('room_id', $roomId)->get();
-                
+
                 $room = Room::create([
                     'roomNumber' => $roomId,
                     'capacity' => $users->count() > 0 ? $users->count() : 4,
@@ -67,7 +67,7 @@ class SyncRoomData extends Command
         }
 
         $this->newLine();
-        $this->info("📊 Résumé :");
+        $this->info('📊 Résumé :');
         $this->line("  - Chambres existantes complètes : {$existing}");
         $this->line("  - Chambres créées : {$created}");
         $this->line("  - Chambres nécessitant des mises à jour : {$updated}");
@@ -75,17 +75,17 @@ class SyncRoomData extends Command
         // Mode interactif
         if ($this->option('interactive') && count($roomsToUpdate) > 0) {
             $this->newLine();
-            $this->info("🔧 Mode interactif activé !");
-            
+            $this->info('🔧 Mode interactif activé !');
+
             foreach ($roomsToUpdate as $room) {
                 $this->newLine();
-                $this->line("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
                 $this->info("Chambre {$room->roomNumber}");
-                
+
                 // Afficher les occupants
                 $users = User::where('room_id', $room->roomNumber)->get();
                 if ($users->count() > 0) {
-                    $this->line("Occupants : " . $users->pluck('firstName')->implode(', '));
+                    $this->line('Occupants : ' . $users->pluck('firstName')->implode(', '));
                 }
 
                 // Demander le nom si non défini
@@ -101,7 +101,7 @@ class SyncRoomData extends Command
                         array_values($this->moodOptions),
                         0
                     );
-                    
+
                     // Retrouver la clé correspondante
                     $mood = array_search($moodChoice, $this->moodOptions);
                     $room->mood = $mood;
@@ -112,21 +112,20 @@ class SyncRoomData extends Command
             }
 
             $this->newLine();
-            $this->info("🎉 Toutes les chambres ont été mises à jour !");
+            $this->info('🎉 Toutes les chambres ont été mises à jour !');
         } elseif (count($roomsToUpdate) > 0) {
             $this->newLine();
-            $this->warn("💡 Astuce : Utilisez --interactive pour définir les chambres de manière interactive :");
-            $this->line("   php artisan rooms:sync --interactive");
+            $this->warn('💡 Astuce : Utilisez --interactive pour définir les chambres de manière interactive :');
+            $this->line('   php artisan rooms:sync --interactive');
             $this->newLine();
-            $this->line("Ou manuellement avec tinker :");
-            $this->line("   php artisan tinker");
+            $this->line('Ou manuellement avec tinker :');
+            $this->line('   php artisan tinker');
             $this->line("   >>> \$room = App\\Models\\Room::where('roomNumber', 'NUMERO')->first();");
             $this->line("   >>> \$room->name = 'Nom de la chambre';");
             $this->line("   >>> \$room->mood = 'chambre_calme'; // chambre_calme, petite_night, grosse_night, mega_grosse_night");
-            $this->line("   >>> \$room->save();");
+            $this->line('   >>> $room->save();');
         }
 
         return Command::SUCCESS;
     }
 }
-

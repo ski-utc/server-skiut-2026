@@ -16,4 +16,3 @@ class UserRoomShotgunFactory extends Factory
         ];
     }
 }
-
