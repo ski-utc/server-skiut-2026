@@ -7,9 +7,6 @@ use Illuminate\Database\Seeder;
 
 class ChallengeSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $challenges = [
@@ -36,7 +33,5 @@ class ChallengeSeeder extends Seeder
                 ['nbPoints' => $points]
             );
         }
-
-        $this->command->info('Défis créés avec succès !');
     }
 }

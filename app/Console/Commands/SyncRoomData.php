@@ -41,7 +41,7 @@ class SyncRoomData extends Command
 
             if (!$room) {
                 // Créer la chambre si elle n'existe pas
-                $users = User::where('roomID', $roomId)->get();
+                $users = User::where('room_id', $roomId)->get();
                 
                 $room = Room::create([
                     'roomNumber' => $roomId,
@@ -83,7 +83,7 @@ class SyncRoomData extends Command
                 $this->info("Chambre {$room->roomNumber}");
                 
                 // Afficher les occupants
-                $users = User::where('roomID', $room->roomNumber)->get();
+                $users = User::where('room_id', $room->roomNumber)->get();
                 if ($users->count() > 0) {
                     $this->line("Occupants : " . $users->pluck('firstName')->implode(', '));
                 }

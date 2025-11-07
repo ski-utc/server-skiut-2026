@@ -4,16 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Transport>
- */
 class TransportFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $routes = [
@@ -31,7 +23,6 @@ class TransportFactory extends Factory
 
         $route = fake()->randomElement($routes);
 
-        // Tableau associatif pour lier les couleurs à leurs noms
         $colourPairs = [
             ['colour' => '#a684ff', 'name' => 'Purple'],
             ['colour' => '#ff6467', 'name' => 'Red'],

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Chambre;
+use App\Models\RoomShotgun;
 use Illuminate\Console\Command;
 
 class CleanExpiredLocks extends Command
@@ -12,11 +12,11 @@ class CleanExpiredLocks extends Command
 
     public function handle()
     {
-        $expiredLocks = Chambre::where('locked_until', '<', now())->get();
+        $expiredLocks = RoomShotgun::where('locked_until', '<', now())->get();
 
-        foreach ($expiredLocks as $chambre) {
-            $chambre->unlock();
-            $this->info("Chambre {$chambre->numero} débloquée");
+        foreach ($expiredLocks as $roomShotgun) {
+            $roomShotgun->unlock();
+            $this->info("Chambre {$roomShotgun->numero} débloquée");
         }
 
         $this->info("Nettoyage terminé. {$expiredLocks->count()} chambres débloquées.");

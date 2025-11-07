@@ -12,7 +12,7 @@ class PerformanceSession extends Model
     protected $table = 'performance_sessions';
 
     protected $fillable = [
-        'user_id',
+        'user_performance_id',
         'session_id',
         'max_speed',
         'average_speed',
@@ -33,8 +33,13 @@ class PerformanceSession extends Model
         'accuracy' => 'float'
     ];
 
+    public function userPerformance()
+    {
+        return $this->belongsTo(UserPerformance::class, 'user_performance_id');
+    }
+
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->userPerformance->user;
     }
 }

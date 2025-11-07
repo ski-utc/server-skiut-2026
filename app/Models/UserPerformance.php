@@ -9,7 +9,7 @@ class UserPerformance extends Model
 {
     use HasFactory;
 
-    protected $table = 'users_performances';
+    protected $table = 'user_performances';
 
     protected $fillable = ['user_id', 'max_speed', 'total_distance', 'duration', 'average_speed', 'session_id', 'session_date'];
 
@@ -23,6 +23,11 @@ class UserPerformance extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(PerformanceSession::class, 'user_performance_id');
     }
 }

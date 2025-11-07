@@ -175,8 +175,8 @@ class RoomTourController extends Controller
     public function getUserTour(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user || !$user->member) {
                 return response()->json([
@@ -196,7 +196,7 @@ class RoomTourController extends Controller
             }
 
             $userBinome = $todayTour->binomes()
-                                    ->forUser($userId)
+                                    ->forUser($user_id)
                                     ->with('visits')
                                     ->first();
 
@@ -262,8 +262,8 @@ class RoomTourController extends Controller
     public function getTourStatusForTraveler(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user) {
                 return response()->json([
@@ -287,7 +287,7 @@ class RoomTourController extends Controller
 
             // Trouver la visite de la chambre de l'utilisateur
             foreach ($activeTour->binomes as $binome) {
-                $visit = $binome->visits()->where('room_id', $user->roomID)->first();
+                $visit = $binome->visits()->where('room_id', $user->room_id)->first();
                 if ($visit) {
                     $roomVisit = $visit;
                     $binomeInfo = $binome;
@@ -358,8 +358,8 @@ class RoomTourController extends Controller
                 'notes' => 'nullable|string|max:500'
             ]);
 
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user || !$user->member) {
                 return response()->json([
@@ -371,7 +371,7 @@ class RoomTourController extends Controller
             $visit = RoomTourVisit::findOrFail($visitId);
             $binome = $visit->tourBinome;
 
-            if (!$binome->hasMember($userId)) {
+            if (!$binome->hasMember($user_id)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vous n\'êtes pas autorisé à modifier cette visite'
@@ -406,8 +406,8 @@ class RoomTourController extends Controller
     public function unmarkVisited(Request $request, $visitId)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user || !$user->member) {
                 return response()->json([
@@ -419,7 +419,7 @@ class RoomTourController extends Controller
             $visit = RoomTourVisit::findOrFail($visitId);
             $binome = $visit->tourBinome;
 
-            if (!$binome->hasMember($userId)) {
+            if (!$binome->hasMember($user_id)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Vous n\'êtes pas autorisé à modifier cette visite'
@@ -456,8 +456,8 @@ class RoomTourController extends Controller
                 'room_order' => 'required|array'
             ]);
 
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user || !$user->member) {
                 return response()->json([
@@ -475,7 +475,7 @@ class RoomTourController extends Controller
                 ], 404);
             }
 
-            $binome = $activeTour->binomes()->forUser($userId)->first();
+            $binome = $activeTour->binomes()->forUser($user_id)->first();
 
             if (!$binome) {
                 return response()->json([
@@ -505,19 +505,19 @@ class RoomTourController extends Controller
     public function getAvailableRooms()
     {
         try {
-            $rooms = User::select('roomID')
+            $rooms = User::select('room_id')
                         ->distinct()
-                        ->whereNotNull('roomID')
-                        ->where('roomID', '!=', '')
-                        ->orderBy('roomID')
+                        ->whereNotNull('room_id')
+                        ->where('room_id', '!=', '')
+                        ->orderBy('room_id')
                         ->get()
                         ->map(function ($user) {
-                            $occupants = User::where('roomID', $user->roomID)
+                            $occupants = User::where('room_id', $user->room_id)
                                            ->select('id', 'firstName', 'lastName')
                                            ->get();
 
                             return [
-                                'room_id' => $user->roomID,
+                                'room_id' => $user->room_id,
                                 'occupants' => $occupants->map(function ($occupant) {
                                     return [
                                         'id' => $occupant->id,

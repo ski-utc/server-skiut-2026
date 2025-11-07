@@ -73,9 +73,9 @@ class EnsureTokenIsValidTest extends TestCase
     public function test_token_valide()
     {
         $user = User::factory()->create();
-        $room = Room::find($user->roomID);
+        $room = Room::find($user->room_id);
         if (!$room) {
-            $room = Room::factory()->create(['id' => $user->roomID]);
+            $room = Room::factory()->create(['id' => $user->room_id]);
         }
         $payload = [
             'key' => $user->id,

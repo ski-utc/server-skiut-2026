@@ -16,8 +16,8 @@ class PlanningController extends Controller
     public function getPlanning(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             // Récupérer les activités régulières
             $activities = Activity::all()->map(function ($activity) {
@@ -54,7 +54,7 @@ class PlanningController extends Controller
                 $startDate = now()->subDays(1);
                 $endDate = now()->addDays(30);
 
-                $permanences = Permanence::forUser($userId)
+                $permanences = Permanence::forUser($user_id)
                     ->inPeriod($startDate, $endDate)
                     ->get()
                     ->map(function ($permanence) {

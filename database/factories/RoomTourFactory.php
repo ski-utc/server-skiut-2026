@@ -5,31 +5,20 @@ namespace Database\Factories;
 use App\Models\RoomTour;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\RoomTour>
- */
 class RoomTourFactory extends Factory
 {
     protected $model = RoomTour::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $tourDate = $this->faker->dateTimeBetween('-7 days', '+14 days');
 
         return [
             'tour_date' => $tourDate->format('Y-m-d'),
-            'is_active' => $this->faker->boolean(10) // 10% de chance d'être active
+            'is_active' => $this->faker->boolean(10)
         ];
     }
 
-    /**
-     * Indicate that the tour is active.
-     */
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -38,9 +27,6 @@ class RoomTourFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the tour is for today.
-     */
     public function today(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -48,9 +34,6 @@ class RoomTourFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the tour is in the future.
-     */
     public function future(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -59,9 +42,6 @@ class RoomTourFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the tour is in the past.
-     */
     public function past(): static
     {
         return $this->state(fn (array $attributes) => [

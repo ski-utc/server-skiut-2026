@@ -2,14 +2,10 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         // Attention à l'ordre, chaque bloc (sauf le premier) représentent des tables dépendantes
@@ -20,17 +16,18 @@ class DatabaseSeeder extends Seeder
             ActivitySeeder::class,
             NotificationSeeder::class,
             TransportSeeder::class,
-            ChambreSeeder::class,
             ShotgunsSeeder::class,
+            RoomShotgunSeeder::class,
             BackOfficeAdminSeeder::class,
 
             RoomSeeder::class,
             UserSeeder::class,
             RelationsSeeder::class,
+            UserRoomShotgunSeeder::class,
+            PushTokenSeeder::class,
 
             AnecdoteSeeder::class,
             ChallengeProofSeeder::class,
-            PushTokenSeeder::class,
 
             SkinderLikeSeeder::class,
             AnecdotesLikeSeeder::class,

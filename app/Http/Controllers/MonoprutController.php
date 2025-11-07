@@ -73,7 +73,7 @@ class MonoprutController extends Controller
             // TODO: Envoyer une notification au donneur (FirebaseService à implémenter)
             // $giverRoom = $article->giver;
             // if ($giverRoom) {
-            //     $giverUsers = User::where('roomID', $giverRoom->roomNumber)->pluck('id')->toArray();
+            //     $giverUsers = User::where('room_id', $giverRoom->roomNumber)->pluck('id')->toArray();
             //     if (!empty($giverUsers)) {
             //         // Envoyer notification
             //     }
@@ -161,8 +161,8 @@ class MonoprutController extends Controller
     public function markAsRetrieved(Request $request) {
         try {
             $articleId = $request->input('articleId');
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
             $room = $user->room;
 
             $article = Monoprut::find($articleId);
@@ -199,8 +199,8 @@ class MonoprutController extends Controller
     public function deleteArticle(Request $request) {
         try {
             $id = $request->input('articleId');
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
             $article = Monoprut::where('id', $id)->first();
             if (!$article) {
                 return response()->json([
@@ -229,8 +229,8 @@ class MonoprutController extends Controller
     public function cancelReservation(Request $request) {
         try {
             $articleId = $request->input('articleId');
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
             $room = $user->room;
 
             $article = Monoprut::find($articleId);

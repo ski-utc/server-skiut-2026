@@ -23,7 +23,7 @@ class DefisController extends Controller
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
             }
 
-            $userRoomId = $user->roomID;
+            $userRoomId = $user->room_id;
 
             $challenges = Challenge::with(['challengeProofs' => function ($query) use ($userRoomId) {
                 $query->where('room_id', $userRoomId);
@@ -73,7 +73,7 @@ class DefisController extends Controller
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
             }
-            $userRoomId = $user->roomID;
+            $userRoomId = $user->room_id;
 
             $defiId = $request->input('defiId');
             $proof = ChallengeProof::where('challenge_id', $defiId)->where('room_id', $userRoomId)->first();
@@ -106,7 +106,7 @@ class DefisController extends Controller
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
         }
-        $userRoomId = $user->roomID;
+        $userRoomId = $user->room_id;
 
         $defiId = $request->input('defiId');
 
@@ -186,7 +186,7 @@ class DefisController extends Controller
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
             }
 
-            $userRoomId = $user->roomID;
+            $userRoomId = $user->room_id;
 
             $defiId = $request->input('defiId');
             $proof = ChallengeProof::where('challenge_id', $defiId)

@@ -1,0 +1,279 @@
+erDiagram
+    %% --- USERS ---
+    USER {
+        UUID id
+        string cas
+        string firstName
+        string lastName
+        string email
+        boolean admin
+        boolean member
+        boolean alumniOrExte
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- ROOMS ---
+    ROOM {
+        int id
+        int roomNumber
+        int capacity
+        string mood
+        string name
+        string photoPath
+        text description
+        json passions
+        int totalPoints
+        int user_id
+        datetime locked_until
+        string locked_by_email
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- ROOM_SHOTGUNS ---
+    ROOM_SHOTGUN {
+        int id
+        int numero
+        int nb_places
+        string responsable_chambre
+        string ambiance
+        datetime locked_until
+        string locked_by_email
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- USER_ROOM_SHOTGUN ---
+    USER_ROOM_SHOTGUN {
+        int id
+        uuid user_id
+        int room_shotgun_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- ANECDOTES ---
+    ANECDOTE {
+        int id
+        text text
+        int room_id
+        uuid user_id
+        boolean valid
+        boolean delete
+        boolean active
+        datetime created_at
+        datetime updated_at
+    }
+
+    ANECDOTES_LIKE {
+        int id
+        uuid user_id
+        int anecdote_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    ANECDOTES_WARN {
+        int id
+        uuid user_id
+        int anecdote_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- CHALLENGES ---
+    CHALLENGE {
+        int id
+        string title
+        tinyint nbPoints
+        datetime created_at
+        datetime updated_at
+    }
+
+    CHALLENGE_PROOF {
+        int id
+        int challenge_id
+        int room_id
+        uuid user_id
+        boolean valid
+        boolean delete
+        string proof_path
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- MONOPRUT ---
+    MONOPRUT {
+        int id
+        string product
+        string quantity
+        enum type
+        int giver_room_id
+        int receiver_room_id
+        boolean retrieved
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- TRANSPORTS ---
+    TRANSPORT {
+        int id
+        string departure
+        string arrival
+        string colour
+        string colourName
+        string type
+        datetime created_at
+        datetime updated_at
+    }
+
+    TRANSPORT_USER {
+        int id
+        uuid user_id
+        int transport_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- PERMANENCE ---
+    PERMANENCE {
+        int id
+        string name
+        text description
+        string location
+        text notes
+        datetime start_datetime
+        datetime end_datetime
+        uuid responsible_user_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- ROOM TOURS ---
+    ROOM_TOUR {
+        int id
+        string name
+        text description
+        boolean active
+        datetime created_at
+        datetime updated_at
+    }
+
+    TOUR_BINOME {
+        int id
+        int room_tour_id
+        int order
+        uuid member_1_id
+        uuid member_2_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    ROOM_TOUR_VISIT {
+        int id
+        int tour_binome_id
+        int room_id
+        boolean visited
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- SKINDER LIKES ---
+    SKINDER_LIKE {
+        int id
+        int room_liker_id
+        int room_liked_id
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- NOTIFICATIONS ---
+    NOTIFICATION {
+        int id
+        string title
+        text description
+        boolean general
+        boolean display
+        datetime created_at
+        datetime updated_at
+    }
+
+    USER_NOTIFICATION {
+        int id
+        uuid user_id
+        int notification_id
+        boolean read
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- PERFORMANCE ---
+    USER_PERFORMANCE {
+        int id
+        uuid user_id
+        float max_speed
+        float total_distance
+        int duration
+        float average_speed
+        string session_id
+        datetime session_date
+        datetime created_at
+        datetime updated_at
+    }
+
+    PERFORMANCE_SESSION {
+        int id
+        int user_performance_id
+        string session_id
+        decimal max_speed
+        decimal average_speed
+        decimal distance
+        int duration
+        datetime session_date
+        json speed_history
+        float accuracy
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% --- RELATIONS ---
+    USER ||--o{ ANECDOTE : writes
+    USER ||--o{ CHALLENGE_PROOF : submits
+    USER ||--o{ USER_NOTIFICATION : receives
+    USER ||--o{ PERMANENCE : responsible_for
+    USER ||--o{ TOUR_BINOME : member
+    USER ||--o{ USER_PERFORMANCE : has
+    USER }o--|| ROOM : lives_in
+    USER ||--o{ USER_ROOM_SHOTGUN : selected
+    USER }o--o{ TRANSPORT_USER : uses
+
+    ROOM ||--o{ USER : residents
+    ROOM ||--o{ CHALLENGE_PROOF : location
+    ROOM ||--o{ MONOPRUT : giver
+    ROOM ||--o{ MONOPRUT : receiver
+    ROOM ||--o{ SKINDER_LIKE : liker
+    ROOM ||--o{ SKINDER_LIKE : liked
+    ROOM ||--o{ ROOM_TOUR_VISIT : tour
+
+    ROOM_SHOTGUN ||--o{ USER_ROOM_SHOTGUN : contains
+
+    ANECDOTE ||--o{ ANECDOTES_LIKE : liked_by
+    ANECDOTE ||--o{ ANECDOTES_WARN : warned_by
+    ANECDOTE }o--|| ROOM : about
+
+    CHALLENGE ||--o{ CHALLENGE_PROOF : proven_by
+
+    TRANSPORT ||--o{ TRANSPORT_USER : users
+
+    PERMANENCE }o--|| USER : responsible
+
+    ROOM_TOUR ||--o{ TOUR_BINOME : contains
+
+    TOUR_BINOME ||--o{ ROOM_TOUR_VISIT : visits
+
+    ROOM_TOUR_VISIT }o--|| ROOM : room
+
+    NOTIFICATION ||--o{ USER_NOTIFICATION : sent_to
+
+    USER_PERFORMANCE ||--o{ PERFORMANCE_SESSION : sessions

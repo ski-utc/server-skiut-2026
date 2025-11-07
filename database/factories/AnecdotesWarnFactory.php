@@ -4,26 +4,18 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AnecdotesWarn>
- */
 class AnecdotesWarnFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        static $index = 0;    // index statique pour éviter les doublons
+        static $index = 0;
         $maxUsers = 30;
         $maxAnecdotes = 50;
 
         $user_id = ($index % $maxUsers) + 1;
         $anecdote_id = (int)($index / $maxUsers) + 1;
 
-        if ($anecdote_id > $maxAnecdotes) {       // Si on a utilisé toutes les combinaisons possibles, on arrête
+        if ($anecdote_id > $maxAnecdotes) {
             $anecdote_id = fake()->numberBetween(1, $maxAnecdotes);
         }
 

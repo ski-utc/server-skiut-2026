@@ -23,8 +23,8 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('shotgun-chambre')
-            ->path('skiutc/shotgun-chambre')
+            ->id('back-office')
+            ->path('skiutc/back-office')
             ->brandName("Ski'UT - Shotgun Chambres")
             ->colors([
                 'primary' => Color::Blue,
@@ -33,12 +33,12 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 \App\Filament\Pages\Dashboard::class,
-                \App\Filament\Pages\ChoisirChambre::class,
+                \App\Filament\Pages\ChooseRoomShotgun::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                \App\Filament\Widgets\ChambreStatsWidget::class,
-                \App\Filament\Widgets\ChambreDisponibleWidget::class,
+                \App\Filament\Widgets\RoomShotgunStatsWidget::class,
+                \App\Filament\Widgets\RoomShotgunAvailableWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -58,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
                 MenuItem::make()
                     ->label('Déconnexion')
                     ->icon('heroicon-o-arrow-right-on-rectangle')
-                    ->url('/auth/shotgun-chambre/logout')
+                    ->url('/auth/back-office/logout')
                     ->sort(999),
             ]);
     }

@@ -1,19 +1,19 @@
-- tournée des chambres widget homePage
-- permamences
+- vérifier que les insertions dans le shotgun chambre fonctionnent
+- vérifier permamences
+- vérifier classement vitesseDeGlisse
 - vérifier vitesse de glisse en arrière plan
 - vérifier les notifications 
+    - token
     - classique (push)
     - skinder
     - monoprut
     - perms
+- vérifier schedule de notification des permanences
 
-ApiCall avec param Get/Post/Put/Delete + Adapter les query et routes du serveur en fonction
-
-back-office
-
-- limiter toutes les response au strict minimum
-- vérifier sur toutes les pages qu'on a bien la page d'erreur ainsi que la page de loading si besoin
+- back-office complet
 - mettre des request->validate sur absolument chaque controller, et adapter l'app pour utiliser les types définis dans les controllers
+- clean les controllers (commentaires, ...)
 - Faire de tests unit pour absolument toutes les conditions des controllers. On essayera de faire des asserts aussi sur ce qui s'est passé côté BDD aussi si possible
-- mettre en forme toutes les db, surtout les fk au format <nom de la fk>_id ("user_id")
-- faire un uml de la DB
+- faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
+- clean l'app (commentaires, ...)
+- ecriture inclusive

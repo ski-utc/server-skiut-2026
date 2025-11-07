@@ -4,22 +4,13 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ChallengeProof>
- */
 class ChallengeProofFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $fileExtensions = ['jpg', 'png', 'mp4', 'mov', 'avi'];
         $mediaType = fake()->randomElement(['image', 'video']);
         
-        // Choisir extension appropriée selon le type
         $extension = $mediaType === 'image' 
             ? fake()->randomElement(['jpg', 'png'])
             : fake()->randomElement(['mp4', 'mov', 'avi']);

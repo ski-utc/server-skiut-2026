@@ -15,7 +15,6 @@ class RoomTourVisit extends Model
         'visited',
         'visited_at',
         'visit_order',
-        'notes'
     ];
 
     protected $casts = [
@@ -28,22 +27,16 @@ class RoomTourVisit extends Model
         return $this->belongsTo(TourBinome::class);
     }
 
-    /**
-     * Récupère les informations de la chambre depuis la table users
-     */
     public function getRoomInfoAttribute()
     {
-        $users = User::where('roomID', $this->room_id)
-                    ->select('id', 'firstName', 'lastName', 'roomID')
+        $users = User::where('room_id', $this->room_id)
+                    ->select('id', 'firstName', 'lastName', 'room_id')
                     ->get();
 
-        // Récupérer les infos de la chambre (mood et nom)
-        // Note: room_id peut être soit un ID, soit un roomNumber selon comment les données sont stockées
         $room = Room::where('roomNumber', $this->room_id)
                    ->orWhere('id', $this->room_id)
                    ->first();
 
-        // Debug: Log si la chambre n'est pas trouvée
         if (!$room) {
             \Log::warning("Chambre non trouvée pour room_id: {$this->room_id}");
         }
@@ -62,25 +55,16 @@ class RoomTourVisit extends Model
         ];
     }
 
-    /**
-     * Scope pour les chambres visitées
-     */
     public function scopeVisited($query)
     {
         return $query->where('visited', true);
     }
 
-    /**
-     * Scope pour les chambres non visitées
-     */
     public function scopePending($query)
     {
         return $query->where('visited', false);
     }
 
-    /**
-     * Scope pour trier par ordre de visite
-     */
     public function scopeOrderedByVisit($query)
     {
         return $query->orderBy('visit_order');

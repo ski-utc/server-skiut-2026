@@ -43,21 +43,21 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (config('auth.app_no_login', false)) {
-            $userId = env('USER_ID');
-            $user = User::find($userId);
+            $user_id = env('USER_ID');
+            $user = User::find($user_id);
             if (!$user) {
-                return response()->json(['message' => 'Il faut au moins créer le user '.$userId.' dans la base de données'], 400);
+                return response()->json(['message' => 'Il faut au moins créer le user '.$user_id.' dans la base de données'], 400);
             }
             try {
                 $accessTokenPayload = [
-                    'key' => $userId,
+                    'key' => $user_id,
                     'exp' => now()->addMinutes(60)->timestamp,
                 ];
                 $privateKey = config('services.crypt.private');
                 $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
                 $refreshTokenPayload = [
-                    'key' => $userId,
+                    'key' => $user_id,
                     'exp' => now()->addDays(30)->timestamp,
                 ];
                 $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
@@ -195,7 +195,7 @@ class AuthController extends Controller
                 return response()->json(['success' => 'false', 'message' => 'Utilisateur non trouvé'], 404);
             }
 
-            $room = Room::where('id', $user->roomID)->first();
+            $room = Room::where('id', $user->room_id)->first();
             if (!$room) {
                 return response()->json(['success' => 'false', 'message' => 'Chambre non trouvée'], 404);
             }

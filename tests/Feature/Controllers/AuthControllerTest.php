@@ -13,9 +13,9 @@ class AuthControllerTest extends TestCase
     private function getToken($user = null)
     {
         $user = $user ?: User::factory()->create();
-        $room = Room::find($user->roomID);
+        $room = Room::find($user->room_id);
         if (!$room) {
-            $room = Room::factory()->create(['id' => $user->roomID]);
+            $room = Room::factory()->create(['id' => $user->room_id]);
         }
         $payload = [
             'key' => $user->id,

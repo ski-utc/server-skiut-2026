@@ -8,9 +8,6 @@ use Illuminate\Database\Seeder;
 
 class MonoprutSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $rooms = Room::all();
@@ -34,7 +31,6 @@ class MonoprutSeeder extends Seeder
             'other' => ['Sel', 'Poivre', 'Huile', 'Épices', 'Sauce', 'Condiments']
         ];
 
-        // Créer des offres disponibles (sans récepteur)
         for ($i = 0; $i < 30; $i++) {
             $type = fake()->randomElement(array_keys($products));
             Monoprut::create([
@@ -47,7 +43,6 @@ class MonoprutSeeder extends Seeder
             ]);
         }
 
-        // Créer des offres réservées (avec récepteur, non récupérées)
         for ($i = 0; $i < 15; $i++) {
             $type = fake()->randomElement(array_keys($products));
             $giverRoom = $rooms->random();
@@ -63,7 +58,6 @@ class MonoprutSeeder extends Seeder
             ]);
         }
 
-        // Créer des offres récupérées (avec récepteur, récupérées)
         for ($i = 0; $i < 10; $i++) {
             $type = fake()->randomElement(array_keys($products));
             $giverRoom = $rooms->random();
@@ -78,7 +72,5 @@ class MonoprutSeeder extends Seeder
                 'retrieved' => true,
             ]);
         }
-
-        $this->command->info('Offres monoprut créées avec succès !');
     }
 }

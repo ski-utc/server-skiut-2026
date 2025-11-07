@@ -7,9 +7,6 @@ use Illuminate\Database\Seeder;
 
 class AnecdoteSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         Anecdote::factory(50)->create();

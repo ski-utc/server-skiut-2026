@@ -4,16 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Challenge>
- */
 class ChallengeFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $challenges = [
@@ -73,7 +65,6 @@ class ChallengeFactory extends Factory
             'Payer la tournée à la team info' => 20,
         ];
 
-        // Sélectionner un défi aléatoire
         $challengeArray = array_rand($challenges);
         $title = $challengeArray;
         $points = $challenges[$title];

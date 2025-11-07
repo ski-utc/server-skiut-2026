@@ -20,8 +20,8 @@ class SkinderController extends Controller
     public function getProfilSkinder(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $roomId = User::where('id', $userId)->first()->roomID;
+            $user_id = $request->user['id'];
+            $roomId = User::where('id', $user_id)->first()->room_id;
 
             $photoPath = Room::where('id', $roomId)->first()->photoPath;
             $relativePath = str_replace('storage/', '', $photoPath);
@@ -31,9 +31,9 @@ class SkinderController extends Controller
             }
 
             $room = Room::whereNotIn('id', function ($query) use ($roomId) {
-                $query->select('room_liked')
+                $query->select('room_liked_id_id')
                       ->from('skinder_likes')
-                      ->where('room_likeur', $roomId);
+                      ->where('room_liker_id', $roomId);
             })
             ->whereNot('id', $roomId)
             ->whereNotNull('photoPath')
@@ -65,9 +65,9 @@ class SkinderController extends Controller
     public function likeSkinder(Request $request)
     {
         try {
-            $userId = $request->user['id'];
+            $user_id = $request->user['id'];
             ;
-            $roomLikeur = User::where('id', $userId)->first()->roomID;
+            $roomLikeur = User::where('id', $user_id)->first()->room_id;
 
             $roomLiked = $request->input('roomLiked');
 
@@ -80,17 +80,17 @@ class SkinderController extends Controller
             }
 
             SkinderLike::firstOrCreate([
-                'room_likeur' => $roomLikeur,
-                'room_liked' => $roomLiked,
+                'room_liker_id' => $roomLikeur,
+                'room_liked_id_id' => $roomLiked,
             ]);
 
-            $reverseLike = SkinderLike::where('room_likeur', $roomLiked)
-                ->where('room_liked', $roomLikeur)
+            $reverseLike = SkinderLike::where('room_liker_id', $roomLiked)
+                ->where('room_liked_id_id', $roomLikeur)
                 ->exists();
 
             if ($reverseLike) {
                 $otherRoom = Room::where('id', $roomLiked)->first();
-                $otherRoomResp = User::where('id', $otherRoom->userID)->first();
+                $otherRoomResp = User::where('id', $otherRoom->user_id)->first();
                 $myRoom = Room::where('id', $roomLikeur)->first();
 
                 // Envoyer des notifications aux occupants des deux chambres
@@ -121,15 +121,15 @@ class SkinderController extends Controller
     public function getMySkinderMatches(Request $request)
     {
         try {
-            $userId = $request->user['id'];
+            $user_id = $request->user['id'];
             ;
-            $roomId = User::where('id', $userId)->first()->roomID;
+            $roomId = User::where('id', $user_id)->first()->room_id;
 
-            $matchedRooms = SkinderLike::where('room_likeur', $roomId)
-                ->whereIn('room_liked', function ($query) use ($roomId) {
-                    $query->select('room_likeur')
+            $matchedRooms = SkinderLike::where('room_liker_id', $roomId)
+                ->whereIn('room_liked_id_id', function ($query) use ($roomId) {
+                    $query->select('room_liker_id')
                           ->from('skinder_likes')
-                          ->where('room_liked', $roomId);
+                          ->where('room_liked_id_id', $roomId);
                 })
                 ->get();
 
@@ -142,8 +142,8 @@ class SkinderController extends Controller
             }
 
             $result = $matchedRooms->map(function ($like) {
-                $room = Room::find($like->room_liked);
-                $user = User::find($room->userID);
+                $room = Room::find($like->room_liked_id);
+                $user = User::find($room->user_id);
 
                 return [
                     'roomId' => $room->id,
@@ -169,9 +169,9 @@ class SkinderController extends Controller
      */
     public function getMyProfilSkinder(Request $request)
     {
-        $userId = $request->user['id'];
+        $user_id = $request->user['id'];
         ;
-        $roomId = User::where('id', $userId)->first()->roomID;
+        $roomId = User::where('id', $user_id)->first()->room_id;
 
         $room = Room::findOrFail($roomId);
 
@@ -196,8 +196,8 @@ class SkinderController extends Controller
      */
     public function modifyProfil(Request $request)
     {
-        $userId = $request->user['id'];
-        $roomId = User::where('id', $userId)->first()->roomID;
+        $user_id = $request->user['id'];
+        $roomId = User::where('id', $user_id)->first()->room_id;
 
         $room = Room::findOrFail($roomId);
 
@@ -220,8 +220,8 @@ class SkinderController extends Controller
      */
     public function uploadRoomImage(Request $request)
     {
-        $userId = $request->user['id'];
-        $roomId = User::where('id', $userId)->first()->roomID;
+        $user_id = $request->user['id'];
+        $roomId = User::where('id', $user_id)->first()->room_id;
         $room = Room::where('id', $roomId)->first();
 
         if (!$room) {
@@ -264,15 +264,15 @@ class SkinderController extends Controller
                 ], 404);
             }
 
-            $respUser = User::find($room->userID);
-            $likesReceived = SkinderLike::where('room_liked', $roomId)->count();
-            $likesGiven = SkinderLike::where('room_likeur', $roomId)->count();
+            $respUser = User::find($room->user_id);
+            $likesReceived = SkinderLike::where('room_liked_id_id', $roomId)->count();
+            $likesGiven = SkinderLike::where('room_liker_id', $roomId)->count();
 
-            $matches = SkinderLike::where('room_likeur', $roomId)
-                ->whereIn('room_liked', function ($query) use ($roomId) {
-                    $query->select('room_likeur')
+            $matches = SkinderLike::where('room_liker_id', $roomId)
+                ->whereIn('room_liked_id_id', function ($query) use ($roomId) {
+                    $query->select('room_liker_id')
                           ->from('skinder_likes')
-                          ->where('room_liked', $roomId);
+                          ->where('room_liked_id_id', $roomId);
                 })
                 ->count();
 
@@ -315,8 +315,8 @@ class SkinderController extends Controller
     private function sendMatchNotifications(Room $room1, Room $room2)
     {
         try {
-            $room1Occupants = User::where('roomID', $room1->roomNumber)->get();
-            $room2Occupants = User::where('roomID', $room2->roomNumber)->get();
+            $room1Occupants = User::where('room_id', $room1->roomNumber)->get();
+            $room2Occupants = User::where('room_id', $room2->roomNumber)->get();
             $allOccupants = $room1Occupants->merge($room2Occupants);
 
             if ($allOccupants->isEmpty()) {

@@ -23,7 +23,7 @@ class UserController extends Controller
                 'cas' => $userDetails['provider_data']['username'] ?? 'undefined',
                 'firstName' => $userDetails['firstName'],
                 'lastName' => $userDetails['lastName'],
-                'roomID' => $userDetails['roomID'] ?? 0,
+                'room_id' => $userDetails['room_id'] ?? 0,
                 'location' => $userDetails['location'] ?? null,
                 'admin' => $userDetails['admin'] ?? false,
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false

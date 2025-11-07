@@ -10,9 +10,6 @@ use Illuminate\Support\Str;
 
 class PerformanceSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $users = User::limit(15)->get();
@@ -23,7 +20,6 @@ class PerformanceSeeder extends Seeder
         }
 
         foreach ($users as $user) {
-            // Créer entre 3 et 12 sessions par utilisateur
             $sessionCount = fake()->numberBetween(3, 12);
             $sessions = [];
             $totalDistance = 0;
@@ -31,14 +27,24 @@ class PerformanceSeeder extends Seeder
             $maxSpeedOverall = 0;
             $totalAverageSpeed = 0;
 
+            $userPerformance = UserPerformance::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'max_speed' => 0,
+                    'total_distance' => 0,
+                    'duration' => 0,
+                    'average_speed' => 0,
+                ]
+            );
+
             for ($i = 0; $i < $sessionCount; $i++) {
-                $maxSpeed = fake()->randomFloat(2, 15, 85); // Entre 15 et 85 km/h
+                $maxSpeed = fake()->randomFloat(2, 15, 85);
                 $averageSpeed = fake()->randomFloat(2, 10, $maxSpeed * 0.8);
-                $duration = fake()->numberBetween(600, 14400); // 10 min à 4h
-                $distance = ($averageSpeed / 3.6) * $duration; // Distance en mètres
+                $duration = fake()->numberBetween(600, 14400);
+                $distance = ($averageSpeed / 3.6) * $duration;
 
                 $session = PerformanceSession::create([
-                    'user_id' => $user->id,
+                    'user_performance_id' => $userPerformance->id,
                     'session_id' => Str::uuid(),
                     'max_speed' => $maxSpeed,
                     'average_speed' => $averageSpeed,
@@ -54,46 +60,38 @@ class PerformanceSeeder extends Seeder
                 $totalAverageSpeed += $averageSpeed;
             }
 
-            // Calculer la vitesse moyenne globale
             $globalAverageSpeed = $totalAverageSpeed / $sessionCount;
 
-            // Créer ou mettre à jour UserPerformance
-            UserPerformance::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'max_speed' => $maxSpeedOverall,
-                    'total_distance' => round($totalDistance, 2),
-                    'duration' => $totalDuration,
-                    'average_speed' => round($globalAverageSpeed, 2),
-                    'session_id' => $sessions[0]->session_id, // Dernière session
-                    'session_date' => $sessions[0]->session_date,
-                ]
-            );
+            $userPerformance->update([
+                'max_speed' => $maxSpeedOverall,
+                'total_distance' => round($totalDistance, 2),
+                'duration' => $totalDuration,
+                'average_speed' => round($globalAverageSpeed, 2),
+                'session_id' => $sessions[0]->session_id,
+                'session_date' => $sessions[0]->session_date,
+            ]);
         }
 
-        // Créer quelques utilisateurs avec des performances exceptionnelles
         $topUsers = $users->take(3);
 
         foreach ($topUsers as $index => $user) {
-            // Créer une session exceptionnelle
             $exceptionalMaxSpeed = fake()->randomFloat(2, 90, 120);
             $exceptionalAverageSpeed = fake()->randomFloat(2, 60, 80);
-            $exceptionalDuration = fake()->numberBetween(3600, 7200); // 1-2h
+            $exceptionalDuration = fake()->numberBetween(3600, 7200);
             $exceptionalDistance = ($exceptionalAverageSpeed / 3.6) * $exceptionalDuration;
 
-            PerformanceSession::create([
-                'user_id' => $user->id,
-                'session_id' => Str::uuid(),
-                'max_speed' => $exceptionalMaxSpeed,
-                'average_speed' => $exceptionalAverageSpeed,
-                'distance' => round($exceptionalDistance, 2),
-                'duration' => $exceptionalDuration,
-                'session_date' => fake()->dateTimeBetween('-7 days', 'now'),
-            ]);
-
-            // Mettre à jour UserPerformance avec les nouvelles données
             $userPerf = UserPerformance::where('user_id', $user->id)->first();
             if ($userPerf) {
+                PerformanceSession::create([
+                    'user_performance_id' => $userPerf->id,
+                    'session_id' => Str::uuid(),
+                    'max_speed' => $exceptionalMaxSpeed,
+                    'average_speed' => $exceptionalAverageSpeed,
+                    'distance' => round($exceptionalDistance, 2),
+                    'duration' => $exceptionalDuration,
+                    'session_date' => fake()->dateTimeBetween('-7 days', 'now'),
+                ]);
+
                 $userPerf->update([
                     'max_speed' => max($userPerf->max_speed, $exceptionalMaxSpeed),
                     'total_distance' => $userPerf->total_distance + $exceptionalDistance,
@@ -101,7 +99,5 @@ class PerformanceSeeder extends Seeder
                 ]);
             }
         }
-
-        $this->command->info('Sessions de performance créées avec succès !');
     }
 }

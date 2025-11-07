@@ -17,8 +17,8 @@ class AdminController extends Controller
     public function getAdmin(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if ($user && $user->admin) {
                 return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
@@ -100,15 +100,18 @@ class AdminController extends Controller
     /**
      * Met à jour le statut de validation d'un challenge (valider ou invalider)
      */
-    public function updateChallengeStatus(Request $request, $challengeId, $isValid, $isDelete)
+    public function updateChallengeStatus(Request $request, $challengeId)
     {
         try {
             $challenge = ChallengeProof::findOrFail($challengeId);
 
+            $isValid = $request->input('is_valid');
+            $isDelete = $request->input('is_delete');
+
             if ($isValid === null || $isDelete === null) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Les paramètres "isValid" et "isDelete" sont requis.',
+                    'message' => 'Les paramètres "is_valid" et "is_delete" sont requis.',
                 ], 500);
             }
 
@@ -227,15 +230,17 @@ class AdminController extends Controller
     /**
      * Met à jour le statut de validation d'une anecdote (valider ou invalider)
     */
-    public function updateAnecdoteStatus($anecdoteId, $isValid)
+    public function updateAnecdoteStatus(Request $request, $anecdoteId)
     {
         try {
             $anecdote = Anecdote::findOrFail($anecdoteId);
 
+            $isValid = $request->input('is_valid');
+
             if ($isValid === null) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Le paramètre "isValid" est requis (1 pour valider, 0 pour invalider).',
+                    'message' => 'Le paramètre "is_valid" est requis (1 pour valider, 0 pour invalider).',
                 ]);
             }
 
@@ -367,13 +372,13 @@ class AdminController extends Controller
     /**
      * Envoie une notification individuelle à un utilisateur spécifique
      */
-    public function sendIndividualNotification(Request $request, $userId)
+    public function sendIndividualNotification(Request $request, $user_id)
     {
         try {
             $notification = new Notification([
                 'title' => $request->title,
                 'description' => $request->texte,
-                'user_id' => $userId,
+                'user_id' => $user_id,
                 'general' => false,
                 'display' => true,
             ]);
@@ -391,15 +396,17 @@ class AdminController extends Controller
     /**
      * Supprime une notification
      */
-    public function displayNotification($notificationId, $display)
+    public function displayNotification(Request $request, $notificationId)
     {
         try {
             $notification = Notification::findOrFail($notificationId);
 
+            $display = $request->input('display_flag');
+
             if ($display === null) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Le paramètre "display" est requis (1 pour supprimer, 0 pour annuler).',
+                    'message' => 'Le paramètre "display_flag" est requis (1 pour supprimer, 0 pour annuler).',
                 ]);
             }
 

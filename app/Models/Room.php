@@ -10,7 +10,7 @@ class Room extends Model
     use HasFactory;
 
     protected $table = 'rooms';
-    protected $fillable = ['id', 'roomNumber', 'capacity', 'mood', 'name', 'photoPath', 'description', 'passions', 'totalPoints', 'userID', 'locked_until', 'locked_by_email'];
+    protected $fillable = ['id', 'roomNumber', 'capacity', 'mood', 'name', 'photoPath', 'description', 'passions', 'totalPoints', 'user_id', 'locked_until', 'locked_by_email'];
 
     protected $casts = [
         'locked_until' => 'datetime',
@@ -19,20 +19,39 @@ class Room extends Model
 
     public function respUser()
     {
-        return $this->belongsTo(User::class, 'userID');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function challengeProofs()
     {
-        return $this->hasMany(ChallengeProof::class);
+        return $this->hasMany(ChallengeProof::class, 'room_id');
     }
 
     public function users()
     {
-        return $this->hasMany(User::class, 'roomID');
+        return $this->hasMany(User::class, 'room_id');
     }
 
-    // Méthodes pour le shotgun des chambres
+    public function givenArticles()
+    {
+        return $this->hasMany(Monoprut::class, 'giver_room_id');
+    }
+
+    public function receivedArticles()
+    {
+        return $this->hasMany(Monoprut::class, 'receiver_room_id');
+    }
+
+    public function likedByRooms()
+    {
+        return $this->hasMany(SkinderLike::class, 'room_liked_id');
+    }
+
+    public function likedRooms()
+    {
+        return $this->hasMany(SkinderLike::class, 'room_liker_id');
+    }
+
     public function isLocked(): bool
     {
         return $this->locked_until && $this->locked_until->isFuture();
@@ -72,7 +91,6 @@ class Room extends Model
         $this->save();
     }
 
-    // Alias pour compatibilité avec les ressources Filament existantes
     public function getNumeroAttribute(): string
     {
         return (string) $this->roomNumber;

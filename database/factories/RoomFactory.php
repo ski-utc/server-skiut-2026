@@ -4,16 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Room>
- */
 class RoomFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $moods = ['Chill', 'Petite Night', 'Grosse Night', 'Mega Grosse Night'];
@@ -34,7 +26,7 @@ class RoomFactory extends Factory
             'description' => fake()->optional()->paragraph(),
             'passions' => json_encode(fake()->randomElement($passions)),
             'totalPoints' => fake()->numberBetween(0, 1000),
-            'userID' => null, // Sera assigné après création des users
+            'user_id' => null,
         ];
     }
 }

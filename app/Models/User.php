@@ -11,16 +11,16 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'roomID', 'location', 'admin', 'member', 'alumniOrExte'];
+    protected $fillable = ['id', 'cas', 'firstName', 'lastName', 'email', 'room_id', 'admin', 'member', 'alumniOrExte'];
 
     public function anecdotes()
     {
-        return $this->hasMany(Anecdote::class);
+        return $this->hasMany(Anecdote::class, 'user_id');
     }
 
     public function room()
     {
-        return $this->belongsTo(Room::class, 'roomID');
+        return $this->belongsTo(Room::class, 'room_id');
     }
 
     public function transports()
@@ -30,7 +30,7 @@ class User extends Authenticatable
 
     public function performances()
     {
-        return $this->hasOne(UserPerformance::class);
+        return $this->hasOne(UserPerformance::class, 'user_id');
     }
 
     public function responsiblePermanences()
@@ -41,5 +41,15 @@ class User extends Authenticatable
     public function allPermanences()
     {
         return Permanence::forUser($this->id);
+    }
+
+    public function pushTokens()
+    {
+        return $this->hasMany(PushToken::class, 'user_id');
+    }
+
+    public function activePushTokens()
+    {
+        return $this->hasMany(PushToken::class, 'user_id')->where('active', true);
     }
 }

@@ -23,8 +23,8 @@ class PermanenceController extends Controller
     public function getUserPermanences(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user || !$user->member) {
                 return response()->json([
@@ -36,13 +36,13 @@ class PermanenceController extends Controller
             $startDate = now();
             $endDate = now()->addDays(30);
 
-            $permanences = Permanence::forUser($userId)
+            $permanences = Permanence::forUser($user_id)
                 ->inPeriod($startDate, $endDate)
                 ->with('responsibleUser')
                 ->orderBy('start_datetime')
                 ->get();
 
-            $data = $permanences->map(function ($permanence) use ($userId) {
+            $data = $permanences->map(function ($permanence) use ($user_id) {
                 return [
                     'id' => $permanence->id,
                     'name' => $permanence->name,
@@ -51,7 +51,7 @@ class PermanenceController extends Controller
                     'end_datetime' => $permanence->end_datetime->toISOString(),
                     'location' => $permanence->location,
                     'status' => $permanence->status,
-                    'is_responsible' => $permanence->responsible_user_id === $userId,
+                    'is_responsible' => $permanence->responsible_user_id === $user_id,
                     'responsible' => [
                         'id' => $permanence->responsibleUser->id,
                         'name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName
@@ -260,7 +260,7 @@ class PermanenceController extends Controller
     {
         try {
             $members = User::where('member', true)
-                ->select('id', 'firstName', 'lastName', 'email', 'roomID')
+                ->select('id', 'firstName', 'lastName', 'email', 'room_id')
                 ->orderBy('firstName')
                 ->get()
                 ->map(function ($member) {
@@ -268,7 +268,7 @@ class PermanenceController extends Controller
                         'id' => $member->id,
                         'name' => $member->firstName . ' ' . $member->lastName,
                         'email' => $member->email,
-                        'roomID' => $member->roomID
+                        'room_id' => $member->room_id
                     ];
                 });
 

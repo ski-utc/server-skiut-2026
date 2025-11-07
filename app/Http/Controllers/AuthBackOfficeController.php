@@ -16,7 +16,7 @@ class AuthBackOfficeController extends Controller
         $this->provider = new GenericProvider([
             'clientId'                => config('services.oauth.client_id'),
             'clientSecret'            => config('services.oauth.client_secret'),
-            'redirectUri'             => config('services.oauth.backoffice_redirect_uri', config('app.url') . '/skiutc/auth/shotgun-chambre/callback'),
+            'redirectUri'             => config('services.oauth.backoffice_redirect_uri', config('app.url') . '/skiutc/auth/back-office/callback'),
             'urlAuthorize'            => config('services.oauth.authorize_url'),
             'urlAccessToken'          => config('services.oauth.access_token_url'),
             'urlResourceOwnerDetails' => config('services.oauth.owner_details_url'),
@@ -71,7 +71,7 @@ class AuthBackOfficeController extends Controller
             session(['admin' => $isAdmin]);
             session(['email' => $userDetails['email']]);
 
-            return redirect()->route('filament.shotgun-chambre.pages.dashboard');
+            return redirect()->route('filament.back-office.pages.dashboard');
         } catch (\Exception $e) {
             abort(401, 'Erreur d\'authentification : ' . $e->getMessage());
         }

@@ -25,8 +25,8 @@ class RgpdController extends Controller
     public function anonymizeMyData(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
@@ -38,24 +38,24 @@ class RgpdController extends Controller
             $user->update([
                 'firstName' => 'Utilisateur',
                 'lastName' => 'Anonymisé',
-                'email' => 'anonyme_' . $userId . '@etu.utc.fr',
-                'cas' => 'anonyme_' . $userId,
+                'email' => 'anonyme_' . $user_id . '@etu.utc.fr',
+                'cas' => 'anonyme_' . $user_id,
                 'location' => null
             ]);
 
             // Anonymiser les anecdotes
-            Anecdote::where('userId', $userId)->update([
+            Anecdote::where('user_id', $user_id)->update([
                 'text' => 'Contenu anonymisé'
             ]);
 
             // Anonymiser les performances
-            UserPerformance::where('user_id', $userId)->delete();
+            UserPerformance::where('user_id', $user_id)->delete();
 
             // Supprimer les tokens push
-            PushToken::where('user_id', $userId)->delete();
+            PushToken::where('user_id', $user_id)->delete();
 
             // Anonymiser les preuves de défis
-            $proofs = ChallengeProof::where('user_id', $userId)->get();
+            $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
                     $relativePath = str_replace('storage/', '', $proof->file);
@@ -67,7 +67,7 @@ class RgpdController extends Controller
             }
 
             // Anonymiser la chambre si l'utilisateur en est responsable
-            $room = Room::where('userID', $userId)->first();
+            $room = Room::where('user_id', $user_id)->first();
             if ($room) {
                 $room->update([
                     'name' => 'Chambre anonymisée',
@@ -86,14 +86,14 @@ class RgpdController extends Controller
             }
 
             // Supprimer les likes Skinder
-            SkinderLike::where('room_likeur', $user->roomID)->delete();
-            SkinderLike::where('room_liked', $user->roomID)->delete();
+            SkinderLike::where('room_liker_id', $user->room_id)->delete();
+            SkinderLike::where('room_liked_id', $user->room_id)->delete();
 
             // Supprimer les likes d'anecdotes
-            AnecdotesLike::where('user_id', $userId)->delete();
+            AnecdotesLike::where('user_id', $user_id)->delete();
 
             // Supprimer les avertissements d'anecdotes
-            AnecdotesWarn::where('user_id', $userId)->delete();
+            AnecdotesWarn::where('user_id', $user_id)->delete();
 
             DB::commit();
 
@@ -117,8 +117,8 @@ class RgpdController extends Controller
     public function deleteMyData(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
@@ -127,7 +127,7 @@ class RgpdController extends Controller
             DB::beginTransaction();
 
             // Supprimer les preuves de défis et leurs fichiers
-            $proofs = ChallengeProof::where('user_id', $userId)->get();
+            $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
                     $relativePath = str_replace('storage/', '', $proof->file);
@@ -136,10 +136,10 @@ class RgpdController extends Controller
                     }
                 }
             }
-            ChallengeProof::where('user_id', $userId)->delete();
+            ChallengeProof::where('user_id', $user_id)->delete();
 
             // Supprimer la chambre et sa photo si l'utilisateur en est responsable
-            $room = Room::where('userID', $userId)->first();
+            $room = Room::where('user_id', $user_id)->first();
             if ($room) {
                 if ($room->photoPath) {
                     $relativePath = str_replace('storage/', '', $room->photoPath);
@@ -151,13 +151,13 @@ class RgpdController extends Controller
             }
 
             // Supprimer toutes les données liées
-            Anecdote::where('userId', $userId)->delete();
-            UserPerformance::where('user_id', $userId)->delete();
-            PushToken::where('user_id', $userId)->delete();
-            SkinderLike::where('room_likeur', $user->roomID)->delete();
-            SkinderLike::where('room_liked', $user->roomID)->delete();
-            AnecdotesLike::where('user_id', $userId)->delete();
-            AnecdotesWarn::where('user_id', $userId)->delete();
+            Anecdote::where('user_id', $user_id)->delete();
+            UserPerformance::where('user_id', $user_id)->delete();
+            PushToken::where('user_id', $user_id)->delete();
+            SkinderLike::where('room_liker_id', $user->room_id)->delete();
+            SkinderLike::where('room_liked_id', $user->room_id)->delete();
+            AnecdotesLike::where('user_id', $user_id)->delete();
+            AnecdotesWarn::where('user_id', $user_id)->delete();
 
             // Supprimer l'utilisateur
             $user->delete();
@@ -184,15 +184,15 @@ class RgpdController extends Controller
     public function exportMyData(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::with(['anecdotes', 'performances', 'room'])->find($userId);
+            $user_id = $request->user['id'];
+            $user = User::with(['anecdotes', 'performances', 'room'])->find($user_id);
 
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
             }
 
             // Créer un dossier temporaire pour les données
-            $tempDir = storage_path('app/temp/user_' . $userId . '_' . time());
+            $tempDir = storage_path('app/temp/user_' . $user_id . '_' . time());
             if (!file_exists($tempDir)) {
                 mkdir($tempDir, 0755, true);
             }
@@ -217,7 +217,7 @@ class RgpdController extends Controller
             }
 
             // Copier les photos des preuves de défis
-            $proofs = ChallengeProof::where('user_id', $userId)->get();
+            $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $index => $proof) {
                 if ($proof->file) {
                     $relativePath = str_replace('storage/', '', $proof->file);
@@ -425,7 +425,7 @@ class RgpdController extends Controller
         $content .= 'Nom: ' . $user->lastName . "\n";
         $content .= 'Email: ' . $user->email . "\n";
         $content .= 'CAS: ' . $user->cas . "\n";
-        $content .= 'Chambre ID: ' . $user->roomID . "\n";
+        $content .= 'Chambre ID: ' . $user->room_id . "\n";
         $content .= 'Localisation: ' . ($user->location ?? 'Non renseignée') . "\n";
         $content .= 'Admin: ' . ($user->admin ? 'Oui' : 'Non') . "\n";
         $content .= 'Alumni/Externe: ' . ($user->alumniOrExte ? 'Oui' : 'Non') . "\n";

@@ -9,30 +9,22 @@ use Illuminate\Database\Seeder;
 
 class RelationsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Assigner des responsables aux rooms
         $users = User::all();
         $rooms = Room::all();
 
         foreach ($rooms as $room) {
-            $room->update(['userID' => $users->random()->id]);
+            $room->update(['user_id' => $users->random()->id]);
         }
 
-        // Relier les utilisateurs aux transports
         $transports = Transport::all();
         
         if ($users->isNotEmpty() && $transports->isNotEmpty()) {
             foreach ($users as $user) {
-                // Assigner 1-3 transports aléatoires à chaque utilisateur
                 $randomTransports = $transports->random(rand(1, min(3, $transports->count())));
                 $user->transports()->attach($randomTransports->pluck('id')->toArray());
             }
         }
-
-        $this->command->info('Relations pivot créées avec succès !');
     }
 }

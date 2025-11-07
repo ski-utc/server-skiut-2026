@@ -24,7 +24,7 @@ class NotificationController extends Controller
     public function getNotifications(Request $request)
     {
         try {
-            $userId = $request->user['id'];
+            $user_id = $request->user['id'];
 
             // Récupérer les notifications générales affichées
             $generalNotifications = Notification::where('display', true)
@@ -37,14 +37,14 @@ class NotificationController extends Controller
             // Récupérer les notifications ciblées pour cet utilisateur
             $targetedNotifications = Notification::where('display', true)
                 ->where('type', 'targeted')
-                ->whereJsonContains('target_users', $userId)
+                ->whereJsonContains('target_users', $user_id)
                 ->orderBy('created_at', 'desc');
 
             // Récupérer les notifications par chambre
-            $user = User::find($userId);
+            $user = User::find($user_id);
             $roomNotifications = Notification::where('display', true)
                 ->where('type', 'room_based')
-                ->whereJsonContains('target_rooms', $user->roomID)
+                ->whereJsonContains('target_rooms', $user->room_id)
                 ->orderBy('created_at', 'desc');
 
             $allNotifications = $generalNotifications->get()
@@ -53,8 +53,8 @@ class NotificationController extends Controller
                 ->sortByDesc('created_at')
                 ->values();
 
-            $data = $allNotifications->map(function ($notification) use ($userId) {
-                $userNotification = UserNotification::where('user_id', $userId)
+            $data = $allNotifications->map(function ($notification) use ($user_id) {
+                $userNotification = UserNotification::where('user_id', $user_id)
                     ->where('notification_id', $notification->id)
                     ->first();
 
@@ -182,9 +182,9 @@ class NotificationController extends Controller
     public function markAsRead(Request $request, $notificationId)
     {
         try {
-            $userId = $request->user['id'];
+            $user_id = $request->user['id'];
 
-            $userNotification = UserNotification::where('user_id', $userId)
+            $userNotification = UserNotification::where('user_id', $user_id)
                 ->where('notification_id', $notificationId)
                 ->first();
 
@@ -250,14 +250,14 @@ class NotificationController extends Controller
     public function getRecipientsData()
     {
         try {
-            $users = User::select('id', 'firstName', 'lastName', 'roomID', 'admin')
+            $users = User::select('id', 'firstName', 'lastName', 'room_id', 'admin')
                 ->orderBy('firstName')
                 ->get()
                 ->map(function ($user) {
                     return [
                         'id' => $user->id,
                         'name' => $user->firstName . ' ' . $user->lastName,
-                        'roomID' => $user->roomID,
+                        'room_id' => $user->room_id,
                         'admin' => $user->admin
                     ];
                 });
@@ -289,7 +289,7 @@ class NotificationController extends Controller
                 return $notification->target_users ?? [];
 
             case 'room_based':
-                return User::whereIn('roomID', $notification->target_rooms ?? [])->pluck('id')->toArray();
+                return User::whereIn('room_id', $notification->target_rooms ?? [])->pluck('id')->toArray();
 
             default:
                 return [];

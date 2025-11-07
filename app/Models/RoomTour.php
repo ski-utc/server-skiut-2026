@@ -25,25 +25,16 @@ class RoomTour extends Model
         return $this->hasMany(TourBinome::class);
     }
 
-    /**
-     * Scope pour récupérer la tournée active
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Scope pour récupérer la tournée d'aujourd'hui
-     */
     public function scopeToday($query)
     {
         return $query->where('tour_date', Carbon::today());
     }
 
-    /**
-     * Récupère la tournée d'aujourd'hui (active ou non)
-     */
     public static function getTodayTour()
     {
         return self::today()
@@ -51,9 +42,6 @@ class RoomTour extends Model
                   ->first();
     }
 
-    /**
-     * Récupère la tournée active d'aujourd'hui
-     */
     public static function getTodayActiveTour()
     {
         return self::today()
@@ -62,17 +50,11 @@ class RoomTour extends Model
                   ->first();
     }
 
-    /**
-     * Vérifie si la tournée est en cours
-     */
     public function isInProgress()
     {
         return $this->is_active && $this->tour_date->isToday();
     }
 
-    /**
-     * Démarre la tournée (l'active)
-     */
     public function start()
     {
         self::where('is_active', true)
@@ -82,17 +64,11 @@ class RoomTour extends Model
         $this->update(['is_active' => true]);
     }
 
-    /**
-     * Arrête la tournée
-     */
     public function stop()
     {
         $this->update(['is_active' => false]);
     }
 
-    /**
-     * Récupère le statut global de la tournée
-     */
     public function getProgressStats()
     {
         $totalRooms = 0;

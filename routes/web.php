@@ -28,9 +28,9 @@ Route::post('/submit', [ShotgunController::class, 'submit'])->name('submit');
 /***********************************************************************************************************************************************/
 
 /************************************************************** Back-Office Shotgun Chambre ***************************************************/
-Route::get('/auth/shotgun-chambre/login', [AuthBackOfficeController::class, 'login'])->name('backoffice.login');
-Route::get('/auth/shotgun-chambre/callback', [AuthBackOfficeController::class, 'callback'])->name('backoffice.callback');
-Route::get('/auth/shotgun-chambre/logout', [AuthBackOfficeController::class, 'logout'])->name('backoffice.logout');
+Route::get('/auth/back-office/login', [AuthBackOfficeController::class, 'login'])->name('backoffice.login');
+Route::get('/auth/back-office/callback', [AuthBackOfficeController::class, 'callback'])->name('backoffice.callback');
+Route::get('/auth/back-office/logout', [AuthBackOfficeController::class, 'logout'])->name('backoffice.logout');
 /**********************************************************************************************************************************************/
 
 require __DIR__.'/auth.php';

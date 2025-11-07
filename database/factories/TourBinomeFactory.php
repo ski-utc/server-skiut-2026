@@ -7,18 +7,10 @@ use App\Models\TourBinome;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TourBinome>
- */
 class TourBinomeFactory extends Factory
 {
     protected $model = TourBinome::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $binomeNames = ['Binôme A', 'Binôme B', 'Binôme C', 'Binôme D', 'Équipe Alpha', 'Équipe Beta'];
@@ -31,9 +23,6 @@ class TourBinomeFactory extends Factory
         ];
     }
 
-    /**
-     * Create a binome with specific members.
-     */
     public function withMembers(int $member1Id, int $member2Id): static
     {
         return $this->state(fn (array $attributes) => [

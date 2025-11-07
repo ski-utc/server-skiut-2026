@@ -57,18 +57,18 @@ class TourBinome extends Model
     /**
      * Scope pour récupérer les binômes d'un utilisateur
      */
-    public function scopeForUser($query, $userId)
+    public function scopeForUser($query, $user_id)
     {
-        return $query->where('member_1_id', $userId)
-                    ->orWhere('member_2_id', $userId);
+        return $query->where('member_1_id', $user_id)
+                    ->orWhere('member_2_id', $user_id);
     }
 
     /**
      * Vérifie si un utilisateur fait partie de ce binôme
      */
-    public function hasMember($userId)
+    public function hasMember($user_id)
     {
-        return $this->member_1_id == $userId || $this->member_2_id == $userId;
+        return $this->member_1_id == $user_id || $this->member_2_id == $user_id;
     }
 
     /**

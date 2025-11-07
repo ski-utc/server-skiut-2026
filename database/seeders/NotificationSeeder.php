@@ -9,12 +9,8 @@ use Illuminate\Database\Seeder;
 
 class NotificationSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Récupérer quelques utilisateurs pour les notifications ciblées
         $users = User::limit(10)->get();
         $admin = User::where('admin', true)->first();
 
@@ -23,10 +19,9 @@ class NotificationSeeder extends Seeder
             return;
         }
 
-        // 1. Notifications globales
         $globalNotifications = [
             [
-                'title' => '🎿 Bienvenue sur SkiUT !',
+                'title' => '🎿ienvenue sur SkiUT !',
                 'description' => 'Votre application compagnon pour une semaine de ski inoubliable. Découvrez toutes les fonctionnalités disponibles !',
                 'sender_id' => $admin?->id,
                 'type' => 'global',
@@ -34,7 +29,7 @@ class NotificationSeeder extends Seeder
                 'display' => true,
             ],
             [
-                'title' => '📋 Planning de la semaine mis à jour',
+                'title' => 'Planning de la semaine mis à jour',
                 'description' => 'Le planning des activités a été mis à jour. Consultez-le pour ne rien manquer !',
                 'sender_id' => $admin?->id,
                 'type' => 'global',
@@ -42,7 +37,7 @@ class NotificationSeeder extends Seeder
                 'display' => true,
             ],
             [
-                'title' => '🏆 Nouveaux défis disponibles',
+                'title' => 'Nouveaux défis disponibles',
                 'description' => 'De nouveaux défis ont été ajoutés ! Relevez-les avec votre chambre pour gagner des points.',
                 'sender_id' => $admin?->id,
                 'type' => 'global',
@@ -50,7 +45,7 @@ class NotificationSeeder extends Seeder
                 'display' => true,
             ],
             [
-                'title' => '🌨️ Conditions météo exceptionnelles',
+                'title' => 'Conditions météo exceptionnelles',
                 'description' => 'Les conditions sont parfaites aujourd\'hui ! Profitez-en pour faire du ski et prendre de superbes photos.',
                 'sender_id' => $admin?->id,
                 'type' => 'global',
@@ -62,21 +57,19 @@ class NotificationSeeder extends Seeder
         foreach ($globalNotifications as $notifData) {
             $notification = Notification::create($notifData);
 
-            // Créer les UserNotifications pour tous les utilisateurs
             foreach ($users as $user) {
                 UserNotification::create([
                     'user_id' => $user->id,
                     'notification_id' => $notification->id,
-                    'read' => fake()->boolean(30), // 30% de chance d'être lu
+                    'read' => fake()->boolean(30),
                     'read_at' => fake()->boolean(30) ? fake()->dateTimeBetween('-7 days', 'now') : null,
                 ]);
             }
         }
 
-        // 2. Notifications ciblées
         $targetedNotifications = [
             [
-                'title' => '🛠️ Rappel de permanence',
+                'title' => 'Rappel de permanence',
                 'description' => 'N\'oubliez pas votre permanence qui commence dans 1 heure. Merci pour votre aide !',
                 'sender_id' => $admin?->id,
                 'type' => 'targeted',
@@ -85,7 +78,7 @@ class NotificationSeeder extends Seeder
                 'display' => true,
             ],
             [
-                'title' => '🎯 Défi spécial pour votre groupe',
+                'title' => 'Défi spécial pour votre groupe',
                 'description' => 'Un défi personnalisé a été créé spécialement pour votre groupe. Consultez la section défis !',
                 'sender_id' => $admin?->id,
                 'type' => 'targeted',
@@ -94,7 +87,7 @@ class NotificationSeeder extends Seeder
                 'display' => true,
             ],
             [
-                'title' => '🏃‍♂️ Excellent temps de glisse !',
+                'title' => 'Excellent temps de glisse !',
                 'description' => 'Félicitations ! Vous avez atteint une vitesse de pointe impressionnante lors de votre dernière session.',
                 'sender_id' => $admin?->id,
                 'type' => 'targeted',
@@ -107,23 +100,21 @@ class NotificationSeeder extends Seeder
         foreach ($targetedNotifications as $notifData) {
             $notification = Notification::create($notifData);
 
-            // Créer les UserNotifications pour les utilisateurs ciblés
             foreach ($notifData['target_users'] as $userId) {
                 UserNotification::create([
                     'user_id' => $userId,
                     'notification_id' => $notification->id,
-                    'read' => fake()->boolean(20), // 20% de chance d'être lu
+                    'read' => fake()->boolean(20),
                     'read_at' => fake()->boolean(20) ? fake()->dateTimeBetween('-3 days', 'now') : null,
                 ]);
             }
         }
 
-        // 3. Notifications par chambre
         $chambres = ['101', '102', '201', '202', '301'];
 
         $roomNotifications = [
             [
-                'title' => '🏠 Tournée des chambres programmée',
+                'title' => 'Tournée des chambres programmée',
                 'description' => 'Une tournée des chambres aura lieu demain. Préparez-vous à accueillir le binôme responsable !',
                 'sender_id' => $admin?->id,
                 'type' => 'room_based',
@@ -132,7 +123,7 @@ class NotificationSeeder extends Seeder
                 'display' => true,
             ],
             [
-                'title' => '🧹 Nettoyage des espaces communs',
+                'title' => 'Nettoyage des espaces communs',
                 'description' => 'Merci de maintenir la propreté des espaces communs. Votre collaboration est appréciée !',
                 'sender_id' => $admin?->id,
                 'type' => 'room_based',
@@ -145,33 +136,31 @@ class NotificationSeeder extends Seeder
         foreach ($roomNotifications as $notifData) {
             $notification = Notification::create($notifData);
 
-            // Créer les UserNotifications pour les utilisateurs des chambres ciblées
             foreach ($notifData['target_rooms'] as $roomId) {
-                $roomUsers = User::where('roomID', $roomId)->get();
+                $roomUsers = User::where('room_id', $roomId)->get();
                 foreach ($roomUsers as $user) {
                     UserNotification::create([
                         'user_id' => $user->id,
                         'notification_id' => $notification->id,
-                        'read' => fake()->boolean(40), // 40% de chance d'être lu
+                        'read' => fake()->boolean(40),
                         'read_at' => fake()->boolean(40) ? fake()->dateTimeBetween('-2 days', 'now') : null,
                     ]);
                 }
             }
         }
 
-        // 4. Notifications de matches Skinder (simulées)
         $skinderNotifications = [
             [
-                'title' => '💕 Nouveau match Skinder !',
+                'title' => 'Nouveau match Skinder !',
                 'description' => 'Les chambres 101 et 205 ont matché ! C\'est le moment de faire connaissance et de se rencontrer. Bonne chance ! 🎉',
-                'sender_id' => null, // Notification système
+                'sender_id' => null,
                 'type' => 'targeted',
                 'target_users' => $users->take(4)->pluck('id')->toArray(),
                 'general' => false,
                 'display' => true,
             ],
             [
-                'title' => '💕 Nouveau match Skinder !',
+                'title' => 'Nouveau match Skinder !',
                 'description' => 'Les chambres 302 et 108 ont matché ! C\'est le moment de faire connaissance et de se rencontrer. Bonne chance ! 🎉',
                 'sender_id' => null,
                 'type' => 'targeted',
@@ -188,12 +177,10 @@ class NotificationSeeder extends Seeder
                 UserNotification::create([
                     'user_id' => $userId,
                     'notification_id' => $notification->id,
-                    'read' => fake()->boolean(60), // 60% de chance d'être lu (plus intéressant)
+                    'read' => fake()->boolean(60),
                     'read_at' => fake()->boolean(60) ? fake()->dateTimeBetween('-1 day', 'now') : null,
                 ]);
             }
         }
-
-        $this->command->info('Notifications et UserNotifications créées avec succès !');
     }
 }

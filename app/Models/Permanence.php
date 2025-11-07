@@ -47,9 +47,9 @@ class Permanence extends Model
     }
 
     // Scope pour récupérer les permanences d'un utilisateur
-    public function scopeForUser($query, $userId)
+    public function scopeForUser($query, $user_id)
     {
-        return $query->where('responsible_user_id', $userId);
+        return $query->where('responsible_user_id', $user_id);
     }
 
     // Scope pour récupérer les permanences d'une période

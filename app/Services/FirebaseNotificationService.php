@@ -12,8 +12,8 @@ class FirebaseNotificationService
     public function sendNotification($userIds, $title, $message, $data = [])
     {
         try {
-            // Récupérer les tokens des utilisateurs
             $tokens = PushToken::whereIn('user_id', $userIds)
+                              ->where('active', true)
                               ->whereNotNull('token')
                               ->pluck('token')
                               ->unique()
@@ -88,7 +88,7 @@ class FirebaseNotificationService
 
     public function sendToRooms($roomIds, $title, $message, $data = [])
     {
-        $userIds = User::whereIn('roomID', $roomIds)->pluck('id')->toArray();
+        $userIds = User::whereIn('room_id', $roomIds)->pluck('id')->toArray();
         return $this->sendNotification($userIds, $title, $message, $data);
     }
 
@@ -100,9 +100,7 @@ class FirebaseNotificationService
 
     public function sendToMembers($title, $message, $data = [])
     {
-        // Supposant qu'on ajoute une colonne 'member' plus tard pour les permanences
-        // Pour l'instant, on envoie aux non-admins
-        $memberIds = User::where('admin', false)->pluck('id')->toArray();
+        $memberIds = User::where('member', true)->pluck('id')->toArray();
         return $this->sendNotification($memberIds, $title, $message, $data);
     }
 }

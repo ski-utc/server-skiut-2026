@@ -11,7 +11,6 @@ class MonoprutFactory extends Factory
     {
         $types = ['fruit', 'veggie', 'drink', 'sweet', 'snack', 'dairy', 'bread', 'meat', 'fish', 'grain', 'other'];
         
-        // 70% chance d'avoir un récepteur
         $hasReceiver = $this->faker->boolean(70);
         
         return [
@@ -19,7 +18,7 @@ class MonoprutFactory extends Factory
             'quantity' => (string) $this->faker->numberBetween(1, 50),
             'type' => $this->faker->randomElement($types),
             'giver_room_id' => Room::factory(),
-            'receiver_room_id' => $hasReceiver ? null : null, // Sera assigné dans le seeder ou via state
+            'receiver_room_id' => $hasReceiver ? null : null,
         ];
     }
 

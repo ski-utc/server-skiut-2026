@@ -17,8 +17,17 @@ class PushTokenFactory extends Factory
     public function definition(): array
     {
         return [
-            'token' => fake()->regexify('[A-Za-z0-9]{152}'), // Format typique d'un token FCM
-            'user_id' => fake()->numberBetween(1, 30),
+            'token' => 'ExponentPushToken[' . $this->faker->bothify('??????????????????') . ']',
+            'device_type' => $this->faker->randomElement(['ios', 'android']),
+            'device_name' => $this->faker->optional()->randomElement([
+                'iPhone 14 Pro',
+                'iPhone 13',
+                'Samsung Galaxy S23',
+                'Google Pixel 7',
+                'OnePlus 11',
+            ]),
+            'active' => $this->faker->boolean(90), // 90% de tokens actifs
+            'last_used_at' => $this->faker->optional(0.7)->dateTimeBetween('-30 days', 'now'),
         ];
     }
 }

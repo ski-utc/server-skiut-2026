@@ -4,16 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Anecdote>
- */
 class AnecdoteFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         $anecdotes = [
@@ -45,7 +37,7 @@ class AnecdoteFactory extends Factory
 
         return [
             'text' => fake()->randomElement($anecdotes),
-            'room' => fake()->numberBetween(1, 15),
+            'room_id' => fake()->numberBetween(1, 15),
             'user_id' => fake()->numberBetween(1, 30),
             'valid' => fake()->boolean(80),
             'delete' => fake()->boolean(5),
