@@ -23,7 +23,7 @@ class RoomFactory extends Factory
             'name' => fake()->unique()->words(2, true),
             'mood' => fake()->randomElement($moods),
             'photoPath' => fake()->optional()->imageUrl(640, 480, 'room'),
-            'description' => fake()->optional()->paragraph(),
+            'description' => fake()->optional()->words(10, true),
             'passions' => json_encode(fake()->randomElement($passions)),
             'totalPoints' => fake()->numberBetween(0, 1000),
             'user_id' => null,

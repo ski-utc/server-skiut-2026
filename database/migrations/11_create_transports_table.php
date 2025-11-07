@@ -10,9 +10,16 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::table('transports', function (Blueprint $table) {
+        Schema::create('transports', function (Blueprint $table) {
+            $table->id();
+            $table->string('departure'); // Paris / Compiègne / Les 2 Alpes
             $table->time('horaire_depart')->nullable();
+            $table->string('arrival'); // Paris / Compiègne / Les 2 Alpes
             $table->time('horaire_arrivee')->nullable();
+            $table->string('colour');
+            $table->string('colourName');
+            $table->string('type'); // aller / retour
+            $table->timestamps();
         });
     }
 
@@ -21,8 +28,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::table('transports', function (Blueprint $table) {
-            $table->dropColumn(['horaire_depart', 'horaire_arrivee']);
-        });
+        Schema::dropIfExists('transports');
     }
 };
