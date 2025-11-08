@@ -49,9 +49,12 @@ class User extends Authenticatable
      */
     public function transports()
     {
-        return $this->belongsToMany(Transport::class, 'transport_user',
-    'user_id',
-    'transport_id');
+        return $this->belongsToMany(
+            Transport::class,
+            'transport_user',
+            'user_id',
+            'transport_id'
+        );
     }
 
     /**

@@ -11,12 +11,12 @@ class Anecdote extends Model
 
     protected $table = 'anecdotes';
     protected $fillable = [
-        'id', 
-        'text', 
-        'room_id', 
-        'user_id', 
-        'valid', 
-        'delete', 
+        'id',
+        'text',
+        'room_id',
+        'user_id',
+        'valid',
+        'delete',
         'active'
     ];
 

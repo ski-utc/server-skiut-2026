@@ -12,7 +12,7 @@ class Challenge extends Model
     protected $table = 'challenges';
     protected $fillable = [
         'id',
-        'title', 
+        'title',
         'nbPoints'
     ];
 
