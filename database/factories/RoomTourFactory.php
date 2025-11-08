@@ -9,6 +9,11 @@ class RoomTourFactory extends Factory
 {
     protected $model = RoomTour::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $tourDate = $this->faker->dateTimeBetween('-7 days', '+14 days');
@@ -19,6 +24,11 @@ class RoomTourFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's active state.
+     *
+     * @return static
+     */
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -27,6 +37,11 @@ class RoomTourFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's today state.
+     *
+     * @return static
+     */
     public function today(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -34,6 +49,11 @@ class RoomTourFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's future state.
+     *
+     * @return static
+     */
     public function future(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -42,6 +62,11 @@ class RoomTourFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's past state.
+     *
+     * @return static
+     */
     public function past(): static
     {
         return $this->state(fn (array $attributes) => [

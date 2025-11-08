@@ -10,18 +10,44 @@ class ChallengeProof extends Model
     use HasFactory;
 
     protected $table = 'challenge_proofs';
-    protected $fillable = ['id', 'file', 'media_type', 'nb_likes', 'valid', 'alert', 'delete', 'room_id', 'user_id', 'challenge_id'];
+    protected $fillable = [
+        'id',
+        'file',
+        'media_type',
+        'nb_likes',
+        'valid',
+        'alert',
+        'delete',
+        'room_id',
+        'user_id',
+        'challenge_id'
+    ];
 
+    /**
+     * Get the room that owns the challenge proof.
+     *
+     * @return BelongsTo
+     */
     public function room()
     {
         return $this->belongsTo(Room::class, 'room_id');
     }
 
+    /**
+     * Get the user that owns the challenge proof.
+     *
+     * @return BelongsTo
+     */
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Get the challenge that owns the challenge proof.
+     *
+     * @return BelongsTo
+     */
     public function challenge()
     {
         return $this->belongsTo(Challenge::class, 'challenge_id');

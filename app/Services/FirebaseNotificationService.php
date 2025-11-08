@@ -9,6 +9,15 @@ use Illuminate\Support\Facades\Log;
 
 class FirebaseNotificationService
 {
+    /**
+     * Send a notification to a list of users.
+     *
+     * @param array $userIds List of user IDs
+     * @param string $title Notification title
+     * @param string $message Notification message
+     * @param array $data Additional data
+     * @return array
+     */
     public function sendNotification($userIds, $title, $message, $data = [])
     {
         try {
@@ -80,24 +89,57 @@ class FirebaseNotificationService
         }
     }
 
+    /**
+     * Send a notification to all users.
+     *
+     * @param string $title Notification title
+     * @param string $message Notification message
+     * @param array $data Additional data
+     * @return array
+     */
     public function sendToAllUsers($title, $message, $data = [])
     {
         $userIds = User::pluck('id')->toArray();
         return $this->sendNotification($userIds, $title, $message, $data);
     }
 
+    /**
+     * Send a notification to a list of rooms.
+     *
+     * @param array $roomIds List of room IDs
+     * @param string $title Notification title
+     * @param string $message Notification message
+     * @param array $data Additional data
+     * @return array
+     */
     public function sendToRooms($roomIds, $title, $message, $data = [])
     {
         $userIds = User::whereIn('room_id', $roomIds)->pluck('id')->toArray();
         return $this->sendNotification($userIds, $title, $message, $data);
     }
 
+    /**
+     * Send a notification to all admins.
+     *
+     * @param string $title Notification title
+     * @param string $message Notification message
+     * @param array $data Additional data
+     * @return array
+     */
     public function sendToAdmins($title, $message, $data = [])
     {
         $adminIds = User::where('admin', true)->pluck('id')->toArray();
         return $this->sendNotification($adminIds, $title, $message, $data);
     }
 
+    /**
+     * Send a notification to all members.
+     *
+     * @param string $title Notification title
+     * @param string $message Notification message
+     * @param array $data Additional data
+     * @return array
+     */
     public function sendToMembers($title, $message, $data = [])
     {
         $memberIds = User::where('member', true)->pluck('id')->toArray();

@@ -16,28 +16,50 @@ class TourBinome extends Model
         'member_2_id'
     ];
 
+    /**
+     * Get the room tour that owns the tour binome.
+     *
+     * @return BelongsTo
+     */
     public function roomTour()
     {
         return $this->belongsTo(RoomTour::class);
     }
 
+    /**
+     * Get the visits that belong to the tour binome.
+     *
+     * @return HasMany
+     */
     public function visits()
     {
         return $this->hasMany(RoomTourVisit::class);
     }
 
+    /**
+     * Get the first member that belongs to the tour binome.
+     *
+     * @return BelongsTo
+     */
     public function member1()
     {
         return $this->belongsTo(User::class, 'member_1_id');
     }
 
+    /**
+     * Get the second member that belongs to the tour binome.
+     *
+     * @return BelongsTo
+     */
     public function member2()
     {
         return $this->belongsTo(User::class, 'member_2_id');
     }
 
     /**
-     * Récupère les 2 membres du binôme
+     * Get the 2 members of the binome.
+     *
+     * @return Collection
      */
     public function getMembers()
     {
@@ -55,7 +77,11 @@ class TourBinome extends Model
     }
 
     /**
-     * Scope pour récupérer les binômes d'un utilisateur
+     * Scope to get the binomes of a user.
+     *
+     * @param Builder $query
+     * @param int $user_id
+     * @return Builder
      */
     public function scopeForUser($query, $user_id)
     {
@@ -64,7 +90,10 @@ class TourBinome extends Model
     }
 
     /**
-     * Vérifie si un utilisateur fait partie de ce binôme
+     * Check if a user is part of this binome.
+     *
+     * @param int $user_id
+     * @return bool
      */
     public function hasMember($user_id)
     {
@@ -72,7 +101,9 @@ class TourBinome extends Model
     }
 
     /**
-     * Récupère les statistiques de visite pour ce binôme
+     * Get the visit statistics for this binome.
+     *
+     * @return array
      */
     public function getVisitStats()
     {
@@ -88,7 +119,9 @@ class TourBinome extends Model
     }
 
     /**
-     * Récupère la prochaine chambre à visiter
+     * Get the next room to visit.
+     *
+     * @return RoomTourVisit
      */
     public function getNextRoom()
     {
@@ -99,7 +132,11 @@ class TourBinome extends Model
     }
 
     /**
-     * Marque une chambre comme visitée
+     * Mark a room as visited.
+     *
+     * @param int $roomId
+     * @param string $notes
+     * @return bool
      */
     public function markRoomAsVisited($roomId, $notes = null)
     {
@@ -119,7 +156,9 @@ class TourBinome extends Model
     }
 
     /**
-     * Réordonne les chambres à visiter
+     * Reorder the rooms to visit.
+     *
+     * @param array $newOrder
      */
     public function reorderRooms($newOrder)
     {

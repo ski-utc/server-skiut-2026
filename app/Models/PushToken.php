@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PushToken extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'user_id',
         'token',
@@ -18,14 +17,15 @@ class PushToken extends Model
         'active',
         'last_used_at',
     ];
-
     protected $casts = [
         'active' => 'boolean',
         'last_used_at' => 'datetime',
     ];
 
     /**
-     * Relation avec l'utilisateur
+     * Get the user that owns the push token.
+     *
+     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -33,7 +33,10 @@ class PushToken extends Model
     }
 
     /**
-     * Scope pour récupérer uniquement les tokens actifs
+     * Scope to get only the active tokens.
+     *
+     * @param Builder $query
+     * @return Builder
      */
     public function scopeActive($query)
     {
@@ -41,7 +44,7 @@ class PushToken extends Model
     }
 
     /**
-     * Marquer le token comme utilisé
+     * Mark the token as used.
      */
     public function markAsUsed(): void
     {

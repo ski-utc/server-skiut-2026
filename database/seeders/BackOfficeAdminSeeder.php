@@ -7,6 +7,9 @@ use Illuminate\Database\Seeder;
 
 class BackOfficeAdminSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         BackOfficeAdmin::factory(5)->create();

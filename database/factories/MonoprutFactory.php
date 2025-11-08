@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MonoprutFactory extends Factory
 {
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $types = ['fruit', 'veggie', 'drink', 'sweet', 'snack', 'dairy', 'bread', 'meat', 'fish', 'grain', 'other'];
@@ -22,6 +27,11 @@ class MonoprutFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's fruit state.
+     *
+     * @return static
+     */
     public function fruit(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -30,6 +40,11 @@ class MonoprutFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's drink state.
+     *
+     * @return static
+     */
     public function drink(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -38,6 +53,11 @@ class MonoprutFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's with receiver state.
+     *
+     * @return static
+     */
     public function withReceiver(): static
     {
         return $this->afterMaking(function ($monoprut) {
@@ -48,6 +68,11 @@ class MonoprutFactory extends Factory
         });
     }
 
+    /**
+     * Define the model's without receiver state.
+     *
+     * @return static
+     */
     public function withoutReceiver(): static
     {
         return $this->state(fn (array $attributes) => [

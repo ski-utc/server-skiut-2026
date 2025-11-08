@@ -10,6 +10,9 @@ use Illuminate\Support\Str;
 
 class PerformanceSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $users = User::limit(15)->get();

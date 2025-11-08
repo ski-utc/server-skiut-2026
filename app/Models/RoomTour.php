@@ -14,27 +14,48 @@ class RoomTour extends Model
         'tour_date',
         'is_active'
     ];
-
     protected $casts = [
         'tour_date' => 'date',
         'is_active' => 'boolean'
     ];
 
+    /**
+     * Get the binomes that belong to the room tour.
+     *
+     * @return HasMany
+     */
     public function binomes()
     {
         return $this->hasMany(TourBinome::class);
     }
 
+    /**
+     * Scope to get the active room tours.
+     *
+     * @param Builder $query
+     * @return Builder
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
+    /**
+     * Scope to get the today's room tours.
+     *
+     * @param Builder $query
+     * @return Builder
+     */
     public function scopeToday($query)
     {
         return $query->where('tour_date', Carbon::today());
     }
 
+    /**
+     * Get the today's room tour.
+     *
+     * @return RoomTour
+     */
     public static function getTodayTour()
     {
         return self::today()
@@ -42,6 +63,11 @@ class RoomTour extends Model
                   ->first();
     }
 
+    /**
+     * Get the today's active room tour.
+     *
+     * @return RoomTour
+     */
     public static function getTodayActiveTour()
     {
         return self::today()
@@ -50,11 +76,19 @@ class RoomTour extends Model
                   ->first();
     }
 
+    /**
+     * Check if the room tour is in progress.
+     *
+     * @return bool
+     */
     public function isInProgress()
     {
         return $this->is_active && $this->tour_date->isToday();
     }
 
+    /**
+     * Start the room tour.
+     */
     public function start()
     {
         self::where('is_active', true)
@@ -64,11 +98,19 @@ class RoomTour extends Model
         $this->update(['is_active' => true]);
     }
 
+    /**
+     * Stop the room tour.
+     */
     public function stop()
     {
         $this->update(['is_active' => false]);
     }
 
+    /**
+     * Get the progress statistics for the room tour.
+     *
+     * @return array
+     */
     public function getProgressStats()
     {
         $totalRooms = 0;

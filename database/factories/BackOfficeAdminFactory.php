@@ -9,6 +9,11 @@ class BackOfficeAdminFactory extends Factory
 {
     protected $model = BackOfficeAdmin::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [

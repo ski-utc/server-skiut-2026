@@ -8,6 +8,9 @@ use Illuminate\Database\Seeder;
 
 class MonoprutSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $rooms = Room::all();

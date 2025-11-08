@@ -10,6 +10,11 @@ class RoomTourVisitFactory extends Factory
 {
     protected $model = RoomTourVisit::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $visited = $this->faker->boolean(40);
@@ -23,6 +28,11 @@ class RoomTourVisitFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's visited state.
+     *
+     * @return static
+     */
     public function visited(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -31,6 +41,11 @@ class RoomTourVisitFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's pending state.
+     *
+     * @return static
+     */
     public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -39,6 +54,11 @@ class RoomTourVisitFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's for room state.
+     *
+     * @return static
+     */
     public function forRoom(string $roomId): static
     {
         return $this->state(fn (array $attributes) => [
@@ -46,6 +66,11 @@ class RoomTourVisitFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's with order state.
+     *
+     * @return static
+     */
     public function withOrder(int $order): static
     {
         return $this->state(fn (array $attributes) => [
@@ -53,6 +78,11 @@ class RoomTourVisitFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's recently visited state.
+     *
+     * @return static
+     */
     public function recentlyVisited(): static
     {
         return $this->state(fn (array $attributes) => [

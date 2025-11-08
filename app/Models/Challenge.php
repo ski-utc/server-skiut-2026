@@ -10,8 +10,17 @@ class Challenge extends Model
     use HasFactory;
 
     protected $table = 'challenges';
-    protected $fillable = ['id','title', 'nbPoints'];
+    protected $fillable = [
+        'id',
+        'title', 
+        'nbPoints'
+    ];
 
+    /**
+     * Get the challenge proofs that belong to the challenge.
+     *
+     * @return HasMany
+     */
     public function challengeProofs()
     {
         return $this->hasMany(ChallengeProof::class);

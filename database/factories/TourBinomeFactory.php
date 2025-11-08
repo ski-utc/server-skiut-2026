@@ -11,6 +11,11 @@ class TourBinomeFactory extends Factory
 {
     protected $model = TourBinome::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $binomeNames = ['Binôme A', 'Binôme B', 'Binôme C', 'Binôme D', 'Équipe Alpha', 'Équipe Beta'];
@@ -23,6 +28,11 @@ class TourBinomeFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's with members state.
+     *
+     * @return static
+     */
     public function withMembers(int $member1Id, int $member2Id): static
     {
         return $this->state(fn (array $attributes) => [

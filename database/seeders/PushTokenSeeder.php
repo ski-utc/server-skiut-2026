@@ -13,7 +13,6 @@ class PushTokenSeeder extends Seeder
      */
     public function run(): void
     {
-        // Récupérer tous les utilisateurs
         $users = User::all();
 
         if ($users->isEmpty()) {
@@ -21,9 +20,7 @@ class PushTokenSeeder extends Seeder
             return;
         }
 
-        // Pour 70% des utilisateurs, créer 1-2 push tokens
         $usersWithTokens = $users->random(min((int)($users->count() * 0.7), $users->count()));
-
         foreach ($usersWithTokens as $user) {
             $tokenCount = fake()->numberBetween(1, 2);
 
@@ -33,7 +30,5 @@ class PushTokenSeeder extends Seeder
                 ]);
             }
         }
-
-        $this->command->info('Push tokens créés avec succès !');
     }
 }

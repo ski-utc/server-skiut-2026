@@ -10,6 +10,11 @@ class PermanenceFactory extends Factory
 {
     protected $model = Permanence::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $startDate = $this->faker->dateTimeBetween('now', '+30 days');
@@ -55,6 +60,11 @@ class PermanenceFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's scheduled state.
+     *
+     * @return static
+     */
     public function scheduled(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -64,6 +74,11 @@ class PermanenceFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's in progress state.
+     *
+     * @return static
+     */
     public function inProgress(): static
     {
         return $this->state(function (array $attributes) {
@@ -80,6 +95,11 @@ class PermanenceFactory extends Factory
         });
     }
 
+    /**
+     * Define the model's completed state.
+     *
+     * @return static
+     */
     public function completed(): static
     {
         return $this->state(function (array $attributes) {
@@ -96,6 +116,11 @@ class PermanenceFactory extends Factory
         });
     }
 
+    /**
+     * Define the model's cancelled state.
+     *
+     * @return static
+     */
     public function cancelled(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -104,6 +129,11 @@ class PermanenceFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's urgent state.
+     *
+     * @return static
+     */
     public function urgent(): static
     {
         return $this->state(function (array $attributes) {

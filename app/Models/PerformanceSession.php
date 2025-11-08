@@ -10,7 +10,6 @@ class PerformanceSession extends Model
     use HasFactory;
 
     protected $table = 'performance_sessions';
-
     protected $fillable = [
         'user_performance_id',
         'session_id',
@@ -22,7 +21,6 @@ class PerformanceSession extends Model
         'speed_history',
         'accuracy'
     ];
-
     protected $casts = [
         'max_speed' => 'float',
         'average_speed' => 'float',
@@ -33,11 +31,21 @@ class PerformanceSession extends Model
         'accuracy' => 'float'
     ];
 
+    /**
+     * Get the user performance that owns the performance session.
+     *
+     * @return BelongsTo
+     */
     public function userPerformance()
     {
         return $this->belongsTo(UserPerformance::class, 'user_performance_id');
     }
 
+    /**
+     * Get the user that owns the performance session.
+     *
+     * @return User
+     */
     public function user()
     {
         return $this->userPerformance->user;

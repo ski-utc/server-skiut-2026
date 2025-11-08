@@ -11,6 +11,11 @@ class PerformanceSessionFactory extends Factory
 {
     protected $model = PerformanceSession::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $maxSpeed = $this->faker->randomFloat(2, 10, 80);
@@ -29,6 +34,11 @@ class PerformanceSessionFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's short state.
+     *
+     * @return static
+     */
     public function short(): static
     {
         return $this->state(function (array $attributes) {
@@ -45,6 +55,11 @@ class PerformanceSessionFactory extends Factory
         });
     }
 
+    /**
+     * Define the model's long state.
+     *
+     * @return static
+     */
     public function long(): static
     {
         return $this->state(function (array $attributes) {
@@ -61,6 +76,11 @@ class PerformanceSessionFactory extends Factory
         });
     }
 
+    /**
+     * Define the model's high speed state.
+     *
+     * @return static
+     */
     public function highSpeed(): static
     {
         return $this->state(fn (array $attributes) => [

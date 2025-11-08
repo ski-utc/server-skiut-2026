@@ -11,6 +11,11 @@ class UserNotificationFactory extends Factory
 {
     protected $model = UserNotification::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [
@@ -23,6 +28,11 @@ class UserNotificationFactory extends Factory
         ];
     }
 
+    /**
+     * Define the model's read state.
+     *
+     * @return static
+     */
     public function read(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -31,6 +41,11 @@ class UserNotificationFactory extends Factory
         ]);
     }
 
+    /**
+     * Define the model's unread state.
+     *
+     * @return static
+     */
     public function unread(): static
     {
         return $this->state(fn (array $attributes) => [

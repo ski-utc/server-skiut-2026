@@ -11,6 +11,9 @@ use Illuminate\Database\Seeder;
 
 class RoomTourSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $members = User::where('member', true)->get();

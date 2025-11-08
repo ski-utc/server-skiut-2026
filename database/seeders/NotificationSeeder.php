@@ -9,6 +9,9 @@ use Illuminate\Database\Seeder;
 
 class NotificationSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $users = User::limit(10)->get();

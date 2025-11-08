@@ -8,6 +8,9 @@ use Prometheus\Storage\APC;
 
 class PrometheusServiceProvider extends ServiceProvider
 {
+    /**
+     * Register the service provider.
+     */
     public function register()
     {
         $this->app->singleton(CollectorRegistry::class, function () {

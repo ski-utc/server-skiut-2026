@@ -16,17 +16,26 @@ class UserNotification extends Model
         'read',
         'read_at'
     ];
-
     protected $casts = [
         'read' => 'boolean',
         'read_at' => 'datetime'
     ];
 
+    /**
+     * Get the user that owns the user notification.
+     *
+     * @return BelongsTo
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the notification that owns the user notification.
+     *
+     * @return BelongsTo
+     */
     public function notification()
     {
         return $this->belongsTo(Notification::class);

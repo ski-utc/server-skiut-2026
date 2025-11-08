@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ChallengeProofFactory extends Factory
 {
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         $fileExtensions = ['jpg', 'png', 'mp4', 'mov', 'avi'];
