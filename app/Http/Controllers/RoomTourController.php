@@ -130,10 +130,14 @@ class RoomTourController extends Controller
      */
     public function toggleTour(Request $request, $tourId)
     {
+        $validated = $request->validate([
+            'activate' => 'nullable|boolean',
+        ]);
+
         try {
             $tour = RoomTour::findOrFail($tourId);
 
-            if ($request->input('activate', false)) {
+            if ($validated['activate'] ?? false) {
                 $tour->start();
                 $message = 'Tournée activée avec succès';
             } else {
@@ -366,11 +370,11 @@ class RoomTourController extends Controller
      */
     public function markRoomVisited(Request $request, $visitId)
     {
-        try {
-            $request->validate([
-                'notes' => 'nullable|string|max:500'
-            ]);
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:500'
+        ]);
 
+        try {
             $user_id = $request->user['id'];
             $user = User::find($user_id);
 
@@ -391,7 +395,7 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            $success = $binome->markRoomAsVisited($visit->room_id, $request->notes);
+            $success = $binome->markRoomAsVisited($visit->room_id, $validated['notes'] ?? null);
 
             if ($success) {
                 return response()->json([
@@ -471,11 +475,11 @@ class RoomTourController extends Controller
      */
     public function reorderRooms(Request $request)
     {
-        try {
-            $request->validate([
-                'room_order' => 'required|array'
-            ]);
+        $validated = $request->validate([
+            'room_order' => 'required|array'
+        ]);
 
+        try {
             $user_id = $request->user['id'];
             $user = User::find($user_id);
 
@@ -504,7 +508,7 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            $binome->reorderRooms($request->room_order);
+            $binome->reorderRooms($validated['room_order']);
 
             return response()->json([
                 'success' => true,

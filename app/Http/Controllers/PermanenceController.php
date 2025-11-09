@@ -6,7 +6,6 @@ use App\Models\Permanence;
 use App\Models\User;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class PermanenceController extends Controller
 {
@@ -85,9 +84,14 @@ class PermanenceController extends Controller
      */
     public function getAllPermanences(Request $request)
     {
+        $validated = $request->validate([
+            'start_date' => 'nullable|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d',
+        ]);
+
         try {
-            $startDate = $request->input('start_date', now()->subDays(7)->format('Y-m-d'));
-            $endDate = $request->input('end_date', now()->addDays(30)->format('Y-m-d'));
+            $startDate = $validated['start_date'] ?? now()->subDays(7)->format('Y-m-d');
+            $endDate = $validated['end_date'] ?? now()->addDays(30)->format('Y-m-d');
 
             $permanences = Permanence::inPeriod($startDate, $endDate)
                 ->with(['responsibleUser'])
@@ -134,25 +138,19 @@ class PermanenceController extends Controller
      */
     public function createPermanence(Request $request)
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_datetime' => 'required|date|after:now',
+            'end_datetime' => 'required|date|after:start_datetime',
+            'responsible_user_id' => 'required|exists:users,id',
+            'location' => 'nullable|string|max:255',
+            'notes' => 'nullable|string'
+        ]);
+
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'start_datetime' => 'required|date|after:now',
-                'end_datetime' => 'required|date|after:start_datetime',
-                'responsible_user_id' => 'required|exists:users,id',
-                'location' => 'nullable|string|max:255',
-                'notes' => 'nullable|string'
-            ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $responsible = User::find($request->responsible_user_id);
+            $responsible = User::find($validated['responsible_user_id']);
             if (!$responsible->member) {
                 return response()->json([
                     'success' => false,
@@ -161,13 +159,13 @@ class PermanenceController extends Controller
             }
 
             $permanence = Permanence::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'start_datetime' => $request->start_datetime,
-                'end_datetime' => $request->end_datetime,
-                'responsible_user_id' => $request->responsible_user_id,
-                'location' => $request->location,
-                'notes' => $request->notes,
+                'name' => $validated['name'],
+                'description' => $validated['description'],
+                'start_datetime' => $validated['start_datetime'],
+                'end_datetime' => $validated['end_datetime'],
+                'responsible_user_id' => $validated['responsible_user_id'],
+                'location' => $validated['location'],
+                'notes' => $validated['notes'],
                 'status' => 'scheduled'
             ]);
 
@@ -204,31 +202,21 @@ class PermanenceController extends Controller
      */
     public function updatePermanence(Request $request, $permanenceId)
     {
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'start_datetime' => 'sometimes|required|date',
+            'end_datetime' => 'sometimes|required|date|after:start_datetime',
+            'responsible_user_id' => 'sometimes|required|exists:users,id',
+            'location' => 'nullable|string|max:255',
+            'status' => 'sometimes|in:scheduled,in_progress,completed,cancelled',
+            'notes' => 'nullable|string'
+        ]);
+
         try {
             $permanence = Permanence::findOrFail($permanenceId);
 
-            $validator = Validator::make($request->all(), [
-                'name' => 'sometimes|required|string|max:255',
-                'description' => 'nullable|string',
-                'start_datetime' => 'sometimes|required|date',
-                'end_datetime' => 'sometimes|required|date|after:start_datetime',
-                'responsible_user_id' => 'sometimes|required|exists:users,id',
-                'location' => 'nullable|string|max:255',
-                'status' => 'sometimes|in:scheduled,in_progress,completed,cancelled',
-                'notes' => 'nullable|string'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $permanence->update($request->only([
-                'name', 'description', 'start_datetime', 'end_datetime',
-                'responsible_user_id', 'location', 'status', 'notes'
-            ]));
+            $permanence->update($validated);
 
             return response()->json([
                 'success' => true,

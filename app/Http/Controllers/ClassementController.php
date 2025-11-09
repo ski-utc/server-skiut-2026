@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PerformanceSession;
 use App\Models\Room;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ClassementController extends Controller
@@ -53,12 +54,17 @@ class ClassementController extends Controller
 
     /**
      * Get the ranking of the performances
+     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function classementPerformances()
+    public function classementPerformances(Request $request)
     {
-        $type = request()->query('type', 'speed');
+        $validated = $request->validate([
+            'type' => 'nullable|in:speed,distance,duration',
+        ]);
+
+        $type = $validated['type'] ?? 'speed';
 
         $orderColumn = match($type) {
             'distance' => 'distance',

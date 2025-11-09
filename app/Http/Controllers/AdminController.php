@@ -39,8 +39,12 @@ class AdminController extends Controller
      */
     public function getAdminChallenges(Request $request)
     {
+        $validated = $request->validate([
+            'filter' => 'nullable|in:pending,valid,all',
+        ]);
+
         try {
-            $filter = $request->query('filter', 'all');
+            $filter = $validated['filter'] ?? 'all';
 
             $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false);
 
@@ -82,7 +86,6 @@ class AdminController extends Controller
     public function getChallengeDetails($challengeId)
     {
         try {
-
             $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
 
             return response()->json([
@@ -108,21 +111,16 @@ class AdminController extends Controller
      */
     public function updateChallengeStatus(Request $request, $challengeId)
     {
+        $validated = $request->validate([
+            'is_valid' => 'required|boolean',
+            'is_delete' => 'required|boolean',
+        ]);
+
         try {
             $challenge = ChallengeProof::findOrFail($challengeId);
 
-            $isValid = $request->input('is_valid');
-            $isDelete = $request->input('is_delete');
-
-            if ($isValid === null || $isDelete === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Les paramètres "is_valid" et "is_delete" sont requis.',
-                ], 500);
-            }
-
-            $isValid = (bool) $isValid;
-            $isDelete = (bool) $isDelete;
+            $isValid = $validated['is_valid'];
+            $isDelete = $validated['is_delete'];
 
             $challenge->valid = $isValid;
             $challenge->delete = $isDelete;
@@ -158,8 +156,12 @@ class AdminController extends Controller
      */
     public function getAdminAnecdotes(Request $request)
     {
+        $validated = $request->validate([
+            'filter' => 'nullable|in:pending,reported,all',
+        ]);
+
         try {
-            $filter = $request->query('filter', 'all');
+            $filter = $validated['filter'] ?? 'all';
 
             $query = Anecdote::with(['user', 'likes', 'warns']);
 
@@ -237,24 +239,19 @@ class AdminController extends Controller
     */
     public function updateAnecdoteStatus(Request $request, $anecdoteId)
     {
+        $validated = $request->validate([
+            'is_valid' => 'required|boolean',
+        ]);
+
         try {
             $anecdote = Anecdote::findOrFail($anecdoteId);
 
-            $isValid = $request->input('is_valid');
-
-            if ($isValid === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Le paramètre "is_valid" est requis (1 pour valider, 0 pour invalider).',
-                ]);
-            }
-
-            $anecdote->valid = $isValid;
+            $anecdote->valid = $validated['is_valid'];
             $anecdote->save();
 
             return response()->json([
                 'success' => true,
-                'message' => $isValid ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
+                'message' => $validated['is_valid'] ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
             ]);
         } catch (\Exception $e) {
             return response()->json([

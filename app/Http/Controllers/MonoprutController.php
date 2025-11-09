@@ -40,14 +40,20 @@ class MonoprutController extends Controller
      */
     public function createArticle(Request $request)
     {
+        $validated = $request->validate([
+            'product' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'type' => 'required|string|max:50',
+        ]);
+
         try {
             $id = $request->user['id'];
             $room = User::find($id)->room;
             Monoprut::create(
                 [
-                    'product' => $request->input('product'),
-                    'quantity' => $request->input('quantity'),
-                    'type' => $request->input('type'),
+                    'product' => $validated['product'],
+                    'quantity' => $validated['quantity'],
+                    'type' => $validated['type'],
                     'giver_room_id' => $room->id,
                 ]
             );

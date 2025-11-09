@@ -217,6 +217,10 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, $notificationId)
     {
+        $validated = $request->validate([
+            'read' => 'required|boolean',
+        ]);
+
         try {
             $user_id = $request->user['id'];
 

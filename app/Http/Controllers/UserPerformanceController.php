@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\PerformanceSession;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class UserPerformanceController extends Controller
 {
@@ -16,26 +15,22 @@ class UserPerformanceController extends Controller
      */
     public function updatePerformance(Request $request)
     {
-        $user_id = $request->user['id'];
-
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'speed' => 'required|numeric|min:0|max:300',
             'distance' => 'required|numeric|min:0',
-            'duration' => 'integer|min:1',
-            'average_speed' => 'numeric|min:0',
-            'session_id' => 'string|max:255',
+            'duration' => 'nullable|integer|min:1',
+            'average_speed' => 'nullable|numeric|min:0',
+            'session_id' => 'nullable|string|max:255',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
-        }
+        $user_id = $request->user['id'];
 
         try {
-            $maxSpeed = round($request->speed, 1);
-            $distance = round($request->distance, 3);
-            $duration = $request->input('duration', 0);
-            $averageSpeed = round($request->input('average_speed', 0), 1);
-            $sessionId = $request->input('session_id', uniqid('session_', true));
+            $maxSpeed = round($validated['speed'], 1);
+            $distance = round($validated['distance'], 3);
+            $duration = $validated['duration'] ?? 0;
+            $averageSpeed = round($validated['average_speed'] ?? 0, 1);
+            $sessionId = $validated['session_id'] ?? uniqid('session_', true);
 
             $session = PerformanceSession::create([
                 'user_id' => $user_id,

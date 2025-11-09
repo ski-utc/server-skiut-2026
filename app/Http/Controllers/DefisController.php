@@ -119,6 +119,12 @@ class DefisController extends Controller
      */
     public function uploadProofMedia(Request $request)
     {
+        $validated = $request->validate([
+            'defiId' => 'required|integer|exists:challenges,id',
+            'media' => 'required|file|mimes:jpeg,png,gif,mp4,quicktime,x-msvideo|max:15360',
+            'mediaType' => 'nullable|string|in:image,video',
+        ]);
+
         $id = $request->user['id'];
         $user = User::with('room')->where('id', $id)->first();
 
@@ -127,14 +133,9 @@ class DefisController extends Controller
         }
         $userRoomId = $user->room_id;
 
-        $defiId = $request->input('defiId');
-
-        if (!$request->hasFile('media')) {
-            return response()->json(['success' => false, 'message' => 'Aucun média fourni'], 400);
-        }
-
+        $defiId = $validated['defiId'];
         $file = $request->file('media');
-        $mediaType = $request->input('mediaType', 'image');
+        $mediaType = $validated['mediaType'] ?? 'image';
 
 
         $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
@@ -200,6 +201,10 @@ class DefisController extends Controller
      */
     public function deleteProofMedia(Request $request)
     {
+        $validated = $request->validate([
+            'defiId' => 'required|integer|exists:challenges,id',
+        ]);
+
         try {
             $id = $request->user['id'];
             $user = User::with('room')->where('id', $id)->first();
@@ -210,7 +215,7 @@ class DefisController extends Controller
 
             $userRoomId = $user->room_id;
 
-            $defiId = $request->input('defiId');
+            $defiId = $validated['defiId'];
             $proof = ChallengeProof::where('challenge_id', $defiId)
                 ->where('room_id', $userRoomId)
                 ->first();

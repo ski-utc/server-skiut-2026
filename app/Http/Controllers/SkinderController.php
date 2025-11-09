@@ -70,19 +70,17 @@ class SkinderController extends Controller
      */
     public function likeSkinder(Request $request)
     {
+        $validated = $request->validate([
+            'roomLiked' => 'required|integer|exists:rooms,id',
+        ]);
+
         try {
             $user_id = $request->user['id'];
-            ;
             $roomLikeur = User::where('id', $user_id)->first()->room_id;
-
-            $roomLiked = $request->input('roomLiked');
+            $roomLiked = $validated['roomLiked'];
 
             if ($roomLikeur == $roomLiked) {
                 return response()->json(['success' => false, 'message' => "Une chambre ne peut pas s'auto_liker"]);
-            }
-
-            if ($roomLiked == null) {
-                return response()->json(['success' => false, 'message' => "Crée d'abord ton profil pour liker."]);
             }
 
             SkinderLike::firstOrCreate([
@@ -210,19 +208,22 @@ class SkinderController extends Controller
      */
     public function modifyProfil(Request $request)
     {
+        $validated = $request->validate([
+            'description' => 'nullable|string|max:1000',
+            'passions' => 'nullable|array',
+        ]);
+
         $user_id = $request->user['id'];
         $roomId = User::where('id', $user_id)->first()->room_id;
 
         $room = Room::findOrFail($roomId);
 
-        $description = $request->input('description');
-        if ($description) {
-            $room->description = $description;
+        if (isset($validated['description'])) {
+            $room->description = $validated['description'];
         }
 
-        $passions = $request->input('passions');
-        if ($passions) {
-            $room->passions = json_encode($passions);
+        if (isset($validated['passions'])) {
+            $room->passions = json_encode($validated['passions']);
         }
 
         $room->save();
@@ -237,6 +238,10 @@ class SkinderController extends Controller
      */
     public function uploadRoomImage(Request $request)
     {
+        $validated = $request->validate([
+            'image' => 'required|file|mimes:jpeg,png,gif|max:5120',
+        ]);
+
         $user_id = $request->user['id'];
         $roomId = User::where('id', $user_id)->first()->room_id;
         $room = Room::where('id', $roomId)->first();
@@ -245,15 +250,7 @@ class SkinderController extends Controller
             return response()->json(['success' => false, 'message' => 'Chambre introuvable'], 404);
         }
 
-        if (!$request->hasFile('image')) {
-            return response()->json(['success' => false, 'message' => 'Aucune image fournie'], 400);
-        }
-
         $file = $request->file('image');
-
-        if (!$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
-            return response()->json(['success' => false, 'message' => 'Fichier invalide ou non pris en charge'], 400);
-        }
 
         try {
             $filePath = $file->storeAs('roomImages', "room_{$room->id}.jpg", 'public');

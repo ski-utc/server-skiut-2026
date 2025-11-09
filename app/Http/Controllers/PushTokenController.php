@@ -6,7 +6,6 @@ use App\Models\PushToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class PushTokenController extends Controller
 {
@@ -18,20 +17,11 @@ class PushTokenController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'token' => 'required|string',
             'device_type' => 'nullable|in:ios,android',
             'device_name' => 'nullable|string|max:255',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
 
         $userId = $request->user['id'] ?? Auth::id();
 
@@ -42,26 +32,23 @@ class PushTokenController extends Controller
             ], 401);
         }
 
-
         $pushToken = PushToken::where('user_id', $userId)
-            ->where('token', $request->token)
+            ->where('token', $validated['token'])
             ->first();
 
         if ($pushToken) {
-
             $pushToken->update([
-                'device_type' => $request->device_type ?? $pushToken->device_type,
-                'device_name' => $request->device_name ?? $pushToken->device_name,
+                'device_type' => $validated['device_type'] ?? $pushToken->device_type,
+                'device_name' => $validated['device_name'] ?? $pushToken->device_name,
                 'active' => true,
                 'last_used_at' => now(),
             ]);
         } else {
-
             $pushToken = PushToken::create([
                 'user_id' => $userId,
-                'token' => $request->token,
-                'device_type' => $request->device_type,
-                'device_name' => $request->device_name,
+                'token' => $validated['token'],
+                'device_type' => $validated['device_type'],
+                'device_name' => $validated['device_name'],
                 'active' => true,
                 'last_used_at' => now(),
             ]);
@@ -107,17 +94,9 @@ class PushTokenController extends Controller
      */
     public function deactivate(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'token' => 'required|string',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
 
         $userId = $request->user['id'] ?? Auth::id();
 
@@ -129,7 +108,7 @@ class PushTokenController extends Controller
         }
 
         $pushToken = PushToken::where('user_id', $userId)
-            ->where('token', $request->token)
+            ->where('token', $validated['token'])
             ->first();
 
         if (!$pushToken) {
@@ -155,17 +134,9 @@ class PushTokenController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'token' => 'required|string',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
 
         $userId = $request->user['id'] ?? Auth::id();
 
@@ -177,7 +148,7 @@ class PushTokenController extends Controller
         }
 
         $pushToken = PushToken::where('user_id', $userId)
-            ->where('token', $request->token)
+            ->where('token', $validated['token'])
             ->first();
 
         if (!$pushToken) {

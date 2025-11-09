@@ -40,6 +40,12 @@ class UserController extends Controller
      */
     public function saveToken(Request $request)
     {
+        $validated = $request->validate([
+            'userToken' => 'required|string',
+            'device_type' => 'nullable|string',
+            'device_name' => 'nullable|string',
+        ]);
+
         try {
             $userId = $request->user['id'] ?? null;
 
@@ -48,11 +54,11 @@ class UserController extends Controller
             }
 
             PushToken::updateOrCreate(
-                ['token' => $request->userToken],
+                ['token' => $validated['userToken']],
                 [
                     'user_id' => $userId,
-                    'device_type' => $request->device_type,
-                    'device_name' => $request->device_name,
+                    'device_type' => $validated['device_type'],
+                    'device_name' => $validated['device_name'],
                     'active' => true,
                     'last_used_at' => now(),
                 ]

@@ -18,14 +18,14 @@ class AnecdoteController extends Controller
      */
     public function getAnecdotes(Request $request)
     {
+        $validated = $request->validate([
+            'quantity' => 'nullable|integer|min:1|max:100',
+        ]);
+
         try {
             $user_id = $request->user['id'];
 
-            $quantity = $request->input('quantity', 10);
-
-            if (!is_numeric($quantity) || (int)$quantity <= 0) {
-                return response()->json(['success' => false, 'message' => 'Le paramètre quantity doit être un entier positif.']);
-            }
+            $quantity = $validated['quantity'] ?? 10;
 
             $anecdotes = Anecdote::withCount('likes')
                 ->where('valid', true)
@@ -60,13 +60,17 @@ class AnecdoteController extends Controller
      */
     public function likeAnecdote(Request $request, $anecdoteId)
     {
+        $validated = $request->validate([
+            'like' => 'required|boolean',
+        ]);
+
         $user_id = $request->user['id'];
 
         $existingLike = AnecdotesLike::where('user_id', $user_id)
             ->where('anecdote_id', $anecdoteId)
             ->first();
 
-        if ($request->input('like')) {
+        if ($validated['like']) {
             if (!$existingLike) {
                 AnecdotesLike::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
                 return response()->json(['success' => true, 'liked' => true]);
@@ -89,13 +93,17 @@ class AnecdoteController extends Controller
      */
     public function warnAnecdote(Request $request, $anecdoteId)
     {
+        $validated = $request->validate([
+            'warn' => 'required|boolean',
+        ]);
+
         $user_id = $request->user['id'];
 
         $existingWarn = AnecdotesWarn::where('user_id', $user_id)
             ->where('anecdote_id', $anecdoteId)
             ->first();
 
-        if ($request->input('warn')) {
+        if ($validated['warn']) {
             if (!$existingWarn) {
                 AnecdotesWarn::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
                 return response()->json(['success' => true, 'warn' => true]);
@@ -117,9 +125,13 @@ class AnecdoteController extends Controller
      */
     public function sendAnecdote(Request $request)
     {
+        $validated = $request->validate([
+            'texte' => 'required|string|min:3|max:500',
+        ]);
+
         try {
             $user_id = $request->user['id'];
-            $text = $request->input('texte');
+            $text = $validated['texte'];
 
             $user = User::where('id', $user_id)->first();
             if (!$user) {
