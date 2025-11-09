@@ -13,7 +13,7 @@ use LogicException;
 use Symfony\Component\HttpFoundation\Response;
 use UnexpectedValueException;
 
-class EnsureTokenIsValid
+class EnsureAdminTokenIsValid
 {
     /**
      * Handle an incoming request.
@@ -43,6 +43,9 @@ class EnsureTokenIsValid
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'Utilisateur non trouvé pour le token fourni', 'JWT_ERROR' => true], 404);
+        }
+        if (!$user->admin) {
+            return response()->json(['message' => 'Vous n\'êtes pas admin.'], 403);
         }
         $request->merge(['user' => array_merge($user->toArray(), ['id' => $user->id])]);
 

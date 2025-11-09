@@ -64,7 +64,7 @@ class DefisController extends Controller
     /**
      * Récupère le média de preuve d'un défi (image ou vidéo)
      */
-    public function getProofMedia(Request $request)
+    public function getProofMedia(Request $request, $challengeId)
     {
         try {
             $id = $request->user['id'];
@@ -75,8 +75,7 @@ class DefisController extends Controller
             }
             $userRoomId = $user->room_id;
 
-            $defiId = $request->input('defiId');
-            $proof = ChallengeProof::where('challenge_id', $defiId)->where('room_id', $userRoomId)->first();
+            $proof = ChallengeProof::where('challenge_id', $challengeId)->where('room_id', $userRoomId)->first();
 
             if (!$proof) {
                 return response()->json([
@@ -93,6 +92,11 @@ class DefisController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e]);
         }
+    }
+
+    public function getMaxFileSize()
+    {
+        return response()->json(['success' => true, 'data' => 1024 * 1024 * 5]);
     }
 
     /**

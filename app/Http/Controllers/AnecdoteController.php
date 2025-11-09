@@ -51,11 +51,9 @@ class AnecdoteController extends Controller
     /**
      * Like d'une anecdote
      */
-    public function likeAnecdote(Request $request)
+    public function likeAnecdote(Request $request, $anecdoteId)
     {
         $user_id = $request->user['id'];
-
-        $anecdoteId = $request->input('anecdoteId');
 
         $existingLike = AnecdotesLike::where('user_id', $user_id)
             ->where('anecdote_id', $anecdoteId)
@@ -78,11 +76,9 @@ class AnecdoteController extends Controller
     /**
      * Warn d'une anecdote
      */
-    public function warnAnecdote(Request $request)
+    public function warnAnecdote(Request $request, $anecdoteId)
     {
         $user_id = $request->user['id'];
-
-        $anecdoteId = $request->input('anecdoteId');
 
         $existingWarn = AnecdotesWarn::where('user_id', $user_id)
             ->where('anecdote_id', $anecdoteId)
@@ -110,9 +106,17 @@ class AnecdoteController extends Controller
         try {
             $user_id = $request->user['id'];
             $text = $request->input('texte');
-            $room = User::where('id', $user_id)->first()->room_id;
 
-            Anecdote::create(['text' => $text, 'room' => $room, 'user_id' => $user_id]);
+            $user = User::where('id', $user_id)->first();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
+            }
+
+            if (!$user->room_id) {
+                return response()->json(['success' => false, 'message' => 'Vous devez être assigné à une chambre'], 400);
+            }
+
+            Anecdote::create(['text' => $text, 'room_id' => $user->room_id, 'user_id' => $user_id]);
 
             return response()->json(['success' => true, 'message' => 'Anecdote postée ! Elle sera visible une fois validée par le bureau']);
         } catch (\Exception $e) {
@@ -123,11 +127,10 @@ class AnecdoteController extends Controller
     /**
      * Supprime une anecdote
      */
-    public function deleteAnecdote(Request $request)
+    public function deleteAnecdote(Request $request, $anecdoteId)
     {
         try {
             $user_id = $request->user['id'];
-            $anecdoteId = $request->input('anecdoteId');
             $anecdote = Anecdote::find($anecdoteId);
 
             if (!$anecdote) {

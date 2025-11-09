@@ -29,7 +29,15 @@ class PushTokenController extends Controller
             ], 422);
         }
 
-        $userId = Auth::id();
+        // Utiliser l'utilisateur du middleware personnalisé (EnsureTokenIsValid)
+        $userId = $request->user['id'] ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié',
+            ], 401);
+        }
 
         // Chercher si le token existe déjà pour cet utilisateur
         $pushToken = PushToken::where('user_id', $userId)
@@ -66,9 +74,17 @@ class PushTokenController extends Controller
     /**
      * Liste des tokens de l'utilisateur connecté
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $userId = Auth::id();
+        $userId = $request->user['id'] ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié',
+            ], 401);
+        }
+
         $tokens = PushToken::where('user_id', $userId)->get();
 
         return response()->json([
@@ -94,7 +110,14 @@ class PushTokenController extends Controller
             ], 422);
         }
 
-        $userId = Auth::id();
+        $userId = $request->user['id'] ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié',
+            ], 401);
+        }
 
         $pushToken = PushToken::where('user_id', $userId)
             ->where('token', $request->token)
@@ -132,7 +155,14 @@ class PushTokenController extends Controller
             ], 422);
         }
 
-        $userId = Auth::id();
+        $userId = $request->user['id'] ?? Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié',
+            ], 401);
+        }
 
         $pushToken = PushToken::where('user_id', $userId)
             ->where('token', $request->token)

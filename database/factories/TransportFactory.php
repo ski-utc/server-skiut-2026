@@ -29,12 +29,12 @@ class TransportFactory extends Factory
         $route = fake()->randomElement($routes);
 
         $colourPairs = [
-            ['colour' => '#a684ff', 'name' => 'Purple'],
-            ['colour' => '#ff6467', 'name' => 'Red'],
-            ['colour' => '#fcc800', 'name' => 'Yellow'],
-            ['colour' => '#51a2ff', 'name' => 'Blue'],
-            ['colour' => '#05df72', 'name' => 'Green'],
-            ['colour' => '#fb64b6', 'name' => 'Pink'],
+            ['colour' => '#a684ff', 'name' => 'Violet'],
+            ['colour' => '#ff6467', 'name' => 'Rouge'],
+            ['colour' => '#fcc800', 'name' => 'Jaune'],
+            ['colour' => '#51a2ff', 'name' => 'Bleu'],
+            ['colour' => '#05df72', 'name' => 'Vert'],
+            ['colour' => '#fb64b6', 'name' => 'Rose'],
             ['colour' => '#ff8904', 'name' => 'Orange'],
         ];
 
