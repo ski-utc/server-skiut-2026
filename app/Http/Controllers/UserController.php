@@ -9,11 +9,10 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
-     * Create or update a user in the database
-     *
-     * @param $userDetails
-     * @param $currentAssociations
+     * Create or update a user in the database.
+     * @param array $userDetails
      * @return User
+     * @throws \Exception
      */
     public function createOrUpdateUser($userDetails)
     {
@@ -28,15 +27,20 @@ class UserController extends Controller
                 'admin' => $userDetails['admin'] ?? false,
                 'alumniOrExte' => $userDetails['alumniOrExte'] ?? false
             ]
-        ); // si se connecte avec email, utiliser comme clé primaire (et cas sinon)
+        );
 
         return $user;
     }
 
+    /**
+     * Save a push token for a user.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function saveToken(Request $request)
     {
         try {
-            // Utiliser l'utilisateur du middleware plutôt que Auth::id() pour cette route
             $userId = $request->user['id'] ?? null;
 
             if (!$userId) {

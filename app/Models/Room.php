@@ -21,11 +21,8 @@ class Room extends Model
         'passions',
         'totalPoints',
         'user_id',
-        'locked_until',
-        'locked_by_email'
     ];
     protected $casts = [
-        'locked_until' => 'datetime',
         'passions' => 'array',
     ];
 
@@ -97,104 +94,5 @@ class Room extends Model
     public function likedRooms()
     {
         return $this->hasMany(SkinderLike::class, 'room_liker_id');
-    }
-
-    /**
-     * Check if the room is locked.
-     *
-     * @return bool
-     */
-    public function isLocked(): bool
-    {
-        return $this->locked_until && $this->locked_until->isFuture();
-    }
-
-    /**
-     * Check if the room is locked by another email.
-     *
-     * @param string $email
-     * @return bool
-     */
-    public function isLockedByOther(string $email): bool
-    {
-        return $this->isLocked() && $this->locked_by_email !== $email;
-    }
-
-    /**
-     * Check if the room is full.
-     *
-     * @return bool
-     */
-    public function isFull(): bool
-    {
-        return $this->users()->count() >= $this->capacity;
-    }
-
-    /**
-     * Check if the room is available.
-     *
-     * @return bool
-     */
-    public function isAvailable(): bool
-    {
-        return !$this->isLocked() && !$this->isFull();
-    }
-
-    /**
-     * Lock the room.
-     *
-     * @param string $email
-     * @return bool
-     */
-    public function lock(string $email): bool
-    {
-        if ($this->isLockedByOther($email)) {
-            return false;
-        }
-
-        $this->locked_until = now()->addMinutes(5);
-        $this->locked_by_email = $email;
-        $this->save();
-        return true;
-    }
-
-    /**
-     * Unlock the room.
-     */
-    public function unlock(): void
-    {
-        $this->locked_until = null;
-        $this->locked_by_email = null;
-        $this->save();
-    }
-
-    /**
-     * Get the room number attribute.
-     *
-     * @return string
-     */
-    public function getNumeroAttribute(): string
-    {
-        return (string) $this->roomNumber;
-    }
-
-    /**
-     * Get the number of places attribute.
-     *
-     * @return int
-     */
-    public function getNbPlacesAttribute(): int
-    {
-        return $this->capacity;
-    }
-
-    /**
-     * Get the ambiance attribute.
-     *
-     * @return string
-     */
-    public function getAmbianceAttribute(): string
-    {
-        return $this->mood;
     }
 }

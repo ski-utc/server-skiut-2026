@@ -58,13 +58,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the performances that belong to the user.
+     * Get the performance sessions that belong to the user.
      *
-     * @return HasOne
+     * @return HasMany
      */
-    public function performances()
+    public function performanceSessions()
     {
-        return $this->hasOne(UserPerformance::class, 'user_id');
+        return $this->hasMany(PerformanceSession::class, 'user_id');
     }
 
     /**

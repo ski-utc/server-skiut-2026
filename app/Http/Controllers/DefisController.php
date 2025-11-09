@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Storage;
 class DefisController extends Controller
 {
     /**
-     * Récupère les défis (et le status selon le user)
+     * Get the challenges for the connected user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getChallenges(Request $request)
     {
@@ -34,11 +37,11 @@ class DefisController extends Controller
 
                 $status = 'empty';
                 if ($proof) {
-                    if ($proof->valid && !$proof->delete) { // validé par admin
+                    if ($proof->valid && !$proof->delete) {
                         $status = 'done';
-                    } elseif ($proof->valid && $proof->delete) { // refusé par admin
+                    } elseif ($proof->valid && $proof->delete) {
                         $status = 'refused';
-                    } else { // en attente de validation
+                    } else {
                         $status = 'pending';
                     }
 
@@ -62,7 +65,11 @@ class DefisController extends Controller
     }
 
     /**
-     * Récupère le média de preuve d'un défi (image ou vidéo)
+     * Get the media of a challenge proof (image or video)
+     * @param Request $request
+     * @param int $challengeId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getProofMedia(Request $request, $challengeId)
     {
@@ -94,13 +101,21 @@ class DefisController extends Controller
         }
     }
 
+    /**
+     * Get the max file size for a challenge proof
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function getMaxFileSize()
     {
         return response()->json(['success' => true, 'data' => 1024 * 1024 * 5]);
     }
 
     /**
-     * Envoie une preuve d'un défi (image ou vidéo)
+     * Upload a challenge proof (image or video)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function uploadProofMedia(Request $request)
     {
@@ -121,24 +136,24 @@ class DefisController extends Controller
         $file = $request->file('media');
         $mediaType = $request->input('mediaType', 'image');
 
-        // Types de fichiers supportés
+
         $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        $allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo']; // mp4, mov, avi
+        $allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
         $allowedTypes = array_merge($allowedImageTypes, $allowedVideoTypes);
 
         if (!$file->isValid() || !in_array($file->getMimeType(), $allowedTypes)) {
             return response()->json(['success' => false, 'message' => 'Fichier invalide ou non pris en charge'], 400);
         }
 
-        // Déterminer le type de média réel basé sur le MIME type
+
         $actualMediaType = in_array($file->getMimeType(), $allowedVideoTypes) ? 'video' : 'image';
 
-        // Déterminer l'extension et le dossier
+
         $isVideo = ($actualMediaType === 'video');
         $extension = $isVideo ? '.mp4' : '.jpg';
         $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
 
-        // Vérifier les tailles de fichiers
+
         $maxSize = $isVideo ? 15 * 1024 * 1024 : 5 * 1024 * 1024; // 15MB pour vidéos, 5MB pour images
         if ($file->getSize() > $maxSize) {
             $maxSizeText = $isVideo ? '15MB' : '5MB';
@@ -146,13 +161,13 @@ class DefisController extends Controller
         }
 
         try {
-            // Supprimer l'ancienne preuve si elle existe
+
             $existingProof = ChallengeProof::where('challenge_id', $defiId)
                 ->where('room_id', $userRoomId)
                 ->first();
 
             if ($existingProof) {
-                // Supprimer l'ancien fichier
+
                 $oldPath = str_replace('storage/', '', $existingProof->file);
                 if (Storage::disk('public')->exists($oldPath)) {
                     Storage::disk('public')->delete($oldPath);
@@ -178,7 +193,10 @@ class DefisController extends Controller
     }
 
     /**
-     * Supprime une preuve d'un défi (image ou vidéo)
+     * Delete a challenge proof (image or video)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteProofMedia(Request $request)
     {

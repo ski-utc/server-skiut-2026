@@ -19,14 +19,17 @@ class NotificationController extends Controller
     }
 
     /**
-     * Récupère les notifications pour l'utilisateur connecté
+     * Get the notifications for the connected user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getNotifications(Request $request)
     {
         try {
             $user_id = $request->user['id'];
 
-            // Récupérer les notifications générales affichées
+
             $generalNotifications = Notification::where('display', true)
                 ->where(function ($query) {
                     $query->where('type', 'global')
@@ -34,13 +37,13 @@ class NotificationController extends Controller
                 })
                 ->orderBy('created_at', 'desc');
 
-            // Récupérer les notifications ciblées pour cet utilisateur
+
             $targetedNotifications = Notification::where('display', true)
                 ->where('type', 'targeted')
                 ->whereJsonContains('target_users', $user_id)
                 ->orderBy('created_at', 'desc');
 
-            // Récupérer les notifications par chambre
+
             $user = User::find($user_id);
             $roomNotifications = Notification::where('display', true)
                 ->where('type', 'room_based')
@@ -77,6 +80,8 @@ class NotificationController extends Controller
 
     /**
      * Récupère toutes les notifications pour l'admin
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAdminNotifications()
     {
@@ -109,7 +114,34 @@ class NotificationController extends Controller
     }
 
     /**
+     * Récupère les détails d'une notification spécifique par son ID
+     * @param int $notificationId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function getNotificationDetails($notificationId)
+    {
+        try {
+            $notification = Notification::findOrFail($notificationId);
+
+            return response()->json([
+                'success' => true,
+                'data' => $notification
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération de la notification : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Créer et envoyer une nouvelle notification
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function createNotification(Request $request)
     {
@@ -137,10 +169,10 @@ class NotificationController extends Controller
                 'display' => $validated['display'] ?? true,
             ]);
 
-            // Déterminer les destinataires
+
             $recipientIds = $this->getRecipientIds($notification);
 
-            // Créer les entrées UserNotification
+
             foreach ($recipientIds as $recipientId) {
                 UserNotification::create([
                     'user_id' => $recipientId,
@@ -149,7 +181,7 @@ class NotificationController extends Controller
                 ]);
             }
 
-            // Envoyer les notifications push si demandé
+
             if ($validated['send_push'] ?? true) {
                 $pushResult = $this->firebaseService->sendNotification(
                     $recipientIds,
@@ -178,6 +210,10 @@ class NotificationController extends Controller
 
     /**
      * Marquer une notification comme lue
+     * @param Request $request
+     * @param int $notificationId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function markAsRead(Request $request, $notificationId)
     {
@@ -205,6 +241,10 @@ class NotificationController extends Controller
 
     /**
      * Toggle display status pour admin
+     * @param Request $request
+     * @param int $notificationId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function toggleDisplay(Request $request, $notificationId)
     {
@@ -226,16 +266,20 @@ class NotificationController extends Controller
 
     /**
      * Supprimer une notification (admin)
+     * @param Request $request
+     * @param int $notificationId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteNotification(Request $request, $notificationId)
     {
         try {
             $notification = Notification::findOrFail($notificationId);
 
-            // Supprimer les entrées de liaison
+
             UserNotification::where('notification_id', $notificationId)->delete();
 
-            // Supprimer la notification
+
             $notification->delete();
 
             return response()->json(['success' => true, 'message' => 'Notification supprimée']);
@@ -246,6 +290,8 @@ class NotificationController extends Controller
 
     /**
      * Obtenir la liste des utilisateurs et chambres pour l'interface admin
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getRecipientsData()
     {
@@ -278,6 +324,8 @@ class NotificationController extends Controller
 
     /**
      * Helper: Obtenir les IDs des destinataires selon le type de notification
+     * @param Notification $notification
+     * @return array
      */
     private function getRecipientIds($notification)
     {
@@ -298,6 +346,8 @@ class NotificationController extends Controller
 
     /**
      * Helper: Compter le nombre de destinataires
+     * @param Notification $notification
+     * @return int
      */
     private function getRecipientsCount($notification)
     {

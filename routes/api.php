@@ -20,10 +20,9 @@ use App\Http\Middleware\EnsureAdminTokenIsValid;
 use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Support\Facades\Route;
 
-/************************************************************** Login *************************************************************/
+/* Auth */
 Route::get('/connected', function () { return view('api-connected');})->name('api-connected');
 Route::get('/notConnected', function () { return view('api-not-connected');})->name('api-not-connected');
-/**********************************************************************************************************************************/
 
 Route::middleware([EnsureTokenIsValid::class])->group(function () {
     /* Auth */
@@ -104,10 +103,10 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
 
     /* RGPD */
     Route::post('/rgpd/anonymize-my-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeMyData']);
-    Route::delete('/rgpd/my-data', [\App\Http\Controllers\RgpdController::class, 'deleteMyData']);
+    Route::delete('/rgpd/delete-my-data', [\App\Http\Controllers\RgpdController::class, 'deleteMyData']);
     Route::get('/rgpd/export-my-data', [\App\Http\Controllers\RgpdController::class, 'exportMyData']);
     Route::post('/rgpd/anonymize-all-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeAllData']);
-    Route::delete('/rgpd/all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
+    Route::delete('/rgpd/delete-all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
 });
 
 Route::middleware([EnsureAdminTokenIsValid::class])->group(function () {
@@ -125,32 +124,27 @@ Route::middleware([EnsureAdminTokenIsValid::class])->group(function () {
     Route::put('/admin/challenges/{challengeId}/status', [AdminController::class, 'updateChallengeStatus']);
 
     /* Permanences */
-    Route::get('/permanences', [PermanenceController::class, 'getAllPermanences']);
-    Route::post('/permanences', [PermanenceController::class, 'createPermanence']);
-    Route::put('/permanences/{id}', [PermanenceController::class, 'updatePermanence']);
-    Route::delete('/permanences/{id}', [PermanenceController::class, 'deletePermanence']);
-    Route::get('/permanences/members', [PermanenceController::class, 'getAssociationMembers']);
-    Route::post('/permanences/send-reminders', [PermanenceController::class, 'sendReminders']);
+    Route::get('/admin/permanences/members', [PermanenceController::class, 'getAssociationMembers']);
+    Route::post('/admin/permanences/send-reminders', [PermanenceController::class, 'sendReminders']);
+    Route::get('/admin/permanences', [PermanenceController::class, 'getAllPermanences']);
+    Route::post('/admin/permanences', [PermanenceController::class, 'createPermanence']);
+    Route::put('/admin/permanences/{id}', [PermanenceController::class, 'updatePermanence']);
+    Route::delete('/admin/permanences/{id}', [PermanenceController::class, 'deletePermanence']);
 
     /* Tournée des chambres */
-    Route::get('/room-tours', [RoomTourController::class, 'getAllTours']);
-    Route::post('/room-tours', [RoomTourController::class, 'createTour']);
-    Route::post('/room-tours/{tourId}/toggle', [RoomTourController::class, 'toggleTour']);
-    Route::delete('/room-tours/{tourId}', [RoomTourController::class, 'deleteTour']);
-    Route::get('/room-tours/available-rooms', [RoomTourController::class, 'getAvailableRooms']);
+    Route::get('/admin/room-tours', [RoomTourController::class, 'getAllTours']);
+    Route::post('/admin/room-tours', [RoomTourController::class, 'createTour']);
+    Route::post('/admin/room-tours/{tourId}/toggle', [RoomTourController::class, 'toggleTour']);
+    Route::delete('/admin/room-tours/{tourId}', [RoomTourController::class, 'deleteTour']);
+    Route::get('/admin/room-tours/available-rooms', [RoomTourController::class, 'getAvailableRooms']);
 
-    /* Notifications V1 */
-    Route::post('/notifications', [NotificationController::class, 'createNotification']);
-    Route::put('/notifications/{id}/display', [NotificationController::class, 'toggleDisplay']);
-    Route::delete('/notifications/{id}', [NotificationController::class, 'deleteNotification']);
-    Route::get('/notifications/recipients', [NotificationController::class, 'getRecipientsData']);
-
-    /* Notifications V2 */
+    /* Notifications */
+    Route::get('/admin/notifications/recipients', [NotificationController::class, 'getRecipientsData']);
     Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications']);
-    Route::get('/admin/notifications/{notificationId}', [AdminController::class, 'getNotificationDetails']);
-    Route::put('/admin/notifications/{notificationId}/display', [AdminController::class, 'displayNotification']);
-    Route::post('/admin/notifications/send-all', [AdminController::class, 'sendNotificationToAll']);
-    Route::post('/admin/notifications/{userId}/send-individual', [AdminController::class, 'sendIndividualNotification']);
+    Route::get('/admin/notifications/{notificationId}', [NotificationController::class, 'getNotificationDetails']);
+    Route::post('/admin/notifications', [NotificationController::class, 'createNotification']);
+    Route::put('/admin/notifications/{id}/display', [NotificationController::class, 'toggleDisplay']);
+    Route::delete('/admin/notifications/{id}', [NotificationController::class, 'deleteNotification']);
 });
 
 // require __DIR__.'/auth.php';

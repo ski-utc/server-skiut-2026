@@ -25,7 +25,10 @@ class AuthBackOfficeController extends Controller
     }
 
     /**
-     * Gère le login d'un utilisateur via OAuth2 pour le back-office
+     * Handle the login of a user via OAuth2 for the back-office
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function login(Request $request)
     {
@@ -40,7 +43,10 @@ class AuthBackOfficeController extends Controller
     }
 
     /**
-     * Gère le callback de l'OAuth du SiMDE pour le back-office
+     * Handle the callback of the SiMDE OAuth for the back-office
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function callback(Request $request)
     {
@@ -78,7 +84,10 @@ class AuthBackOfficeController extends Controller
     }
 
     /**
-     * Déconnexion de l'utilisateur du back-office
+     * Logout the user from the back-office
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function logout(Request $request)
     {

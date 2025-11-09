@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PerformanceSession;
 use App\Models\Room;
-use App\Models\UserPerformance;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ClassementController extends Controller
 {
     /**
-     * Calcule le classement des chambres
+     * Get the ranking of the rooms
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function classementChambres()
     {
@@ -48,44 +52,55 @@ class ClassementController extends Controller
     }
 
     /**
-     * Calcule le classement des performances
+     * Get the ranking of the performances
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function classementPerformances()
     {
         $type = request()->query('type', 'speed');
 
         $orderColumn = match($type) {
-            'distance' => 'total_distance',
+            'distance' => 'distance',
             'duration' => 'duration',
             default => 'max_speed',
         };
 
-        // Filtrer les performances avec des valeurs > 0 pour éviter les entrées vides
-        $performances = UserPerformance::with('user:id,firstName,lastName')
-            ->where($orderColumn, '>', 0)
-            ->orderBy($orderColumn, 'desc')
-            ->get(['user_id', 'max_speed', 'total_distance', 'duration']);
+        $userStats = PerformanceSession::select(
+            'user_id',
+            DB::raw('MAX(max_speed) as max_speed'),
+            DB::raw('SUM(distance) as total_distance'),
+            DB::raw('SUM(duration) as total_duration'),
+            DB::raw('AVG(average_speed) as average_speed')
+        )
+            ->groupBy('user_id')
+            ->orderByRaw(match($type) {
+                'distance' => 'SUM(distance) DESC',
+                'duration' => 'SUM(duration) DESC',
+                default => 'MAX(max_speed) DESC',
+            })
+            ->get();
 
-        $formatPerformance = function ($performance) {
-            return [
-                'user_id' => $performance->user_id,
-                'max_speed' => $performance->max_speed,
-                'total_distance' => $performance->total_distance,
-                'duration' => $performance->duration,
-                'full_name' => $performance->user
-                    ? "{$performance->user->firstName} {$performance->user->lastName}"
-                    : "ID {$performance->user_id}",
+        $performancesByPosition = [];
+        $position = 1;
+
+        foreach ($userStats as $stat) {
+            $user = User::find($stat->user_id);
+            $performancesByPosition[$position] = [
+                'user_id' => (int)$stat->user_id,
+                'max_speed' => (float)$stat->max_speed,
+                'total_distance' => (float)$stat->total_distance,
+                'duration' => (int)$stat->total_duration,
+                'full_name' => $user
+                    ? "{$user->firstName} {$user->lastName}"
+                    : "ID {$stat->user_id}",
             ];
-        };
-
-        $podiumPerformances = $performances->take(3)->map($formatPerformance);
-
-        $restPerformances = $performances->slice(3)->map($formatPerformance);
+            $position++;
+        }
 
         return response()->json([
             'success' => true,
-            'podium' => $podiumPerformances,
-            'rest' => $restPerformances,
+            'data' => $performancesByPosition,
         ]);
     }
 }

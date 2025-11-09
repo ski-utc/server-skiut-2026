@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Anecdote;
 use App\Models\ChallengeProof;
-use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     /**
-     * Permet de vérifier si le user est admin
+     * Check if the user is admin
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAdmin(Request $request)
     {
@@ -30,18 +32,18 @@ class AdminController extends Controller
     }
 
     /**
-     * Gestion des défis (récupération, validation, suppression)
+     * Get the challenges (retrieval, validation, deletion)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAdminChallenges(Request $request)
     {
         try {
-            // Retrieve filter parameter (optional)
             $filter = $request->query('filter', 'all');
 
-            // Build the base query
             $query = ChallengeProof::with(['room', 'user', 'challenge'])->where('delete', false);
 
-            // Apply filters
             switch ($filter) {
                 case 'pending':
                     $query->where('valid', false);
@@ -56,7 +58,6 @@ class AdminController extends Controller
                     break;
             }
 
-            // Fetch challenges
             $challenges = $query->orderBy('id', 'desc')
                 ->get();
 
@@ -73,13 +74,15 @@ class AdminController extends Controller
     }
 
     /**
-     * Récupère les détails d'un défi spécifique par son ID
+     * Get the details of a specific challenge by its ID
+     * @param int $challengeId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getChallengeDetails($challengeId)
     {
         try {
 
-            // Récupère le défi avec les informations de l'utilisateur (prénom et nom)
             $challenge = ChallengeProof::with(['user', 'room', 'challenge'])->findOrFail($challengeId);
 
             return response()->json([
@@ -97,7 +100,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Met à jour le statut de validation d'un challenge (valider ou invalider)
+     * Update the status of a challenge (validate or invalidate)
+     * @param Request $request
+     * @param int $challengeId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function updateChallengeStatus(Request $request, $challengeId)
     {
@@ -114,16 +121,13 @@ class AdminController extends Controller
                 ], 500);
             }
 
-            // Convert parameters to boolean
             $isValid = (bool) $isValid;
             $isDelete = (bool) $isDelete;
 
-            // Mise à jour du statut de validation
             $challenge->valid = $isValid;
             $challenge->delete = $isDelete;
             $challenge->save();
 
-            // Prépare le message
             if ($isValid && $isDelete) {
                 $message = 'Challenge refusé avec succès';
             } elseif ($isValid && !$isDelete) {
@@ -147,43 +151,39 @@ class AdminController extends Controller
     }
 
     /**
-     * Récupère les détails d'une anecdote spécifique par son ID
+     * Get the details of a specific anecdote by its ID
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAdminAnecdotes(Request $request)
     {
         try {
-            // Récupération des paramètres de filtre (facultatifs)
             $filter = $request->query('filter', 'all');
 
-            // Construire la requête de base
             $query = Anecdote::with(['user', 'likes', 'warns']);
 
-            // Appliquer les filtres
             switch ($filter) {
                 case 'pending':
                     $query->where('valid', false);
                     break;
 
                 case 'reported':
-                    // Filtrer les anecdotes ayant plus d'un avertissement
                     $query->whereHas('warns', function ($q) {
-                        $q->groupBy('anecdote_id')  // Groupement par ID d'anecdote
-                        ->havingRaw('COUNT(*) > 0');  // Plus d'un avertissement
+                        $q->groupBy('anecdote_id')
+                        ->havingRaw('COUNT(*) > 0');
                     });
                     break;
 
                 case 'all':
                 default:
-                    // Pas de filtre spécifique
                     break;
             }
 
-            // Récupérer les anecdotes
-            $anecdotes = $query->where('delete', false) // Exclure les anecdotes supprimées
-                ->orderBy('id', 'desc') // Trier par date de création
+            $anecdotes = $query->where('delete', false)
+                ->orderBy('id', 'desc')
                 ->get();
 
-            // Compter le nombre d'avertissements pour chaque anecdote
             foreach ($anecdotes as $anecdote) {
                 $anecdote->nbWarns = $anecdote->warns()->count();
             }
@@ -201,13 +201,15 @@ class AdminController extends Controller
     }
 
     /**
-     * Récupère les détails d'une anecdote spécifique par son ID
+     * Get the details of a specific anecdote by its ID
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
     */
     public function getAnecdoteDetails($id)
     {
         try {
 
-            // Récupère l'anecdote avec les informations de l'utilisateur (prénom et nom)
             $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
             $nbLikes = $anecdote->likes()->count();
             $nbWarns = $anecdote->warns()->count();
@@ -227,7 +229,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Met à jour le statut de validation d'une anecdote (valider ou invalider)
+     * Update the status of a anecdote (validate or invalidate)
+     * @param Request $request
+     * @param int $anecdoteId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
     */
     public function updateAnecdoteStatus(Request $request, $anecdoteId)
     {
@@ -243,7 +249,6 @@ class AdminController extends Controller
                 ]);
             }
 
-            // Mise à jour du statut de validation
             $anecdote->valid = $isValid;
             $anecdote->save();
 
@@ -258,170 +263,4 @@ class AdminController extends Controller
             ], 500);
         }
     }
-
-    // /**
-    //  * Récupère les notifications
-    //  */
-    // public function getAdminNotifications()
-    // {
-    //     try {
-    //         $notifications = Notification::orderBy('created_at', 'desc')->get();
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => $notifications,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Error retrieving notifications: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
-    // /**
-    //  * Récupère les détails d'une notification spécifique par son ID
-    //  */
-    // public function getNotificationDetails($notificationId)
-    // {
-    //     try {
-    //         $notification = Notification::findOrFail($notificationId);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => $notification
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
-    // /**
-    //  * @deprecated
-    //  * Envoie une notification à un utilisateur spécifique
-    //  */
-    // public function sendNotificationToOne(Request $request)
-    // {
-    //     try {
-    //         $title = $request->input('titre');
-    //         $body = $request->input('texte');
-    //         $token = $request->input('token');
-
-    //         $expoPushService = new ExpoPushService();
-    //         $expoPushService->sendNotification(
-    //             $token,
-    //             $title,
-    //             $body,
-    //             $request->input('data', [])
-    //         );
-
-    //         Notification::create([
-    //             'title' => $title,
-    //             'description' => $body,
-    //             'general' => false,
-    //             'display' => true,
-    //         ]);
-
-    //         return response()->json(['success' => true, 'message' => "Notification envoyée avec succès à l'utilisateurice !"]);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
-    //     }
-    // }
-
-    // /**
-    //  * Envoie une notification à tous les utilisateurs
-    //  */
-    // public function sendNotificationToAll(Request $request)
-    // {
-    //     try {
-    //         $title = $request->input('titre');
-    //         $body = $request->input('texte');
-    //         $data = (object) [];
-    //         $tokens = \App\Models\PushToken::pluck('token')->toArray();
-
-    //         // Use dependency injection instead of creating new instance
-    //         $expoPushService = app(\App\Services\ExpoPushService::class);
-
-    //         foreach ($tokens as $token) {
-    //             $expoPushService->sendNotification(
-    //                 $token,
-    //                 $title,
-    //                 $body,
-    //                 $data
-    //             );
-    //         }
-
-    //         Notification::create([
-    //             'title' => $title,
-    //             'description' => $body,
-    //             'general' => true,
-    //             'display' => true,
-    //         ]);
-
-    //         return response()->json(['success' => true, 'message' => 'Notification envoyée à tous les utilisateurs !']);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['success' => false, 'message' => 'Erreur : ' . $e->getMessage()]);
-    //     }
-    // }
-
-    // /**
-    //  * Envoie une notification individuelle à un utilisateur spécifique
-    //  */
-    // public function sendIndividualNotification(Request $request, $user_id)
-    // {
-    //     try {
-    //         $notification = new Notification([
-    //             'title' => $request->title,
-    //             'description' => $request->texte,
-    //             'user_id' => $user_id,
-    //             'general' => false,
-    //             'display' => true,
-    //         ]);
-    //         $notification->save();
-
-    //         return response()->json(['success' => true, 'message' => 'Notification sent to user.']);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors de l\'envoi de la notification : ' . $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-    // /**
-    //  * Supprime une notification
-    //  */
-    // public function displayNotification(Request $request, $notificationId)
-    // {
-    //     try {
-    //         $notification = Notification::findOrFail($notificationId);
-
-    //         $display = $request->input('display_flag');
-
-    //         if ($display === null) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Le paramètre "display_flag" est requis (1 pour supprimer, 0 pour annuler).',
-    //             ]);
-    //         }
-
-    //         // Mise à jour du statut de suppression
-    //         $notification->display = $display;
-    //         $notification->save();
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => $display ? 'Notification désactivée avec succès.' : 'Notification activée avec succès.',
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors de la mise à jour du statut de la notification : ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
 }

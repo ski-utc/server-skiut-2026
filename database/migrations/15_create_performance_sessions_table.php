@@ -9,8 +9,8 @@ return new class () extends Migration {
     {
         Schema::create('performance_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_performance_id')->constrained('user_performances')->onDelete('cascade');
-            $table->string('session_id');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('session_id')->unique();
             $table->decimal('max_speed', 8, 2)->default(0);
             $table->decimal('average_speed', 8, 2)->default(0);
             $table->decimal('distance', 10, 2)->default(0);

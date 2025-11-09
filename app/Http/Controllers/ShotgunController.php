@@ -11,7 +11,11 @@ use Illuminate\Validation\ValidationException;
 
 class ShotgunController extends Controller
 {
-    // Route GET /game
+    /**
+     * Show the game page.
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function showGame()
     {
         $token = Str::uuid()->toString();
@@ -21,7 +25,12 @@ class ShotgunController extends Controller
         return view('shotgun.game', ['token' => $token]);
     }
 
-    // Route POST /submit
+    /**
+     * Submit the game.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function submit(Request $request)
     {
         try {

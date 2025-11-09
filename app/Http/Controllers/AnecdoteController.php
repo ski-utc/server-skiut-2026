@@ -11,7 +11,10 @@ use Illuminate\Http\Request;
 class AnecdoteController extends Controller
 {
     /**
-     * Récupère les anecdotes d'un utilisateur
+     * Get the anecdotes of a user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAnecdotes(Request $request)
     {
@@ -26,7 +29,7 @@ class AnecdoteController extends Controller
 
             $anecdotes = Anecdote::withCount('likes')
                 ->where('valid', true)
-                ->orderBy('created_at', 'desc') // ou nbLikes
+                ->orderBy('created_at', 'desc')
                 ->take((int)$quantity)
                 ->get();
 
@@ -49,7 +52,11 @@ class AnecdoteController extends Controller
     }
 
     /**
-     * Like d'une anecdote
+     * Like an anecdote
+     * @param Request $request
+     * @param int $anecdoteId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function likeAnecdote(Request $request, $anecdoteId)
     {
@@ -74,7 +81,11 @@ class AnecdoteController extends Controller
     }
 
     /**
-     * Warn d'une anecdote
+     * Warn an anecdote
+     * @param Request $request
+     * @param int $anecdoteId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function warnAnecdote(Request $request, $anecdoteId)
     {
@@ -99,7 +110,10 @@ class AnecdoteController extends Controller
     }
 
     /**
-     * Envoie une anecdote (ajout dans la BDD)
+     * Send an anecdote (add in the database)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function sendAnecdote(Request $request)
     {
@@ -125,7 +139,11 @@ class AnecdoteController extends Controller
     }
 
     /**
-     * Supprime une anecdote
+     * Delete an anecdote
+     * @param Request $request
+     * @param int $anecdoteId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteAnecdote(Request $request, $anecdoteId)
     {

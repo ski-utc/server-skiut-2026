@@ -16,7 +16,10 @@ use Illuminate\Support\Facades\Storage;
 class HomeController extends Controller
 {
     /**
-     * Obtenir l'activité la plus proche, un défi au hasard, et les contacts "Team Info".
+     * Get the closest activity, a random challenge, and the "Team Info" contacts.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getRandomData(Request $request)
     {
@@ -67,6 +70,11 @@ class HomeController extends Controller
         }
     }
 
+    /**
+     * Get the weather for the connected user
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function getWeather(): JsonResponse
     {
         $cachePath = storage_path('app/' . 'weather.json');
@@ -100,7 +108,7 @@ class HomeController extends Controller
 
             $fullData = $response->json();
 
-            // Extraction des données utilisées par l'application
+
             $optimizedData = $this->extractWeatherData($fullData);
 
             $cacheData = [
@@ -132,12 +140,14 @@ class HomeController extends Controller
 
     /**
      * Extrait uniquement les données météo utilisées par l'application React Native
+     * @param array $fullData
+     * @return array
      */
     private function extractWeatherData(array $fullData): array
     {
         $hourlyData = [];
 
-        // Extraction des données horaires (seulement les champs utilisés)
+
         if (isset($fullData['forecast']['forecastday'][0]['hour'])) {
             foreach ($fullData['forecast']['forecastday'][0]['hour'] as $hour) {
                 $hourlyData[] = [

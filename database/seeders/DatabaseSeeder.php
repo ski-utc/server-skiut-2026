@@ -26,7 +26,6 @@ class DatabaseSeeder extends Seeder
             RoomSeeder::class,
             UserSeeder::class,
             RelationsSeeder::class,
-            UserRoomShotgunSeeder::class,
             PushTokenSeeder::class,
 
             AnecdoteSeeder::class,

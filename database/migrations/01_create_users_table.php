@@ -17,7 +17,7 @@ return new class () extends Migration {
             $table->string('lastName');
             $table->string('email')->unique();
             $table->unsignedBigInteger('room_id')->nullable();
-            $table->boolean('admin'); // true if team info
+            $table->boolean('admin');
             $table->boolean('member')->default(false);
             $table->boolean('alumniOrExte');
             $table->timestamps();

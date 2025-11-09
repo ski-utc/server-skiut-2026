@@ -94,7 +94,6 @@ class RoomShotgunSelectionResource extends Resource
         $nbSlots = $record ? max($record->nb_places - 1, 0) : 0;
         $email = session('email');
 
-        // Vérifier si l'email est déjà dans une autre chambre shotgun
         $existingAssignment = UserRoomShotgun::where('email', $email)->first();
         if ($existingAssignment) {
             Notification::make()
@@ -123,7 +122,6 @@ class RoomShotgunSelectionResource extends Resource
             return [];
         }
 
-        // Récupérer les emails déjà dans cette chambre
         $usedEmails = UserRoomShotgun::where('room_shotgun_id', $record->id)
             ->pluck('email')
             ->toArray();
@@ -222,7 +220,6 @@ class RoomShotgunSelectionResource extends Resource
         try {
             DB::beginTransaction();
 
-            // Vérifier si l'email est déjà dans une chambre shotgun
             $existingAssignment = UserRoomShotgun::where('email', session('email'))->first();
             if ($existingAssignment) {
                 DB::rollBack();
@@ -245,10 +242,8 @@ class RoomShotgunSelectionResource extends Resource
                 return;
             }
 
-            // Récupérer les emails des participants (incluant le responsable)
             $emails = collect($data['participants'] ?? [])->pluck('email')->push($data['responsable_email']);
 
-            // Vérifier que tous les emails existent dans Shotguns
             $existing = Shotguns::whereIn('email', $emails)->pluck('email');
             $missing = $emails->diff($existing);
             if ($missing->isNotEmpty()) {
@@ -261,7 +256,6 @@ class RoomShotgunSelectionResource extends Resource
                 return;
             }
 
-            // Vérification du nombre d'emails
             if ($emails->count() !== $room->nb_places) {
                 DB::rollBack();
                 Notification::make()
@@ -272,7 +266,6 @@ class RoomShotgunSelectionResource extends Resource
                 return;
             }
 
-            // Créer les associations UserRoomShotgun
             foreach ($data['participants'] ?? [] as $index => $participant) {
                 UserRoomShotgun::create([
                     'room_shotgun_id' => $room->id,
@@ -281,14 +274,12 @@ class RoomShotgunSelectionResource extends Resource
                 ]);
             }
 
-            // Ajouter le responsable
             UserRoomShotgun::create([
                 'room_shotgun_id' => $room->id,
                 'email' => $data['responsable_email'],
                 'is_vegetarian' => $data['responsable_is_vegetarian'] ?? false,
             ]);
 
-            // Mise à jour de la chambre
             $room->update([
                 'responsable_chambre' => $data['responsable_email'],
                 'ambiance' => $data['ambiance'] ?? null,

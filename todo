@@ -1,5 +1,13 @@
+- mettre des request->validate sur absolument chaque controller, et adapter l'app pour utiliser les types définis dans les controllers
+- clean les controllers (commentaires, ajouter du logging)
+- Faire de tests unit pour absolument toutes les conditions des controllers (avec les nouvelles routes surtout). On essayera de faire des asserts aussi sur ce qui s'est passé côté BDD aussi si possible
+- faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
+- clean l'app (commentaires, ...)
+- ecriture inclusive
+- back-office complet
+
 - vérifier permamences
-- vérifier classement vitesseDeGlisse
+  - ajouter plus d'info dans le planning ? Une page pour gérer ça ?
 - vérifier vitesse de glisse en arrière plan
 - vérifier les notifications 
     - token
@@ -9,11 +17,3 @@
     - perms
     - faire le tri sur les routes
 - vérifier schedule de notification des permanences
-
-- back-office complet
-- mettre des request->validate sur absolument chaque controller, et adapter l'app pour utiliser les types définis dans les controllers
-- clean les controllers (commentaires, ajouter du logging)
-- Faire de tests unit pour absolument toutes les conditions des controllers (avec les nouvelles routes surtout). On essayera de faire des asserts aussi sur ce qui s'est passé côté BDD aussi si possible
-- faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
-- clean l'app (commentaires, ...)
-- ecriture inclusive

@@ -16,16 +16,15 @@ use UnexpectedValueException;
 class AuthController extends Controller
 {
     /**
-     * Le fournisseur d'OAuth2.
+     * The OAuth2 provider.
      */
     public GenericProvider $provider;
 
     /**
-     * Crée un nouveau contrôleur AuthController.
+     * Create a new AuthController.
      */
     public function __construct()
     {
-        // Initialisation du fournisseur OAuth2 avec les valeurs de configuration des variables d'environnement
         $this->provider = new GenericProvider([
             'clientId'                => config('services.oauth.client_id'),
             'clientSecret'            => config('services.oauth.client_secret'),
@@ -38,7 +37,10 @@ class AuthController extends Controller
     }
 
     /**
-     * Gère le login d'un utilisateur via OAuth2 (génère un token de session et renvoie vers l'OAuth du SiMDE)
+        * Handle the login of a user via OAuth2 (generate a session token and redirect to the SiMDE OAuth)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function login(Request $request)
     {
@@ -71,10 +73,10 @@ class AuthController extends Controller
             }
         }
 
-        $state = bin2hex(random_bytes(16));   // génère un token de session aléatoire
+        $state = bin2hex(random_bytes(16));
         $request->session()->put('oauth2state', $state);
 
-        $authorizationUrl = $this->provider->getAuthorizationUrl([    // Redirection vers l'URL d'autorisation de l'OAuth avec le token
+        $authorizationUrl = $this->provider->getAuthorizationUrl([
             'state' => $state
         ]);
 
@@ -82,17 +84,20 @@ class AuthController extends Controller
     }
 
     /**
-     * Gère le callback de l'OAuth du SiMDE
+     * Handle the callback of the SiMDE OAuth
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function callback(Request $request)
     {
         $storedState = $request->session()->pull('oauth2state');
 
-        if (!$request->has('state') || $request->get('state') !== $storedState) {   // Vérifie que le token de session est valide
+        if (!$request->has('state') || $request->get('state') !== $storedState) {
             abort(400, 'Invalid state: '. $request->get('state') . ' VS ' . $storedState);
         }
 
-        if (!$request->has('code')) {     // Vérifie que le code d'autorisation est présent
+        if (!$request->has('code')) {
             abort(400, 'No authorization code');
         }
         try {
@@ -107,7 +112,7 @@ class AuthController extends Controller
                 abort(401, 'Compte supprimé ou désactivé');
             }
 
-            $user = User::where('email', $userDetails['email'])->first();  // Si le user n'existe pas => ielle n'a pas de pack Ski'Ut
+            $user = User::where('email', $userDetails['email'])->first();
             if (!$user) {
                 abort(401, "Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée. Veuillez utiliser le mail utilisé lors de votre achat de la place");
             }
@@ -141,7 +146,10 @@ class AuthController extends Controller
     }
 
     /**
-     * Refresh l'access token du user à partir de son refresh token.
+     * Refresh the access token of the user from his refresh token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function refresh(Request $request)
     {
@@ -178,7 +186,10 @@ class AuthController extends Controller
     }
 
     /**
-     * Récupère les informations de l'utilisateur à partir d'un token.
+     * Get the user data from a token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getUserData(Request $request)
     {
@@ -216,7 +227,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Déconnexion de l'utilisateur
+     * Logout the user
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function logout()
     {

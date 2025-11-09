@@ -18,7 +18,10 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Récupérer toutes les permanences pour un utilisateur (membre)
+     * Get all the permanences for a user (member)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getUserPermanences(Request $request)
     {
@@ -75,7 +78,10 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Récupérer toutes les permanences pour l'admin
+     * Get all the permanences for the admin
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAllPermanences(Request $request)
     {
@@ -121,7 +127,10 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Créer une nouvelle permanence (admin)
+     * Create a new permanence (admin)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function createPermanence(Request $request)
     {
@@ -187,7 +196,11 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Mettre à jour une permanence (admin)
+     * Update a permanence (admin)
+     * @param Request $request
+     * @param int $permanenceId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function updatePermanence(Request $request, $permanenceId)
     {
@@ -232,7 +245,11 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Supprimer une permanence (admin)
+     * Delete a permanence (admin)
+     * @param Request $request
+     * @param int $permanenceId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deletePermanence(Request $request, $permanenceId)
     {
@@ -254,7 +271,9 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Récupérer les membres de l'association pour l'assignation
+     * Get the members of the association for the assignment
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAssociationMembers()
     {
@@ -286,7 +305,35 @@ class PermanenceController extends Controller
     }
 
     /**
-     * Envoyer les notifications de rappel (appelée par une tâche cron)
+     * Format the time difference in French (xxhxx or xxmin).
+     * @param Carbon $dateTime
+     * @return string
+     */
+    private function formatTimeDifferenceInFrench($dateTime)
+    {
+        $now = now();
+        $diffInMinutes = $dateTime->diffInMinutes($now);
+
+        if ($diffInMinutes < 0) {
+            $diffInMinutes = abs($diffInMinutes);
+        }
+
+        $hours = intdiv($diffInMinutes, 60);
+        $minutes = $diffInMinutes % 60;
+
+        if ($hours > 0 && $minutes > 0) {
+            return "{$hours}h{$minutes}";
+        } elseif ($hours > 0) {
+            return "{$hours}h";
+        } else {
+            return "{$minutes}min";
+        }
+    }
+
+    /**
+     * Send the reminders (called by a cron job)
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function sendReminders()
     {
@@ -305,7 +352,7 @@ class PermanenceController extends Controller
                 $result = $this->firebaseService->sendNotification(
                     [$permanence->responsible_user_id],
                     'Rappel de permanence',
-                    "Votre permanence '{$permanence->name}' commence dans 1 heure",
+                    "Votre permanence '{$permanence->name}' commence dans " . $this->formatTimeDifferenceInFrench($permanence->start_datetime),
                     [
                         'type' => 'permanence_reminder',
                         'permanence_id' => $permanence->id

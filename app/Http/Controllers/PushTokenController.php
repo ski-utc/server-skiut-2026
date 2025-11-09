@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Validator;
 class PushTokenController extends Controller
 {
     /**
-     * Enregistrer ou mettre à jour un push token
+     * Save or update a push token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function store(Request $request): JsonResponse
     {
@@ -29,7 +32,7 @@ class PushTokenController extends Controller
             ], 422);
         }
 
-        // Utiliser l'utilisateur du middleware personnalisé (EnsureTokenIsValid)
+
         $userId = $request->user['id'] ?? Auth::id();
 
         if (!$userId) {
@@ -39,13 +42,13 @@ class PushTokenController extends Controller
             ], 401);
         }
 
-        // Chercher si le token existe déjà pour cet utilisateur
+
         $pushToken = PushToken::where('user_id', $userId)
             ->where('token', $request->token)
             ->first();
 
         if ($pushToken) {
-            // Mettre à jour le token existant
+
             $pushToken->update([
                 'device_type' => $request->device_type ?? $pushToken->device_type,
                 'device_name' => $request->device_name ?? $pushToken->device_name,
@@ -53,7 +56,7 @@ class PushTokenController extends Controller
                 'last_used_at' => now(),
             ]);
         } else {
-            // Créer un nouveau token
+
             $pushToken = PushToken::create([
                 'user_id' => $userId,
                 'token' => $request->token,
@@ -72,7 +75,10 @@ class PushTokenController extends Controller
     }
 
     /**
-     * Liste des tokens de l'utilisateur connecté
+     * Get the list of push tokens of the connected user.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function index(Request $request): JsonResponse
     {
@@ -94,7 +100,10 @@ class PushTokenController extends Controller
     }
 
     /**
-     * Désactiver un push token
+     * Deactivate a push token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deactivate(Request $request): JsonResponse
     {
@@ -139,7 +148,10 @@ class PushTokenController extends Controller
     }
 
     /**
-     * Supprimer un push token
+     * Delete a push token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function destroy(Request $request): JsonResponse
     {

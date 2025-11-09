@@ -11,7 +11,10 @@ use Illuminate\Http\Request;
 class PlanningController extends Controller
 {
     /**
-     * Récupère les activités de la semaine avec les permanences pour les membres
+     * Get the activities of the week with the permanences for the members
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getPlanning(Request $request)
     {
@@ -19,7 +22,6 @@ class PlanningController extends Controller
             $user_id = $request->user['id'];
             $user = User::find($user_id);
 
-            // Récupérer les activités régulières
             $activities = Activity::all()->map(function ($activity) {
                 $activityStatus = 'future';
                 $endDateTime = Carbon::parse($activity->date . ' ' . $activity->endTime);
@@ -48,9 +50,9 @@ class PlanningController extends Controller
 
             $allEvents = collect($activities);
 
-            // Ajouter les permanences si l'utilisateur est membre
+
             if ($user && $user->member) {
-                // Récupérer les permanences assignées à cet utilisateur
+
                 $startDate = now()->subDays(1);
                 $endDate = now()->addDays(30);
 
@@ -90,7 +92,7 @@ class PlanningController extends Controller
                 $allEvents = $allEvents->concat($permanences);
             }
 
-            // Grouper par date et trier par heure
+
             $data = $allEvents->groupBy('date')
                              ->map(function ($dayEvents) {
                                  return $dayEvents->sortBy(function ($event) {

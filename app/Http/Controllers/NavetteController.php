@@ -8,7 +8,10 @@ use Illuminate\Http\Request;
 class NavetteController extends Controller
 {
     /**
-     * Récupère les navettes d'un utilisateur
+     * Get the transports for a user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getNavettes(Request $request)
     {

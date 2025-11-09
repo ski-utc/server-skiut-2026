@@ -53,16 +53,4 @@ class Notification extends Model
     {
         return $this->hasMany(UserNotification::class);
     }
-
-    /**
-     * Get the users that received the notification.
-     *
-     * @return BelongsToMany
-     */
-    public function recipients()
-    {
-        return $this->belongsToMany(User::class, 'user_notifications')
-                   ->withPivot(['read', 'read_at'])
-                   ->withTimestamps();
-    }
 }

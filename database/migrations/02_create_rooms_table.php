@@ -20,8 +20,6 @@ return new class () extends Migration {
             $table->string('description')->nullable();
             $table->json('passions')->nullable();
             $table->unsignedInteger('totalPoints')->default(0);
-            $table->timestamp('locked_until')->nullable();
-            $table->string('locked_by_email')->nullable();
             $table->unsignedBigInteger('user_id')->nullable(); // Responsible user
             $table->timestamps();
         });

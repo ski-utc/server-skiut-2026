@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\DB;
 class RoomTourController extends Controller
 {
     /**
-     * Récupère toutes les tournées (admin)
-     * Filtre: uniquement les tournées d'aujourd'hui et futures
-     * Tri: ordre chronologique croissant
+     * Get all tours (admin).
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAllTours()
     {
@@ -53,7 +53,10 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Créer une nouvelle tournée (admin)
+     * Create a new tour (admin).
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function createTour(Request $request)
     {
@@ -119,7 +122,11 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Activer/désactiver une tournée (admin)
+     * Activate/deactivate a tour (admin).
+     * @param Request $request
+     * @param string $tourId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function toggleTour(Request $request, $tourId)
     {
@@ -148,7 +155,10 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Supprimer une tournée (admin)
+     * Delete a tour (admin).
+     * @param string $tourId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteTour($tourId)
     {
@@ -170,7 +180,10 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Récupère la tournée d'aujourd'hui pour un utilisateur membre (active ou non)
+     * Get the tour of the day for a member (active or not).
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getUserTour(Request $request)
     {
@@ -256,8 +269,10 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Récupère le statut de la tournée pour un voyageur (widget home)
-     * N'affiche le widget que si la tournée est active ET la chambre n'a pas encore été visitée
+     * Get the status of the tour for a traveler (widget home).
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getTourStatusForTraveler(Request $request)
     {
@@ -272,7 +287,6 @@ class RoomTourController extends Controller
                 ], 404);
             }
 
-            // Récupérer uniquement la tournée ACTIVE d'aujourd'hui
             $activeTour = RoomTour::getTodayActiveTour();
 
             if (!$activeTour) {
@@ -285,7 +299,6 @@ class RoomTourController extends Controller
             $roomVisit = null;
             $binomeInfo = null;
 
-            // Trouver la visite de la chambre de l'utilisateur
             foreach ($activeTour->binomes as $binome) {
                 $visit = $binome->visits()->where('room_id', $user->room_id)->first();
                 if ($visit) {
@@ -295,7 +308,6 @@ class RoomTourController extends Controller
                 }
             }
 
-            // Ne pas afficher si la chambre n'est pas dans les visites
             if (!$roomVisit) {
                 return response()->json([
                     'success' => true,
@@ -303,7 +315,6 @@ class RoomTourController extends Controller
                 ]);
             }
 
-            // Ne pas afficher si la chambre a déjà été visitée
             if ($roomVisit->visited) {
                 return response()->json([
                     'success' => true,
@@ -311,13 +322,11 @@ class RoomTourController extends Controller
                 ]);
             }
 
-            // Calculer le nombre de chambres non visitées avant celle de l'utilisateur
             $roomsBefore = $binomeInfo->visits()
                                      ->where('visit_order', '<', $roomVisit->visit_order)
                                      ->where('visited', false)
                                      ->count();
 
-            // Récupérer les membres du binôme avec nom et prénom
             $members = $binomeInfo->getMembers()->map(function ($member) {
                 return [
                     'firstName' => $member->firstName,
@@ -349,7 +358,11 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Marquer une chambre comme visitée (membres uniquement)
+     * Mark a room as visited (members only).
+     * @param Request $request
+     * @param string $visitId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function markRoomVisited(Request $request, $visitId)
     {
@@ -401,7 +414,11 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Annuler la visite d'une chambre (membres uniquement)
+     * Cancel the visit of a room (members only).
+     * @param Request $request
+     * @param string $visitId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function unmarkVisited(Request $request, $visitId)
     {
@@ -447,7 +464,10 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Réorganiser l'ordre des chambres pour un binôme (membres uniquement)
+     * Reorder the rooms for a binome (members only).
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function reorderRooms(Request $request)
     {
@@ -500,7 +520,9 @@ class RoomTourController extends Controller
     }
 
     /**
-     * Récupère la liste des chambres disponibles pour créer une tournée
+     * Get the list of available rooms for creating a tour.
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getAvailableRooms()
     {

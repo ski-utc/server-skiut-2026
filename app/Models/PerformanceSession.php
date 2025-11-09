@@ -11,15 +11,13 @@ class PerformanceSession extends Model
 
     protected $table = 'performance_sessions';
     protected $fillable = [
-        'user_performance_id',
+        'user_id',
         'session_id',
         'max_speed',
         'average_speed',
         'distance',
         'duration',
         'session_date',
-        'speed_history',
-        'accuracy'
     ];
     protected $casts = [
         'max_speed' => 'float',
@@ -27,27 +25,15 @@ class PerformanceSession extends Model
         'distance' => 'float',
         'duration' => 'integer',
         'session_date' => 'datetime',
-        'speed_history' => 'array',
-        'accuracy' => 'float'
     ];
-
-    /**
-     * Get the user performance that owns the performance session.
-     *
-     * @return BelongsTo
-     */
-    public function userPerformance()
-    {
-        return $this->belongsTo(UserPerformance::class, 'user_performance_id');
-    }
 
     /**
      * Get the user that owns the performance session.
      *
-     * @return User
+     * @return BelongsTo
      */
     public function user()
     {
-        return $this->userPerformance->user;
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -8,9 +8,12 @@ use Illuminate\Http\Request;
 class ContactController extends Controller
 {
     /**
-     * Obtenir les contacts.
+     * Get the contacts
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
-    public function getContacts(Request $request)
+    public function getContacts()
     {
         try {
             $contacts = Contact::all();

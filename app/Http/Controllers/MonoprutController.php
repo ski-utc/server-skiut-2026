@@ -3,11 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Monoprut;
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class MonoprutController extends Controller
 {
+    /**
+     * Get the articles for the connected user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function getArticles(Request $request)
     {
         try {
@@ -25,6 +32,12 @@ class MonoprutController extends Controller
         }
     }
 
+    /**
+     * Create a new article
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function createArticle(Request $request)
     {
         try {
@@ -50,11 +63,17 @@ class MonoprutController extends Controller
         }
     }
 
-    public function shotgunArticle(Request $request)
+    /**
+     * Shotgun an article
+     * @param Request $request
+     * @param int $articleId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function shotgunArticle(Request $request, $articleId)
     {
         try {
-            $articleId = $request->input('articleId');
-            $article = Monoprut::where('id', $articleId)->first();
+            $article = Monoprut::find($articleId);
             if (!$article) {
                 return response()->json([
                     'success' => false,
@@ -69,6 +88,14 @@ class MonoprutController extends Controller
 
             $id = $request->user['id'];
             $receiverUser = User::find($id);
+
+            if (!$receiverUser || !$receiverUser->room) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé ou non assigné à une chambre',
+                ], 404);
+            }
+
             $room = $receiverUser->room;
             $article->receiver_room_id = $room->id;
             $article->save();
@@ -94,23 +121,40 @@ class MonoprutController extends Controller
         }
     }
 
+    /**
+     * Get the articles given by the connected user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function myGivenArticles(Request $request)
     {
         try {
             $id = $request->user['id'];
-            $room = User::find($id)->room;
+            $user = User::find($id);
+
+            if (!$user || !$user->room) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé ou non assigné à une chambre',
+                ], 404);
+            }
+
+            $room = $user->room;
             $articles = Monoprut::where('giver_room_id', $room->id)->get();
 
             $articles = $articles->map(function ($article) {
                 if ($article->receiver_room_id) {
-                    $receiverRoom = $article->receiver;
-                    // Récupérer le responsable de la chambre
-                    $receiverResponsible = $receiverRoom->respUser;
-                    if ($receiverResponsible) {
-                        $article->receiver_info = [
-                            'responsible_name' => $receiverResponsible->firstName . ' ' . $receiverResponsible->lastName,
-                            'room' => $receiverRoom->roomNumber
-                        ];
+                    $receiverRoom = Room::find($article->receiver_room_id);
+
+                    if ($receiverRoom) {
+                        $receiverResponsible = User::find($receiverRoom->user_id);
+                        if ($receiverResponsible) {
+                            $article->receiver_info = [
+                                'responsible_name' => $receiverResponsible->firstName . ' ' . $receiverResponsible->lastName,
+                                'room' => $receiverRoom->roomNumber
+                            ];
+                        }
                     }
                 }
                 return $article;
@@ -129,22 +173,44 @@ class MonoprutController extends Controller
         }
     }
 
+    /**
+     * Get the articles received by the connected user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function myReceivedArticles(Request $request)
     {
         try {
             $id = $request->user['id'];
-            $room = User::find($id)->room;
+            $user = User::find($id);
+
+            if (!$user || !$user->room) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé ou non assigné à une chambre',
+                ], 404);
+            }
+
+            $room = $user->room;
             $articles = Monoprut::where('receiver_room_id', $room->id)
                 ->where('retrieved', false)
                 ->get();
 
             $articles = $articles->map(function ($article) {
-                $giverRoom = $article->giver;
-                $giverResponsible = $giverRoom->respUser;
-                if ($giverResponsible) {
+                $giverRoom = Room::find($article->giver_room_id);
+                if ($giverRoom) {
+                    $giverResponsible = User::find($giverRoom->user_id);
                     $article->giver_info = [
-                        'responsible_name' => $giverResponsible->firstName . ' ' . $giverResponsible->lastName,
-                        'room' => $giverRoom->roomNumber
+                        'responsible_name' => $giverResponsible ? $giverResponsible->firstName . ' ' . $giverResponsible->lastName : 'N/A',
+                        'room' => $giverRoom->roomNumber,
+                        'room_name' => $giverRoom->name
+                    ];
+
+                    $article->giver_room = [
+                        'id' => $giverRoom->id,
+                        'roomNumber' => $giverRoom->roomNumber,
+                        'name' => $giverRoom->name
                     ];
                 }
                 return $article;
@@ -163,14 +229,27 @@ class MonoprutController extends Controller
         }
     }
 
-    public function markAsRetrieved(Request $request)
+    /**
+     * Mark an article as retrieved
+     * @param Request $request
+     * @param int $articleId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function markAsRetrieved(Request $request, $articleId)
     {
         try {
-            $articleId = $request->input('articleId');
             $user_id = $request->user['id'];
             $user = User::find($user_id);
-            $room = $user->room;
 
+            if (!$user || !$user->room) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé ou non assigné à une chambre',
+                ], 404);
+            }
+
+            $room = $user->room;
             $article = Monoprut::find($articleId);
 
             if (!$article) {
@@ -202,13 +281,27 @@ class MonoprutController extends Controller
         }
     }
 
-    public function deleteArticle(Request $request)
+    /**
+     * Delete an article
+     * @param Request $request
+     * @param int $articleId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function deleteArticle(Request $request, $articleId)
     {
         try {
-            $id = $request->input('articleId');
             $user_id = $request->user['id'];
             $user = User::find($user_id);
-            $article = Monoprut::where('id', $id)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé.',
+                ], 404);
+            }
+
+            $article = Monoprut::find($articleId);
             if (!$article) {
                 return response()->json([
                     'success' => false,
@@ -233,14 +326,27 @@ class MonoprutController extends Controller
         }
     }
 
-    public function cancelReservation(Request $request)
+    /**
+     * Cancel a reservation
+     * @param Request $request
+     * @param int $articleId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function cancelReservation(Request $request, $articleId)
     {
         try {
-            $articleId = $request->input('articleId');
             $user_id = $request->user['id'];
             $user = User::find($user_id);
-            $room = $user->room;
 
+            if (!$user || !$user->room) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non trouvé ou non assigné à une chambre',
+                ], 404);
+            }
+
+            $room = $user->room;
             $article = Monoprut::find($articleId);
 
             if (!$article) {
