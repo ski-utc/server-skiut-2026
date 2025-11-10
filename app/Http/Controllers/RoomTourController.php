@@ -558,7 +558,6 @@ class RoomTourController extends Controller
                 'success' => true,
                 'data' => $rooms
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

@@ -176,10 +176,10 @@ class SkinderController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function getMyProfilSkinder(Request $request)
+    public function getMyProfilSkinder(Request $request) # TODO : add try/catch
     {
         $user_id = $request->user['id'];
-        ;
+
         $roomId = User::where('id', $user_id)->first()->room_id;
 
         $room = Room::findOrFail($roomId);
@@ -206,7 +206,7 @@ class SkinderController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function modifyProfil(Request $request)
+    public function modifyProfil(Request $request) # TODO : add try/catch
     {
         $validated = $request->validate([
             'description' => 'nullable|string|max:1000',
@@ -317,7 +317,6 @@ class SkinderController extends Controller
                     ]
                 ]
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -345,7 +344,7 @@ class SkinderController extends Controller
             }
 
             $notification = Notification::create([
-                'title' => '💕 Nouveau match Skinder !',
+                'title' => '🎉 Nouveau match Skinder ! 🎉',
                 'description' => "Les chambres {$room1->roomNumber} et {$room2->roomNumber} ont matché ! C'est le moment de faire connaissance et de se rencontrer. Bonne chance ! 🎉",
                 'sender_id' => null,
                 'type' => 'targeted',
@@ -378,7 +377,6 @@ class SkinderController extends Controller
                     'notification_id' => $notification->id
                 ]
             );
-
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi des notifications de match Skinder: ' . $e->getMessage());
         }

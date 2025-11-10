@@ -61,7 +61,6 @@ class UserPerformanceController extends Controller
                     'session_count' => $sessionCount
                 ],
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -111,7 +110,6 @@ class UserPerformanceController extends Controller
                 'sessions' => $sessions,
                 'stats' => $stats
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -156,7 +154,6 @@ class UserPerformanceController extends Controller
                 'success' => true,
                 'message' => 'Session supprimée avec succès'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

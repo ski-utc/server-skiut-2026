@@ -32,5 +32,6 @@
         <env name="JWT_PUBLIC_KEY_PATH" value="app/private/keys/public.pem"/>
         <env name="JWT_PRIVATE_KEY_PATH" value="app/private/keys/private.pem"/>
         <env name="JWT_ALGO" value="RS256"/>
+        <env name="XDEBUG_MODE" value="coverage"/> # TODO : find a way to compute coverage
     </php>
 </phpunit>

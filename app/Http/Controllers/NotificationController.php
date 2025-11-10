@@ -29,7 +29,6 @@ class NotificationController extends Controller
         try {
             $user_id = $request->user['id'];
 
-
             $generalNotifications = Notification::where('display', true)
                 ->where(function ($query) {
                     $query->where('type', 'global')
@@ -37,12 +36,10 @@ class NotificationController extends Controller
                 })
                 ->orderBy('created_at', 'desc');
 
-
             $targetedNotifications = Notification::where('display', true)
                 ->where('type', 'targeted')
                 ->whereJsonContains('target_users', $user_id)
                 ->orderBy('created_at', 'desc');
-
 
             $user = User::find($user_id);
             $roomNotifications = Notification::where('display', true)
@@ -128,7 +125,6 @@ class NotificationController extends Controller
                 'success' => true,
                 'data' => $notification
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -169,9 +165,7 @@ class NotificationController extends Controller
                 'display' => $validated['display'] ?? true,
             ]);
 
-
             $recipientIds = $this->getRecipientIds($notification);
-
 
             foreach ($recipientIds as $recipientId) {
                 UserNotification::create([
@@ -180,7 +174,6 @@ class NotificationController extends Controller
                     'read' => false
                 ]);
             }
-
 
             if ($validated['send_push'] ?? true) {
                 $pushResult = $this->firebaseService->sendNotification(
@@ -202,7 +195,6 @@ class NotificationController extends Controller
                 'data' => $notification,
                 'recipients_count' => count($recipientIds)
             ]);
-
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
@@ -280,9 +272,7 @@ class NotificationController extends Controller
         try {
             $notification = Notification::findOrFail($notificationId);
 
-
             UserNotification::where('notification_id', $notificationId)->delete();
-
 
             $notification->delete();
 

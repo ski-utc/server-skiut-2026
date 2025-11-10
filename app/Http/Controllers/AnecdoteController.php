@@ -58,7 +58,7 @@ class AnecdoteController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function likeAnecdote(Request $request, $anecdoteId)
+    public function likeAnecdote(Request $request, $anecdoteId) # TODO : add try/catch
     {
         $validated = $request->validate([
             'like' => 'required|boolean',
@@ -91,7 +91,7 @@ class AnecdoteController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function warnAnecdote(Request $request, $anecdoteId)
+    public function warnAnecdote(Request $request, $anecdoteId) # TODO : add try/catch
     {
         $validated = $request->validate([
             'warn' => 'required|boolean',

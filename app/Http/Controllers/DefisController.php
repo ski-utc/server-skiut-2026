@@ -137,7 +137,6 @@ class DefisController extends Controller
         $file = $request->file('media');
         $mediaType = $validated['mediaType'] ?? 'image';
 
-
         $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
         $allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
         $allowedTypes = array_merge($allowedImageTypes, $allowedVideoTypes);
@@ -146,14 +145,11 @@ class DefisController extends Controller
             return response()->json(['success' => false, 'message' => 'Fichier invalide ou non pris en charge'], 400);
         }
 
-
         $actualMediaType = in_array($file->getMimeType(), $allowedVideoTypes) ? 'video' : 'image';
-
 
         $isVideo = ($actualMediaType === 'video');
         $extension = $isVideo ? '.mp4' : '.jpg';
         $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
-
 
         $maxSize = $isVideo ? 15 * 1024 * 1024 : 5 * 1024 * 1024; // 15MB pour vidéos, 5MB pour images
         if ($file->getSize() > $maxSize) {

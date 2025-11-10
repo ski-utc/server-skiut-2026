@@ -67,7 +67,6 @@ class PermanenceController extends Controller
                 'success' => true,
                 'data' => $data
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -121,7 +120,6 @@ class PermanenceController extends Controller
                 'success' => true,
                 'data' => $data
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -149,7 +147,6 @@ class PermanenceController extends Controller
         ]);
 
         try {
-
             $responsible = User::find($validated['responsible_user_id']);
             if (!$responsible->member) {
                 return response()->json([
@@ -184,7 +181,6 @@ class PermanenceController extends Controller
                 'message' => 'Permanence créée avec succès',
                 'data' => $permanence
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -249,7 +245,6 @@ class PermanenceController extends Controller
                 'success' => true,
                 'message' => 'Permanence supprimée avec succès'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -283,7 +278,6 @@ class PermanenceController extends Controller
                 'success' => true,
                 'data' => $members
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

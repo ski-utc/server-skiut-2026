@@ -48,8 +48,8 @@ class EnsureAdminTokenIsValid
         if (!$user->admin) {
             return response()->json(['message' => 'Vous n\'êtes pas admin.'], 403);
         }
-        $request->merge(['user' => array_merge($user->toArray(), ['id' => $user->id])]);
-        Log::info('Request: ', $request->all());
+        $request->merge(['user' => array_merge($user->toArray(), ['id' => $user->id])]); # TODO : is 'user' array useful ?
+        Log::info('Request: ', $request->all()); # TODO : display more infos here (endpoints, ...)
         return $next($request);
     }
 }

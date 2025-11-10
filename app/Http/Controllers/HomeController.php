@@ -122,7 +122,6 @@ class HomeController extends Controller
                 'success' => true,
                 'data' => $optimizedData
             ]);
-
         } catch (\Exception $e) {
             if (isset($content['data'])) {
                 return response()->json([
@@ -146,7 +145,6 @@ class HomeController extends Controller
     private function extractWeatherData(array $fullData): array
     {
         $hourlyData = [];
-
 
         if (isset($fullData['forecast']['forecastday'][0]['hour'])) {
             foreach ($fullData['forecast']['forecastday'][0]['hour'] as $hour) {

@@ -50,9 +50,7 @@ class PlanningController extends Controller
 
             $allEvents = collect($activities);
 
-
             if ($user && $user->member) {
-
                 $startDate = now()->subDays(1);
                 $endDate = now()->addDays(30);
 
@@ -92,7 +90,6 @@ class PlanningController extends Controller
                 $allEvents = $allEvents->concat($permanences);
             }
 
-
             $data = $allEvents->groupBy('date')
                              ->map(function ($dayEvents) {
                                  return $dayEvents->sortBy(function ($event) {
@@ -105,7 +102,6 @@ class PlanningController extends Controller
                 'data' => $data,
                 'user_is_member' => $user ? $user->member : false
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
