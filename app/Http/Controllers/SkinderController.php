@@ -176,28 +176,32 @@ class SkinderController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function getMyProfilSkinder(Request $request) # TODO : add try/catch
+    public function getMyProfilSkinder(Request $request)
     {
-        $user_id = $request->user['id'];
+        try {
+            $user_id = $request->user['id'];
 
-        $roomId = User::where('id', $user_id)->first()->room_id;
+            $roomId = User::where('id', $user_id)->first()->room_id;
 
-        $room = Room::findOrFail($roomId);
+            $room = Room::findOrFail($roomId);
 
-        if (!$room) {
-            return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération de la chambre']);
+            if (!$room) {
+                return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération de la chambre'], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                    'description' => $room->description,
+                    'image' => asset($room->photoPath),
+                    'passions' => json_decode($room->passions, true) ?? [],
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération du profil: ' . $e->getMessage()], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $room->id,
-                'name' => $room->name,
-                'description' => $room->description,
-                'image' => asset($room->photoPath),
-                'passions' => json_decode($room->passions, true) ?? [],
-            ]
-        ]);
     }
 
     /**
@@ -206,28 +210,32 @@ class SkinderController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function modifyProfil(Request $request) # TODO : add try/catch
+    public function modifyProfil(Request $request)
     {
-        $validated = $request->validate([
-            'description' => 'nullable|string|max:1000',
-            'passions' => 'nullable|array',
-        ]);
+        try {
+            $validated = $request->validate([
+                'description' => 'nullable|string|max:1000',
+                'passions' => 'nullable|array',
+            ]);
 
-        $user_id = $request->user['id'];
-        $roomId = User::where('id', $user_id)->first()->room_id;
+            $user_id = $request->user['id'];
+            $roomId = User::where('id', $user_id)->first()->room_id;
 
-        $room = Room::findOrFail($roomId);
+            $room = Room::findOrFail($roomId);
 
-        if (isset($validated['description'])) {
-            $room->description = $validated['description'];
+            if (isset($validated['description'])) {
+                $room->description = $validated['description'];
+            }
+
+            if (isset($validated['passions'])) {
+                $room->passions = json_encode($validated['passions']);
+            }
+
+            $room->save();
+            return response()->json(['success' => true, 'message' => 'Profil mis à jour avec succès.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur lors de la modification du profil: ' . $e->getMessage()], 500);
         }
-
-        if (isset($validated['passions'])) {
-            $room->passions = json_encode($validated['passions']);
-        }
-
-        $room->save();
-        return response()->json(['success' => true, 'message' => 'Profil mis à jour avec succès.']);
     }
 
     /**

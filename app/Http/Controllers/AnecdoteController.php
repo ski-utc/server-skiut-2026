@@ -58,30 +58,34 @@ class AnecdoteController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function likeAnecdote(Request $request, $anecdoteId) # TODO : add try/catch
+    public function likeAnecdote(Request $request, $anecdoteId)
     {
-        $validated = $request->validate([
-            'like' => 'required|boolean',
-        ]);
+        try {
+            $validated = $request->validate([
+                'like' => 'required|boolean',
+            ]);
 
-        $user_id = $request->user['id'];
+            $user_id = $request->user['id'];
 
-        $existingLike = AnecdotesLike::where('user_id', $user_id)
-            ->where('anecdote_id', $anecdoteId)
-            ->first();
+            $existingLike = AnecdotesLike::where('user_id', $user_id)
+                ->where('anecdote_id', $anecdoteId)
+                ->first();
 
-        if ($validated['like']) {
-            if (!$existingLike) {
-                AnecdotesLike::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
-                return response()->json(['success' => true, 'liked' => true]);
+            if ($validated['like']) {
+                if (!$existingLike) {
+                    AnecdotesLike::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
+                    return response()->json(['success' => true, 'liked' => true]);
+                }
+            } else {
+                if ($existingLike) {
+                    $existingLike->delete();
+                    return response()->json(['success' => true, 'liked' => false]);
+                }
             }
-        } else {
-            if ($existingLike) {
-                $existingLike->delete();
-                return response()->json(['success' => true, 'liked' => false]);
-            }
+            return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur lors du like: ' . $e->getMessage()], 500);
         }
-        return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
     }
 
     /**
@@ -91,30 +95,34 @@ class AnecdoteController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function warnAnecdote(Request $request, $anecdoteId) # TODO : add try/catch
+    public function warnAnecdote(Request $request, $anecdoteId)
     {
-        $validated = $request->validate([
-            'warn' => 'required|boolean',
-        ]);
+        try {
+            $validated = $request->validate([
+                'warn' => 'required|boolean',
+            ]);
 
-        $user_id = $request->user['id'];
+            $user_id = $request->user['id'];
 
-        $existingWarn = AnecdotesWarn::where('user_id', $user_id)
-            ->where('anecdote_id', $anecdoteId)
-            ->first();
+            $existingWarn = AnecdotesWarn::where('user_id', $user_id)
+                ->where('anecdote_id', $anecdoteId)
+                ->first();
 
-        if ($validated['warn']) {
-            if (!$existingWarn) {
-                AnecdotesWarn::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
-                return response()->json(['success' => true, 'warn' => true]);
+            if ($validated['warn']) {
+                if (!$existingWarn) {
+                    AnecdotesWarn::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
+                    return response()->json(['success' => true, 'warn' => true]);
+                }
+            } else {
+                if ($existingWarn) {
+                    $existingWarn->delete();
+                    return response()->json(['success' => true, 'warn' => false]);
+                }
             }
-        } else {
-            if ($existingWarn) {
-                $existingWarn->delete();
-                return response()->json(['success' => true, 'warn' => false]);
-            }
+            return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erreur lors du warn: ' . $e->getMessage()], 500);
         }
-        return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
     }
 
     /**

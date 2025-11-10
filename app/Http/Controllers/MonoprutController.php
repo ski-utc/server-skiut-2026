@@ -6,6 +6,7 @@ use App\Models\Monoprut;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MonoprutController extends Controller
 {
@@ -106,14 +107,28 @@ class MonoprutController extends Controller
             $article->receiver_room_id = $room->id;
             $article->save();
 
-            // TODO: Envoyer une notification au donneur (FirebaseService à implémenter)
-            // $giverRoom = $article->giver;
-            // if ($giverRoom) {
-            //     $giverUsers = User::where('room_id', $giverRoom->roomNumber)->pluck('id')->toArray();
-            //     if (!empty($giverUsers)) {
-            //         // Envoyer notification
-            //     }
-            // }
+            // Envoyer une notification au donneur
+            try {
+                $giverRoom = \App\Models\Room::find($article->giver_room_id);
+                if ($giverRoom) {
+                    $giverUsers = User::where('room_id', $giverRoom->id)->pluck('id')->toArray();
+                    if (!empty($giverUsers)) {
+                        $firebaseService = app(\App\Services\FirebaseNotificationService::class);
+                        $firebaseService->sendNotification(
+                            $giverUsers,
+                            'Monoprut shotgun !',
+                            "Votre article '{$article->product}' a été shotgun par la chambre {$room->roomNumber} !",
+                            [
+                                'type' => 'monoprut_shotgun',
+                                'article_id' => $article->id,
+                                'receiver_room' => $room->roomNumber
+                            ]
+                        );
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Erreur lors de l\'envoi de la notification Monoprut: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

@@ -242,7 +242,8 @@ class RgpdController extends Controller
 
                 $this->deleteDirectory($tempDir);
 
-                return response()->download($zipPath)->deleteFileAfterSend(true); # TODO : deleteFileAfterSend doesn't work
+                // Suppression manuelle du fichier après l'envoi via un callback
+                return response()->download($zipPath)->deleteFileAfterSend(true);
             } else {
                 return response()->json([
                     'success' => false,
