@@ -73,16 +73,18 @@ jobs:
       - run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
       - run: apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
       - run: pecl install apcu
+      - run: pecl install pcov
       - run: docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
       - run: docker-php-ext-install gd
       - run: docker-php-ext-enable apcu
+      - run: docker-php-ext-enable pcov
       - run: echo "apc.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini
       - run: cp .env.ci .env
       - run: php artisan key:generate
       - run: php artisan jwt:generate
       - run: mkdir -p /var/www/html/database && touch /var/www/html/database/database.sqlite
       - run: php artisan migrate --force
-      - run: ./vendor/bin/phpunit --no-coverage
+      - run: ./vendor/bin/phpunit --coverage-text
 
   build_docker_image:
     runs-on: ubuntu-latest

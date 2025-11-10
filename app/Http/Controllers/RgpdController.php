@@ -477,7 +477,7 @@ class RgpdController extends Controller
                 $content .= 'Date: ' . $proof->created_at . "\n\n";
             }
         }
-        
+
         return $content;
     }
 
