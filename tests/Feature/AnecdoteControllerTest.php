@@ -34,7 +34,7 @@ class AnecdoteControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/anecdotes');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -51,7 +51,7 @@ class AnecdoteControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseHas('anecdotes', ['text' => 'Test anecdote content']);
     }
 
@@ -67,7 +67,7 @@ class AnecdoteControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseHas('anecdotes_likes', [
             'user_id' => $this->user->id,
             'anecdote_id' => $anecdote->id,
@@ -98,15 +98,14 @@ class AnecdoteControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseMissing('anecdotes', ['id' => $anecdote->id]);
     }
 
     public function test_get_anecdotes_without_token()
     {
         $response = $this->getJson('/api/anecdotes');
-        
+
         $this->assertEquals(400, $response->status());
     }
 }
-

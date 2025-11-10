@@ -42,7 +42,7 @@ class NotificationControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/notifications');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -52,8 +52,8 @@ class NotificationControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $notification = Notification::factory()->create();
-        
-        
+
+
         UserNotification::create([
             'user_id' => $this->user->id,
             'notification_id' => $notification->id,
@@ -67,8 +67,8 @@ class NotificationControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseHas('user_notifications', [
             'user_id' => $this->user->id,
             'notification_id' => $notification->id,
@@ -80,7 +80,7 @@ class NotificationControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/notifications');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -90,7 +90,7 @@ class NotificationControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/notifications/recipients');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -99,7 +99,7 @@ class NotificationControllerTest extends TestCase
     public function test_get_notifications_without_token()
     {
         $response = $this->getJson('/api/notifications');
-        
+
         $this->assertEquals(400, $response->status());
     }
 
@@ -107,8 +107,7 @@ class NotificationControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/notifications');
-        
+
         $this->assertEquals(403, $response->status());
     }
 }
-

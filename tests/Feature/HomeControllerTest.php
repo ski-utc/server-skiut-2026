@@ -33,7 +33,7 @@ class HomeControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/home/random-data');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -43,7 +43,7 @@ class HomeControllerTest extends TestCase
     public function test_get_random_data_without_token()
     {
         $response = $this->getJson('/api/home/random-data');
-        
+
         $this->assertEquals(400, $response->status());
     }
 
@@ -51,11 +51,10 @@ class HomeControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/home/weather');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
         $this->assertIsArray($response->json('data'));
     }
 }
-

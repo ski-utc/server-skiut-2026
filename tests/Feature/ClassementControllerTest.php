@@ -33,7 +33,7 @@ class ClassementControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/classement-chambres');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -43,7 +43,7 @@ class ClassementControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/classement-performances');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -53,7 +53,7 @@ class ClassementControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/classement-performances?type=distance');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -63,7 +63,7 @@ class ClassementControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/classement-performances?type=duration');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -73,10 +73,9 @@ class ClassementControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/classement-performances?type=speed');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
     }
 }
-

@@ -22,9 +22,9 @@ class MiddlewareTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->room = Room::factory()->create(['id' => 1]);
-        
+
         $this->user = User::factory()->create([
             'id' => 1,
             'email' => 'test@example.com',
@@ -187,4 +187,3 @@ class MiddlewareTest extends TestCase
         $this->assertTrue($response->json('JWT_ERROR'));
     }
 }
-

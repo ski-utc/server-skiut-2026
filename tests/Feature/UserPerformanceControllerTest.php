@@ -43,8 +43,8 @@ class UserPerformanceControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseHas('performance_sessions', [
             'user_id' => $this->user->id,
             'max_speed' => 50.5,
@@ -56,7 +56,7 @@ class UserPerformanceControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/user-performances');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -65,8 +65,8 @@ class UserPerformanceControllerTest extends TestCase
     public function test_delete_performance_session_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
-        
+
+
         $sessionId = 'test_session_' . time();
         PerformanceSession::create([
             'user_id' => $this->user->id,
@@ -77,14 +77,14 @@ class UserPerformanceControllerTest extends TestCase
             'duration' => 120,
             'session_date' => now(),
         ]);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson("/api/user-performances/{$sessionId}");
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseMissing('performance_sessions', ['session_id' => $sessionId]);
     }
 
@@ -94,7 +94,7 @@ class UserPerformanceControllerTest extends TestCase
             'speed' => 50.5,
             'distance' => 1000,
         ]);
-        
+
         $this->assertEquals(400, $response->status());
     }
 }

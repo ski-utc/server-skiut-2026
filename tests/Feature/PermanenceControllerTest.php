@@ -50,7 +50,7 @@ class PermanenceControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->memberUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/permanences/my');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -60,7 +60,7 @@ class PermanenceControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/permanences');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -71,7 +71,7 @@ class PermanenceControllerTest extends TestCase
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $startDate = now()->addDays(2);
         $endDate = now()->addDays(2)->addHours(2);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/admin/permanences', [
             'name' => 'Test Permanence',
             'description' => 'Test',
@@ -81,10 +81,10 @@ class PermanenceControllerTest extends TestCase
             'responsible_user_id' => $this->adminUser->id,
         ]);
 
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
-        
+
         if ($response->status() < 300) {
             $this->assertTrue($response->json('success'));
             $this->assertDatabaseHas('permanences', ['name' => 'Test Permanence']);
@@ -94,8 +94,8 @@ class PermanenceControllerTest extends TestCase
     public function test_update_permanence_success()
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
-        
-        
+
+
         $permanence = Permanence::create([
             'name' => 'Original Permanence',
             'description' => 'Original',
@@ -105,7 +105,7 @@ class PermanenceControllerTest extends TestCase
             'location' => 'Room 101',
             'status' => 'scheduled',
         ]);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->putJson("/api/admin/permanences/{$permanence->id}", [
             'name' => 'Updated Permanence',
             'description' => 'Updated',
@@ -114,10 +114,10 @@ class PermanenceControllerTest extends TestCase
             'responsible_user_id' => $this->adminUser->id,
         ]);
 
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
-        
+
         if ($response->status() < 300) {
             $this->assertTrue($response->json('success'));
             $this->assertDatabaseHas('permanences', ['id' => $permanence->id, 'name' => 'Updated Permanence']);
@@ -127,8 +127,8 @@ class PermanenceControllerTest extends TestCase
     public function test_delete_permanence_success()
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
-        
-        
+
+
         $permanence = Permanence::create([
             'name' => 'To Delete',
             'description' => 'Test',
@@ -138,13 +138,13 @@ class PermanenceControllerTest extends TestCase
             'location' => 'Room 101',
             'status' => 'scheduled',
         ]);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson("/api/admin/permanences/{$permanence->id}");
 
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
-        
+
         if ($response->status() < 300) {
             $this->assertTrue($response->json('success'));
             $this->assertDatabaseMissing('permanences', ['id' => $permanence->id]);
@@ -155,7 +155,7 @@ class PermanenceControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/permanences/members');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -174,7 +174,7 @@ class PermanenceControllerTest extends TestCase
     public function test_get_user_permanences_without_token()
     {
         $response = $this->getJson('/api/permanences/my');
-        
+
         $this->assertEquals(400, $response->status());
     }
 
@@ -182,7 +182,7 @@ class PermanenceControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/permanences');
-        
+
         $this->assertEquals(403, $response->status());
     }
 }

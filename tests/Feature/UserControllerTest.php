@@ -6,7 +6,6 @@ use App\Models\Room;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Tests\Unit\JwtTestHelper;
 
 /**
  * Tests pour UserController (utilisé pour createOrUpdateUser et saveToken en interne)
@@ -37,4 +36,3 @@ class UserControllerTest extends TestCase
         ]);
     }
 }
-

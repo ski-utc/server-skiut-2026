@@ -3,8 +3,6 @@
 namespace Tests\Unit;
 
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-use Illuminate\Support\Carbon;
 
 class JwtTestHelper
 {
@@ -14,7 +12,7 @@ class JwtTestHelper
     public static function generateToken($userId, $expiresInMinutes = 60): string
     {
         $privateKey = config('services.crypt.private');
-        
+
         $payload = [
             'key' => $userId,
             'exp' => now()->addMinutes($expiresInMinutes)->timestamp,
@@ -29,7 +27,7 @@ class JwtTestHelper
     public static function generateExpiredToken($userId): string
     {
         $privateKey = config('services.crypt.private');
-        
+
         $payload = [
             'key' => $userId,
             'exp' => now()->subMinutes(10)->timestamp,
@@ -44,7 +42,7 @@ class JwtTestHelper
     public static function generateRefreshToken($userId, $expiresInDays = 30): string
     {
         $privateKey = config('services.crypt.private');
-        
+
         $payload = [
             'key' => $userId,
             'exp' => now()->addDays($expiresInDays)->timestamp,
@@ -58,7 +56,7 @@ class JwtTestHelper
      */
     public static function generateInvalidSignatureToken($userId): string
     {
-        return "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkiOiIxIiwiZXhwIjoxOTI2MzQwMjAwfQ.invalid_signature_here";
+        return 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkiOiIxIiwiZXhwIjoxOTI2MzQwMjAwfQ.invalid_signature_here';
     }
 
     /**
@@ -66,7 +64,6 @@ class JwtTestHelper
      */
     public static function generateMalformedToken(): string
     {
-        return "this.is.not.a.valid.jwt.token.at.all";
+        return 'this.is.not.a.valid.jwt.token.at.all';
     }
 }
-

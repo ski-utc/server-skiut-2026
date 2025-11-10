@@ -34,7 +34,7 @@ class AuthControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/auth/me');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -44,7 +44,7 @@ class AuthControllerTest extends TestCase
     public function test_get_user_data_without_token()
     {
         $response = $this->getJson('/api/auth/me');
-        
+
         $this->assertEquals(400, $response->status());
         $this->assertTrue($response->json('JWT_ERROR'));
     }
@@ -53,7 +53,7 @@ class AuthControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateExpiredToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/auth/me');
-        
+
         $this->assertEquals(401, $response->status());
     }
 
@@ -61,9 +61,8 @@ class AuthControllerTest extends TestCase
     {
         $refreshToken = JwtTestHelper::generateRefreshToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$refreshToken}"])->getJson('/auth/refresh');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
     }
 }
-

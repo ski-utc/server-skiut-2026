@@ -40,7 +40,7 @@ class RoomTourControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/room-tours');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -80,7 +80,7 @@ class RoomTourControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/room-tours/my');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
     }
@@ -89,7 +89,7 @@ class RoomTourControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/room-tours/status');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -128,7 +128,7 @@ class RoomTourControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/room-tours/available-rooms');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -137,7 +137,7 @@ class RoomTourControllerTest extends TestCase
     public function test_get_user_tour_without_token()
     {
         $response = $this->getJson('/api/room-tours/my');
-        
+
         $this->assertEquals(400, $response->status());
     }
 
@@ -145,7 +145,7 @@ class RoomTourControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/room-tours');
-        
+
         $this->assertEquals(403, $response->status());
     }
 }

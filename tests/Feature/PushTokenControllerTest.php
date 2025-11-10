@@ -34,7 +34,7 @@ class PushTokenControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $pushTokenValue = 'test_token_' . time();
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/push-tokens', [
             'token' => $pushTokenValue,
             'device_type' => 'ios',
@@ -44,7 +44,7 @@ class PushTokenControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseHas('push_tokens', ['user_id' => $this->user->id, 'token' => $pushTokenValue]);
     }
 
@@ -52,7 +52,7 @@ class PushTokenControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/push-tokens');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -61,8 +61,8 @@ class PushTokenControllerTest extends TestCase
     public function test_deactivate_push_token_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
-        
+
+
         $pushTokenValue = 'test_token_' . time();
         PushToken::create([
             'user_id' => $this->user->id,
@@ -70,24 +70,24 @@ class PushTokenControllerTest extends TestCase
             'device_type' => 'ios',
             'active' => true,
         ]);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/push-tokens/deactivate', [
             'token' => $pushTokenValue,
         ]);
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseHas('push_tokens', ['token' => $pushTokenValue, 'active' => false]);
     }
 
     public function test_destroy_push_token_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
-        
+
+
         $pushTokenValue = 'test_token_' . time();
         PushToken::create([
             'user_id' => $this->user->id,
@@ -95,16 +95,16 @@ class PushTokenControllerTest extends TestCase
             'device_type' => 'android',
             'active' => true,
         ]);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson('/api/push-tokens', [
             'token' => $pushTokenValue,
         ]);
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseMissing('push_tokens', ['token' => $pushTokenValue]);
     }
 
@@ -113,7 +113,7 @@ class PushTokenControllerTest extends TestCase
         $response = $this->postJson('/api/push-tokens', [
             'device_type' => 'ios',
         ]);
-        
+
         $this->assertEquals(400, $response->status());
     }
 }

@@ -33,7 +33,7 @@ class NavetteControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/navettes');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -42,8 +42,7 @@ class NavetteControllerTest extends TestCase
     public function test_get_navettes_without_token()
     {
         $response = $this->getJson('/api/navettes');
-        
+
         $this->assertEquals(400, $response->status());
     }
 }
-

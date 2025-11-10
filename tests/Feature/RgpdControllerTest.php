@@ -70,7 +70,7 @@ class RgpdControllerTest extends TestCase
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/rgpd/anonymize-all-data');
 
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
     }
@@ -80,7 +80,7 @@ class RgpdControllerTest extends TestCase
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson('/api/rgpd/delete-all-data');
 
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
     }
@@ -88,7 +88,7 @@ class RgpdControllerTest extends TestCase
     public function test_anonymize_my_data_without_token()
     {
         $response = $this->postJson('/api/rgpd/anonymize-my-data');
-        
+
         $this->assertEquals(400, $response->status());
     }
 
@@ -96,8 +96,7 @@ class RgpdControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/rgpd/anonymize-all-data');
-        
+
         $this->assertEquals(403, $response->status());
     }
 }
-

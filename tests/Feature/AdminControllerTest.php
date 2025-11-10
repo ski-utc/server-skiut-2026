@@ -42,7 +42,7 @@ class AdminControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -52,7 +52,7 @@ class AdminControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/challenges');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -93,7 +93,7 @@ class AdminControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseHas('challenge_proofs', ['id' => $challengeProof->id, 'valid' => true, 'delete' => false]);
     }
 
@@ -101,7 +101,7 @@ class AdminControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin/anecdotes');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -131,7 +131,7 @@ class AdminControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseHas('anecdotes', ['id' => $anecdote->id, 'valid' => true]);
     }
 
@@ -139,15 +139,14 @@ class AdminControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/admin');
-        
+
         $this->assertEquals(403, $response->status());
     }
 
     public function test_get_admin_without_token()
     {
         $response = $this->getJson('/api/admin');
-        
+
         $this->assertEquals(400, $response->status());
     }
 }
-

@@ -33,7 +33,7 @@ class PlanningControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/planning');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -42,8 +42,7 @@ class PlanningControllerTest extends TestCase
     public function test_get_planning_without_token()
     {
         $response = $this->getJson('/api/planning');
-        
+
         $this->assertEquals(400, $response->status());
     }
 }
-

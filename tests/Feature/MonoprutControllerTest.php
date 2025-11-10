@@ -10,7 +10,7 @@ use Tests\TestCase;
 use Tests\Unit\JwtTestHelper;
 
 /**
- * Tests pour MonoprutController  
+ * Tests pour MonoprutController
  * Routes: /api/articles/*
  */
 class MonoprutControllerTest extends TestCase
@@ -34,7 +34,7 @@ class MonoprutControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/articles');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -52,14 +52,14 @@ class MonoprutControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
+
         $this->assertDatabaseHas('monoprut', ['product' => 'Test Product', 'giver_room_id' => $this->room->id]);
     }
 
     public function test_shotgun_article_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
+
         $giverRoom = Room::factory()->create();
         $article = Monoprut::factory()->create([
             'giver_room_id' => $giverRoom->id,
@@ -71,8 +71,8 @@ class MonoprutControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseHas('monoprut', ['id' => $article->id, 'receiver_room_id' => $this->room->id]);
     }
 
@@ -80,7 +80,7 @@ class MonoprutControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/articles/given');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -90,7 +90,7 @@ class MonoprutControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/articles/received');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -99,7 +99,7 @@ class MonoprutControllerTest extends TestCase
     public function test_mark_as_retrieved_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
+
         $giverRoom = Room::factory()->create();
         $article = Monoprut::factory()->create([
             'giver_room_id' => $giverRoom->id,
@@ -112,15 +112,15 @@ class MonoprutControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseHas('monoprut', ['id' => $article->id, 'retrieved' => true]);
     }
 
     public function test_cancel_reservation_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
+
         $giverRoom = Room::factory()->create();
         $article = Monoprut::factory()->create([
             'giver_room_id' => $giverRoom->id,
@@ -133,15 +133,15 @@ class MonoprutControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseHas('monoprut', ['id' => $article->id, 'receiver_room_id' => null]);
     }
 
     public function test_delete_article_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
+
         $article = Monoprut::factory()->create([
             'giver_room_id' => $this->room->id,
             'receiver_room_id' => null,
@@ -152,15 +152,15 @@ class MonoprutControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        
+
+
         $this->assertDatabaseMissing('monoprut', ['id' => $article->id]);
     }
 
     public function test_get_articles_without_token()
     {
         $response = $this->getJson('/api/articles');
-        
+
         $this->assertEquals(400, $response->status());
     }
 }

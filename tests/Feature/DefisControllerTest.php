@@ -37,7 +37,7 @@ class DefisControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/challenges');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -47,7 +47,7 @@ class DefisControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $challenge = Challenge::factory()->create();
-        
+
         $proof = \App\Models\ChallengeProof::factory()->create([
             'challenge_id' => $challenge->id,
             'room_id' => $this->room->id,
@@ -65,7 +65,7 @@ class DefisControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/challenges/max-file-size');
-        
+
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
@@ -92,11 +92,11 @@ class DefisControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
         $challenge = Challenge::factory()->create();
-        
+
         // Create a fake file first
         $filePath = 'defiProofImages/test_proof.jpg';
         Storage::disk('public')->put($filePath, 'fake_content');
-        
+
         $proof = \App\Models\ChallengeProof::factory()->create([
             'challenge_id' => $challenge->id,
             'room_id' => $this->room->id,
@@ -116,8 +116,7 @@ class DefisControllerTest extends TestCase
     public function test_get_challenges_without_token()
     {
         $response = $this->getJson('/api/challenges');
-        
+
         $this->assertEquals(400, $response->status());
     }
 }
-

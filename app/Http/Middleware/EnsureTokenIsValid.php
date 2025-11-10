@@ -46,7 +46,7 @@ class EnsureTokenIsValid
             return response()->json(['message' => 'Utilisateur non trouvé pour le token fourni', 'JWT_ERROR' => true], 404);
         }
         $request->merge(['user' => array_merge($user->toArray(), ['id' => $user->id])]);
-        Log::info('Request: ' . $request->all());
+        Log::info('Request: ', $request->all());
         return $next($request);
     }
 }

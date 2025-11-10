@@ -9,8 +9,9 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Log;
 use LogicException;
+use Symfony\Component\HttpFoundation\Response;
 use UnexpectedValueException;
 
 class EnsureAdminTokenIsValid
@@ -48,7 +49,7 @@ class EnsureAdminTokenIsValid
             return response()->json(['message' => 'Vous n\'êtes pas admin.'], 403);
         }
         $request->merge(['user' => array_merge($user->toArray(), ['id' => $user->id])]);
-        Log::info('Request: ' . $request->all());
+        Log::info('Request: ', $request->all());
         return $next($request);
     }
 }
