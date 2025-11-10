@@ -9,6 +9,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use LogicException;
 use Symfony\Component\HttpFoundation\Response;
 use UnexpectedValueException;
@@ -45,7 +46,7 @@ class EnsureTokenIsValid
             return response()->json(['message' => 'Utilisateur non trouvé pour le token fourni', 'JWT_ERROR' => true], 404);
         }
         $request->merge(['user' => array_merge($user->toArray(), ['id' => $user->id])]);
-
+        Log::info('Request: ' . $request->all());
         return $next($request);
     }
 }
