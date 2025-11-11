@@ -1,4 +1,10 @@
-- tests pour roomTour
+- enlever méthodes de models inutiles
+- définir des méhodes pour tt pattern qui se répète 
+- définir des index sur les tables (et les utiliser)
+- - logger chaque erreir 
+- optimisier ci et Dockerfile
+- tests pour rgpd et planning
+- voir pour avoir % de coverage ?
 - clean les controllers (commentaires, ajouter du logging)
 - faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
 - clean l'app (commentaires, ...)
@@ -17,3 +23,5 @@
   - perms
   - lue / non lue
 - vérifier schedule de notification des permanences
+
+Revoir design app défi, monopr'ut ... (surtout les shadow)

@@ -142,6 +142,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
         PrometheusServiceProvider::class,
+        App\Providers\HealthServiceProvider::class,
     ])->toArray(),
 
 ];

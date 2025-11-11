@@ -17,7 +17,8 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "league/oauth2-client": "^2.7",
-        "promphp/prometheus_client_php": "^2.14"
+        "promphp/prometheus_client_php": "^2.14",
+        "spatie/laravel-health": "^1.34"
     },
     "require-dev": {
         "enlightn/security-checker": "^2.0",
