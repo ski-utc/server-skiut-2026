@@ -113,7 +113,7 @@ return [
         Spatie\Health\Checks\Checks\CacheCheck::class,
         Spatie\Health\Checks\Checks\QueueCheck::class,
         Spatie\Health\Checks\Checks\ScheduleCheck::class,
-        
+
         App\Checks\DiskSpaceCheck::class,
         App\Checks\MemoryUsageCheck::class,
         App\Checks\StorageCheck::class,

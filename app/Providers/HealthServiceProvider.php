@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Spatie\Health\Facades\Health;
+use App\Checks\ApiResponseCheck;
+use App\Checks\DiskSpaceCheck;
 // use Spatie\Health\Checks\Checks\OptimizedAppCheck;
 // use Spatie\Health\Checks\Checks\DebugModeCheck;
 // use Spatie\Health\Checks\Checks\EnvironmentCheck;
-use Spatie\Health\Checks\Checks\DatabaseCheck;
-use Spatie\Health\Checks\Checks\CacheCheck;
-// use Spatie\Health\Checks\Checks\QueueCheck;
-// use Spatie\Health\Checks\Checks\ScheduleCheck;
-use App\Checks\DiskSpaceCheck;
 use App\Checks\MemoryUsageCheck;
 use App\Checks\StorageCheck;
-use App\Checks\ApiResponseCheck;
+// use Spatie\Health\Checks\Checks\QueueCheck;
+// use Spatie\Health\Checks\Checks\ScheduleCheck;
+use Illuminate\Support\ServiceProvider;
+use Spatie\Health\Checks\Checks\CacheCheck;
+use Spatie\Health\Checks\Checks\DatabaseCheck;
+use Spatie\Health\Facades\Health;
 
 class HealthServiceProvider extends ServiceProvider
 {
@@ -40,4 +40,3 @@ class HealthServiceProvider extends ServiceProvider
         ]);
     }
 }
-

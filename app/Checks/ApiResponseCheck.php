@@ -2,9 +2,9 @@
 
 namespace App\Checks;
 
+use Illuminate\Support\Facades\Log;
 use Spatie\Health\Checks\Check;
 use Spatie\Health\Checks\Result;
-use Illuminate\Support\Facades\Log;
 
 class ApiResponseCheck extends Check
 {
@@ -14,7 +14,9 @@ class ApiResponseCheck extends Check
 
         try {
             Log::info('API URL: ' . env('APP_URL') . '/health');
-            $response = @file_get_contents(env('APP_URL') . '/health', false, 
+            $response = @file_get_contents(
+                env('APP_URL') . '/health',
+                false,
                 stream_context_create([
                     'http' => [
                         'timeout' => 5,
@@ -33,4 +35,3 @@ class ApiResponseCheck extends Check
         }
     }
 }
-

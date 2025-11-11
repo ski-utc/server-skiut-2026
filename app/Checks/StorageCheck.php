@@ -35,4 +35,3 @@ class StorageCheck extends Check
         }
     }
 }
-
