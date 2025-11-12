@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class SkinderLike extends Model
 {
@@ -65,7 +66,7 @@ class SkinderLike extends Model
     {
         return self::where('room_liker_id', $room_id)
             ->whereExists(function ($query) use ($room_id) {
-                $query->select(\DB::raw(1))
+                $query->select(DB::raw(1))
                     ->from('skinder_likes as sl2')
                     ->whereColumn('sl2.room_liker_id', 'skinder_likes.room_liked_id')
                     ->where('sl2.room_liked_id', $room_id);
