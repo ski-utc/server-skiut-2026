@@ -26,6 +26,7 @@ class MonoprutController extends Controller
                 'message' => 'Articles récupérés avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des articles: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération des articles : ' . $e->getMessage(),
@@ -63,6 +64,7 @@ class MonoprutController extends Controller
                 'message' => 'Article créé avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la création de l\'article: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la création de l\'article : ' . $e->getMessage(),
@@ -135,6 +137,7 @@ class MonoprutController extends Controller
                 'message' => 'Article shotgun avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du shotgun de l\'article: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors du shotgun de l\'article : ' . $e->getMessage(),
@@ -187,6 +190,7 @@ class MonoprutController extends Controller
                 'message' => 'Articles récupérés avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des articles giver par l\'utilisateur: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération des articles giver par l\'utilisateur : ' . $e->getMessage(),
@@ -243,6 +247,7 @@ class MonoprutController extends Controller
                 'message' => 'Articles récupérés avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des articles reçus par l\'utilisateur: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération des articles reçus par l\'utilisateur : ' . $e->getMessage(),
@@ -295,6 +300,7 @@ class MonoprutController extends Controller
                 'message' => 'Article marqué comme récupéré.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour du statut de l\'article: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue : ' . $e->getMessage(),
@@ -340,6 +346,7 @@ class MonoprutController extends Controller
                 'message' => 'Article supprimé avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de l\'article: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la suppression de l\'article : ' . $e->getMessage(),
@@ -392,6 +399,7 @@ class MonoprutController extends Controller
                 'message' => 'Réservation annulée avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'annulation de la réservation: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue : ' . $e->getMessage(),

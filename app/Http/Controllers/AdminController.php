@@ -6,6 +6,7 @@ use App\Models\Anecdote;
 use App\Models\ChallengeProof;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -22,12 +23,13 @@ class AdminController extends Controller
             $user = User::find($user_id);
 
             if ($user && $user->admin) {
-                return response()->json(['success' => true, 'message' => 'Vous êtes admin.']);
+                return response()->json(['success' => true, 'message' => 'Vous êtes admin.'], 200);
             } else {
-                return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.']);
+                return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.'], 403);
             }
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la vérification de l\'admin: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur lors de la vérification de l\'admin: ' . $e->getMessage()], 500);
         }
     }
 
@@ -70,6 +72,7 @@ class AdminController extends Controller
                 'data' => $challenges,
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des défis: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des défis : ' . $e->getMessage(),
@@ -95,6 +98,7 @@ class AdminController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des détails du défi: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération du défi : ' . $e->getMessage(),
@@ -141,6 +145,7 @@ class AdminController extends Controller
                 'message' => $message,
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des anecdotes: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du statut du challenge : ' . $e->getMessage(),
@@ -223,6 +228,7 @@ class AdminController extends Controller
                 'nbWarns' => $nbWarns
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des détails de l\'anecdote: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération de l\'anecdote : ' . $e->getMessage(),
@@ -254,6 +260,7 @@ class AdminController extends Controller
                 'message' => $validated['is_valid'] ? 'Anecdote validée avec succès.' : 'Anecdote désactivée avec succès.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour du statut de l\'anecdote: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),

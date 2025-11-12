@@ -8,6 +8,7 @@ use App\Models\TourBinome;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RoomTourController extends Controller
 {
@@ -45,6 +46,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des tournées: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des tournées : ' . $e->getMessage()
@@ -114,6 +116,7 @@ class RoomTourController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de la création de la tournée: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la création de la tournée : ' . $e->getMessage()
@@ -151,6 +154,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la modification de la tournée: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la modification de la tournée : ' . $e->getMessage()
@@ -176,6 +180,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de la tournée: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression de la tournée : ' . $e->getMessage()
@@ -265,6 +270,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération de la tournée: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération de la tournée : ' . $e->getMessage()
@@ -354,6 +360,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération du statut: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération du statut : ' . $e->getMessage()
@@ -410,6 +417,7 @@ class RoomTourController extends Controller
             }
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour : ' . $e->getMessage()
@@ -460,6 +468,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'annulation: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'annulation : ' . $e->getMessage()
@@ -516,6 +525,7 @@ class RoomTourController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la réorganisation: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la réorganisation : ' . $e->getMessage()
@@ -559,6 +569,7 @@ class RoomTourController extends Controller
                 'data' => $rooms
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des chambres: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des chambres : ' . $e->getMessage()

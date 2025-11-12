@@ -7,6 +7,7 @@ use App\Models\Permanence;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PlanningController extends Controller
 {
@@ -103,6 +104,7 @@ class PlanningController extends Controller
                 'user_is_member' => $user ? $user->member : false
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération du planning: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération du planning: ' . $e->getMessage()

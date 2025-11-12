@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PerformanceSession;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserPerformanceController extends Controller
 {
@@ -62,6 +63,7 @@ class UserPerformanceController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'enregistrement: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'enregistrement: ' . $e->getMessage()
@@ -111,6 +113,7 @@ class UserPerformanceController extends Controller
                 'stats' => $stats
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des performances: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des performances: ' . $e->getMessage()
@@ -155,6 +158,7 @@ class UserPerformanceController extends Controller
                 'message' => 'Session supprimée avec succès'
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression: ' . $e->getMessage()

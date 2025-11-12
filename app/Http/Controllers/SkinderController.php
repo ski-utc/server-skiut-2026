@@ -58,6 +58,7 @@ class SkinderController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération du profil: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération du profil : '. $e]);
         }
     }
@@ -114,6 +115,7 @@ class SkinderController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
+            Log::error('Erreur lors du like: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du like : ' . $e->getMessage()]);
         }
     }
@@ -163,6 +165,7 @@ class SkinderController extends Controller
                 'data' => $result
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des matchs: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des matchs : ' . $e->getMessage()
@@ -200,6 +203,7 @@ class SkinderController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération du profil: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération du profil: ' . $e->getMessage()], 500);
         }
     }
@@ -234,6 +238,7 @@ class SkinderController extends Controller
             $room->save();
             return response()->json(['success' => true, 'message' => 'Profil mis à jour avec succès.']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la modification du profil: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors de la modification du profil: ' . $e->getMessage()], 500);
         }
     }
@@ -267,6 +272,7 @@ class SkinderController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Image téléversée avec succès']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du téléversement: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du téléversement : ' . $e->getMessage()], 500);
         }
     }
@@ -326,6 +332,7 @@ class SkinderController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des détails de la chambre: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des détails de la chambre : ' . $e->getMessage()

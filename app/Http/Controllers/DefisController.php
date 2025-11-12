@@ -6,6 +6,7 @@ use App\Models\Challenge;
 use App\Models\ChallengeProof;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class DefisController extends Controller
@@ -60,7 +61,8 @@ class DefisController extends Controller
                 'data' => $challengeData,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : '.$e]);
+            Log::error('Erreur lors de la récupération des défis: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : '.$e], 500);
         }
     }
 
@@ -97,7 +99,8 @@ class DefisController extends Controller
                 'mediaType' => $proof->media_type ?? 'image',
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e]);
+            Log::error('Erreur lors de la récupération de la preuve de défi: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e], 500);
         }
     }
 
@@ -185,6 +188,7 @@ class DefisController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Défi envoyé avec succès !']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du téléversement du défi: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du téléversement du défi : ' . $e->getMessage()], 500);
         }
     }
@@ -251,6 +255,7 @@ class DefisController extends Controller
                 'message' => 'Défi supprimé avec succès',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de la preuve de défi: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue : ' . $e->getMessage(),

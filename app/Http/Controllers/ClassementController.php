@@ -7,6 +7,7 @@ use App\Models\Room;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ClassementController extends Controller
 {
@@ -45,6 +46,7 @@ class ClassementController extends Controller
                 'rest' => $restRooms,
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du classement des chambres: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors du calcul du classement : ' . $e->getMessage(),
@@ -60,53 +62,61 @@ class ClassementController extends Controller
      */
     public function classementPerformances(Request $request)
     {
-        $validated = $request->validate([
-            'type' => 'nullable|in:speed,distance,duration',
-        ]);
+        try {
+            $validated = $request->validate([
+                'type' => 'nullable|in:speed,distance,duration',
+            ]);
 
-        $type = $validated['type'] ?? 'speed';
+            $type = $validated['type'] ?? 'speed';
 
-        $orderColumn = match($type) {
-            'distance' => 'distance',
-            'duration' => 'duration',
-            default => 'max_speed',
-        };
+            $orderColumn = match($type) {
+                'distance' => 'distance',
+                'duration' => 'duration',
+                default => 'max_speed',
+            };
 
-        $userStats = PerformanceSession::select(
-            'user_id',
-            DB::raw('MAX(max_speed) as max_speed'),
-            DB::raw('SUM(distance) as total_distance'),
-            DB::raw('SUM(duration) as total_duration'),
-            DB::raw('AVG(average_speed) as average_speed')
-        )
-            ->groupBy('user_id')
-            ->orderByRaw(match($type) {
-                'distance' => 'SUM(distance) DESC',
-                'duration' => 'SUM(duration) DESC',
-                default => 'MAX(max_speed) DESC',
-            })
-            ->get();
+            $userStats = PerformanceSession::select(
+                'user_id',
+                DB::raw('MAX(max_speed) as max_speed'),
+                DB::raw('SUM(distance) as total_distance'),
+                DB::raw('SUM(duration) as total_duration'),
+                DB::raw('AVG(average_speed) as average_speed')
+            )
+                ->groupBy('user_id')
+                ->orderByRaw(match($type) {
+                    'distance' => 'SUM(distance) DESC',
+                    'duration' => 'SUM(duration) DESC',
+                    default => 'MAX(max_speed) DESC',
+                })
+                ->get();
 
-        $performancesByPosition = [];
-        $position = 1;
+            $performancesByPosition = [];
+            $position = 1;
 
-        foreach ($userStats as $stat) {
-            $user = User::find($stat->user_id);
-            $performancesByPosition[$position] = [
-                'user_id' => (int)$stat->user_id,
-                'max_speed' => (float)$stat->max_speed,
-                'total_distance' => (float)$stat->total_distance,
-                'duration' => (int)$stat->total_duration,
-                'full_name' => $user
-                    ? "{$user->firstName} {$user->lastName}"
-                    : "ID {$stat->user_id}",
-            ];
-            $position++;
+            foreach ($userStats as $stat) {
+                $user = User::find($stat->user_id);
+                $performancesByPosition[$position] = [
+                    'user_id' => (int)$stat->user_id,
+                    'max_speed' => (float)$stat->max_speed,
+                    'total_distance' => (float)$stat->total_distance,
+                    'duration' => (int)$stat->total_duration,
+                    'full_name' => $user
+                        ? "{$user->firstName} {$user->lastName}"
+                        : "ID {$stat->user_id}",
+                ];
+                $position++;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $performancesByPosition,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du classement des performances: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors du calcul du classement : ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => $performancesByPosition,
-        ]);
     }
 }

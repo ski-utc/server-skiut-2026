@@ -6,6 +6,7 @@ use App\Models\Permanence;
 use App\Models\User;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PermanenceController extends Controller
 {
@@ -68,9 +69,10 @@ class PermanenceController extends Controller
                 'data' => $data
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des permanences: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de la récupération des permanences: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -121,9 +123,10 @@ class PermanenceController extends Controller
                 'data' => $data
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des permanences: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de la récupération des permanences: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -182,9 +185,10 @@ class PermanenceController extends Controller
                 'data' => $permanence
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la création de la permanence: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de la création de la permanence: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -221,6 +225,7 @@ class PermanenceController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la mise à jour de la permanence: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur: ' . $e->getMessage()
@@ -246,9 +251,10 @@ class PermanenceController extends Controller
                 'message' => 'Permanence supprimée avec succès'
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de la permanence: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de la mise à jour de la permanence: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -279,9 +285,10 @@ class PermanenceController extends Controller
                 'data' => $members
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des membres de l\'association: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de la récupération des membres de l\'association: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -353,9 +360,10 @@ class PermanenceController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi des rappels: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'envoi des rappels: ' . $e->getMessage()
             ], 500);
         }
     }

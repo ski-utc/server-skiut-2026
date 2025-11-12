@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserNotification;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -71,12 +72,13 @@ class NotificationController extends Controller
 
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la récupération des notifications: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Récupère toutes les notifications pour l'admin
+     * Get all the notifications for the admin
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
@@ -106,12 +108,13 @@ class NotificationController extends Controller
 
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la récupération des notifications pour l\'admin: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Récupère les détails d'une notification spécifique par son ID
+     * Get the details of a specific notification by its ID
      * @param int $notificationId
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
@@ -126,6 +129,7 @@ class NotificationController extends Controller
                 'data' => $notification
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des détails de la notification: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération de la notification : ' . $e->getMessage(),
@@ -134,7 +138,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Créer et envoyer une nouvelle notification
+     * Create and send a new notification
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
@@ -196,12 +200,13 @@ class NotificationController extends Controller
                 'recipients_count' => count($recipientIds)
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la création de la notification: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Marquer une notification comme lue
+     * Mark a notification as read
      * @param Request $request
      * @param int $notificationId
      * @return \Illuminate\Http\JsonResponse
@@ -221,7 +226,7 @@ class NotificationController extends Controller
                 ->first();
 
             if (!$userNotification) {
-                return response()->json(['success' => false, 'message' => 'Notification non trouvée']);
+                return response()->json(['success' => false, 'message' => 'Notification non trouvée'], 404);
             }
 
             $userNotification->update([
@@ -231,12 +236,13 @@ class NotificationController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Notification marquée comme lue']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la mise à jour de la notification: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Toggle display status pour admin
+     * Toggle the display status for the admin
      * @param Request $request
      * @param int $notificationId
      * @return \Illuminate\Http\JsonResponse
@@ -256,12 +262,13 @@ class NotificationController extends Controller
                 'display' => $notification->display
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la mise à jour du statut de la notification: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Supprimer une notification (admin)
+     * Delete a notification (admin)
      * @param Request $request
      * @param int $notificationId
      * @return \Illuminate\Http\JsonResponse
@@ -278,12 +285,13 @@ class NotificationController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Notification supprimée']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la suppression de la notification: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Obtenir la liste des utilisateurs et chambres pour l'interface admin
+     * Get the list of users and rooms for the admin interface
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
@@ -312,12 +320,13 @@ class NotificationController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
+            Log::error('Erreur lors de la récupération des destinataires: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Helper: Obtenir les IDs des destinataires selon le type de notification
+     * Helper: Get the recipient IDs according to the notification type
      * @param Notification $notification
      * @return array
      */
@@ -339,7 +348,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Helper: Compter le nombre de destinataires
+     * Helper: Count the number of recipients
      * @param Notification $notification
      * @return int
      */

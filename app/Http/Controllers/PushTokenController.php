@@ -6,6 +6,7 @@ use App\Models\PushToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PushTokenController extends Controller
 {
@@ -17,48 +18,57 @@ class PushTokenController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'token' => 'required|string',
-            'device_type' => 'nullable|in:ios,android',
-            'device_name' => 'nullable|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'token' => 'required|string',
+                'device_type' => 'nullable|in:ios,android',
+                'device_name' => 'nullable|string|max:255',
+            ]);
 
-        $userId = $request->user['id'] ?? Auth::id();
+            $userId = $request->user['id'] ?? Auth::id();
 
-        if (!$userId) {
+            if (!$userId) {
+                Log::error('Erreur lors de la sauvegarde du token de push: ' . 'Utilisateur non authentifié');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié',
+                ], 401);
+            }
+
+            $pushToken = PushToken::where('user_id', $userId)
+                ->where('token', $validated['token'])
+                ->first();
+
+            if ($pushToken) {
+                $pushToken->update([
+                    'device_type' => $validated['device_type'] ?? $pushToken->device_type,
+                    'device_name' => $validated['device_name'] ?? $pushToken->device_name,
+                    'active' => true,
+                    'last_used_at' => now(),
+                ]);
+            } else {
+                $pushToken = PushToken::create([
+                    'user_id' => $userId,
+                    'token' => $validated['token'],
+                    'device_type' => $validated['device_type'],
+                    'device_name' => $validated['device_name'],
+                    'active' => true,
+                    'last_used_at' => now(),
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Push token saved successfully',
+                    'data' => $pushToken,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la sauvegarde du token de push: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Utilisateur non authentifié',
-            ], 401);
+                'message' => 'Erreur lors de la sauvegarde du token de push: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $pushToken = PushToken::where('user_id', $userId)
-            ->where('token', $validated['token'])
-            ->first();
-
-        if ($pushToken) {
-            $pushToken->update([
-                'device_type' => $validated['device_type'] ?? $pushToken->device_type,
-                'device_name' => $validated['device_name'] ?? $pushToken->device_name,
-                'active' => true,
-                'last_used_at' => now(),
-            ]);
-        } else {
-            $pushToken = PushToken::create([
-                'user_id' => $userId,
-                'token' => $validated['token'],
-                'device_type' => $validated['device_type'],
-                'device_name' => $validated['device_name'],
-                'active' => true,
-                'last_used_at' => now(),
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Push token saved successfully',
-            'data' => $pushToken,
-        ], 200);
     }
 
     /**
@@ -69,21 +79,29 @@ class PushTokenController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user['id'] ?? Auth::id();
+        try {
+            $userId = $request->user['id'] ?? Auth::id();
 
-        if (!$userId) {
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié',
+                ], 401);
+            }
+
+            $tokens = PushToken::where('user_id', $userId)->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $tokens,
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des tokens de push: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Utilisateur non authentifié',
-            ], 401);
+                'message' => 'Erreur lors de la récupération des tokens de push: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $tokens = PushToken::where('user_id', $userId)->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $tokens,
-        ], 200);
     }
 
     /**
@@ -94,36 +112,44 @@ class PushTokenController extends Controller
      */
     public function deactivate(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'token' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'token' => 'required|string',
+            ]);
 
-        $userId = $request->user['id'] ?? Auth::id();
+            $userId = $request->user['id'] ?? Auth::id();
 
-        if (!$userId) {
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié',
+                ], 401);
+            }
+
+            $pushToken = PushToken::where('user_id', $userId)
+                ->where('token', $validated['token'])
+                ->first();
+
+            if (!$pushToken) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token not found',
+                ], 404);
+            }
+
+            $pushToken->update(['active' => false]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Push token deactivated successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la désactivation du token de push: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Utilisateur non authentifié',
-            ], 401);
+                'message' => 'Erreur lors de la désactivation du token de push: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $pushToken = PushToken::where('user_id', $userId)
-            ->where('token', $validated['token'])
-            ->first();
-
-        if (!$pushToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token not found',
-            ], 404);
-        }
-
-        $pushToken->update(['active' => false]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Push token deactivated successfully',
-        ], 200);
     }
 
     /**
@@ -134,35 +160,43 @@ class PushTokenController extends Controller
      */
     public function destroy(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'token' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'token' => 'required|string',
+            ]);
 
-        $userId = $request->user['id'] ?? Auth::id();
+            $userId = $request->user['id'] ?? Auth::id();
 
-        if (!$userId) {
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utilisateur non authentifié',
+                ], 401);
+            }
+
+            $pushToken = PushToken::where('user_id', $userId)
+                ->where('token', $validated['token'])
+                ->first();
+
+            if (!$pushToken) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token not found',
+                ], 404);
+            }
+
+            $pushToken->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Push token deleted successfully',
+                ], 200);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression du token de push: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Utilisateur non authentifié',
-            ], 401);
+                'message' => 'Erreur lors de la suppression du token de push: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $pushToken = PushToken::where('user_id', $userId)
-            ->where('token', $validated['token'])
-            ->first();
-
-        if (!$pushToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token not found',
-            ], 404);
-        }
-
-        $pushToken->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Push token deleted successfully',
-        ], 200);
     }
 }

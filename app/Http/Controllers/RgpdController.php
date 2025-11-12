@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use ZipArchive;
 
 class RgpdController extends Controller
@@ -104,6 +105,7 @@ class RgpdController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de l\'anonymisation: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'anonymisation : ' . $e->getMessage()
@@ -177,6 +179,7 @@ class RgpdController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de la suppression: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
@@ -251,6 +254,7 @@ class RgpdController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'export: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'export : ' . $e->getMessage()
@@ -334,6 +338,7 @@ class RgpdController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de l\'anonymisation globale: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'anonymisation globale : ' . $e->getMessage()
@@ -398,6 +403,7 @@ class RgpdController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de la suppression globale: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression globale : ' . $e->getMessage()

@@ -6,6 +6,7 @@ use App\Models\BackOfficeAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use League\OAuth2\Client\Provider\GenericProvider;
+use Illuminate\Support\Facades\Log;
 
 class AuthBackOfficeController extends Controller
 {
@@ -79,6 +80,7 @@ class AuthBackOfficeController extends Controller
 
             return redirect()->route('filament.back-office.pages.dashboard');
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'authentification: ' . $e->getMessage());
             abort(401, 'Erreur d\'authentification : ' . $e->getMessage());
         }
     }

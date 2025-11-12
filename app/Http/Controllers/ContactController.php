@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
@@ -23,10 +24,11 @@ class ContactController extends Controller
                     'data' => $contacts
                 ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des contacts: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NavetteController extends Controller
 {
@@ -57,6 +58,7 @@ class NavetteController extends Controller
                 'message' => 'Transports fetched successfully.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des navettes: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération des navettes : ' . $e->getMessage(),

@@ -9,6 +9,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use League\OAuth2\Client\Provider\GenericProvider;
 use LogicException;
 use UnexpectedValueException;
@@ -139,6 +140,7 @@ class AuthController extends Controller
                 'refresh_token' => $refreshToken,
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la callback: ' . $e->getMessage());
             return redirect()->route('api-not-connected', [
                 'message' => 'Callback error : ' . $e->getMessage()
             ]);
@@ -153,36 +155,41 @@ class AuthController extends Controller
      */
     public function refresh(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        if (!$token) {
-            return response()->json(['message' => "Refresh JWT absent pour l'authentification",'JWT_ERROR' => true], 400);
-        }
         try {
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-        } catch (ExpiredException) {
-            return response()->json(['message' => 'Refresh JWT expiré','JWT_ERROR' => true], 401);
-        } catch (SignatureInvalidException) {
-            return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé','JWT_ERROR' => true], 401);
-        } catch (LogicException $e) {
-            return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
-        } catch (UnexpectedValueException $e) {
-            return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
-        }
-        $id = $decoded->key;
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'Utilisateur non trouvé pour le refresh token fourni', 'JWT_ERROR' => true], 404);
-        }
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            if (!$token) {
+                return response()->json(['message' => "Refresh JWT absent pour l'authentification",'JWT_ERROR' => true], 400);
+            }
+            try {
+                $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+            } catch (ExpiredException) {
+                return response()->json(['message' => 'Refresh JWT expiré','JWT_ERROR' => true], 401);
+            } catch (SignatureInvalidException) {
+                return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé','JWT_ERROR' => true], 401);
+            } catch (LogicException $e) {
+                return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
+            } catch (UnexpectedValueException $e) {
+                return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
+            }
+            $id = $decoded->key;
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json(['message' => 'Utilisateur non trouvé pour le refresh token fourni', 'JWT_ERROR' => true], 404);
+            }
 
-        $accessTokenPayload = [
-            'key' => $id,
-            'exp' => now()->addMinutes(60)->timestamp,
-        ];
-        $privateKey = config('services.crypt.private');
-        $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
+            $accessTokenPayload = [
+                'key' => $id,
+                'exp' => now()->addMinutes(60)->timestamp,
+            ];
+            $privateKey = config('services.crypt.private');
+            $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
-        return response()->json(['access_token' => $accessToken]);
+            return response()->json(['access_token' => $accessToken]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du refresh: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur lors du refresh: ' . $e->getMessage()], 400);
+        }
     }
 
     /**
@@ -222,6 +229,7 @@ class AuthController extends Controller
                 'member' => $user->member
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des users infos: ' . $e->getMessage());
             return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : '.$e], 401);
         }
     }

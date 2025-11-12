@@ -7,6 +7,7 @@ use App\Models\AnecdotesLike;
 use App\Models\AnecdotesWarn;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AnecdoteController extends Controller
 {
@@ -47,6 +48,7 @@ class AnecdoteController extends Controller
 
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des anecdotes: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
     }
@@ -84,6 +86,7 @@ class AnecdoteController extends Controller
             }
             return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du like: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du like: ' . $e->getMessage()], 500);
         }
     }
@@ -121,6 +124,7 @@ class AnecdoteController extends Controller
             }
             return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du warn: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du warn: ' . $e->getMessage()], 500);
         }
     }
@@ -154,6 +158,7 @@ class AnecdoteController extends Controller
 
             return response()->json(['success' => true, 'message' => 'Anecdote postée ! Elle sera visible une fois validée par le bureau']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'envoi de l\'anecdote: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur'.$e]);
         }
     }
@@ -183,6 +188,7 @@ class AnecdoteController extends Controller
 
             return response()->json(['success' => true, 'message' => "L'anecdote a bien été supprimée"]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de l\'anecdote: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()]);
         }
     }

@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
@@ -66,7 +67,8 @@ class HomeController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => "L'application n'est pas tout à fait finie... " . $e->getMessage()]);
+            Log::error('Erreur lors de la récupération des données de la page d\'accueil: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => "L'application n'est pas tout à fait finie... " . $e->getMessage()], 500);
         }
     }
 
@@ -130,6 +132,7 @@ class HomeController extends Controller
                 ]);
             }
 
+            Log::error('Erreur lors de la récupération de la météo: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
