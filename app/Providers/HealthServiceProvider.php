@@ -25,6 +25,10 @@ class HealthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (!class_exists(\Spatie\Health\Facades\Health::class)) {
+            return;
+        }
+        
         Health::checks([
             // OptimizedAppCheck::new(),
             // DebugModeCheck::new(),

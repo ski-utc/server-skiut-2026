@@ -8,7 +8,7 @@ use Prometheus\RenderTextFormat;
 use Spatie\Health\Http\Controllers\HealthCheckResultsController;
 
 /* Health Check */
-Route::get('/health', HealthCheckResultsController::class);
+// Route::get('/health', HealthCheckResultsController::class);
 
 /* Metrics */
 Route::get('/metrics', function (CollectorRegistry $registry) {

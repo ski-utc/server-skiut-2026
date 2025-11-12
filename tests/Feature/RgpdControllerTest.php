@@ -44,16 +44,29 @@ class RgpdControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
+        
+        // Vérifier que les données de l'utilisateur ont été anonymisées
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->id,
+            'firstName' => 'Utilisateur',
+            'lastName' => 'Anonymisé',
+        ]);
     }
 
     public function test_delete_my_data_success()
     {
-        $token = JwtTestHelper::generateToken($this->user->id);
+        $userId = $this->user->id;
+        $token = JwtTestHelper::generateToken($userId);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson('/api/rgpd/delete-my-data');
 
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
+        
+        // Vérifier que l'utilisateur a été supprimé de la DB
+        $this->assertDatabaseMissing('users', [
+            'id' => $userId,
+        ]);
     }
 
     public function test_export_my_data_success()
@@ -68,21 +81,40 @@ class RgpdControllerTest extends TestCase
     public function test_anonymize_all_data_success()
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
-        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/rgpd/anonymize-all-data');
-
+        
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/rgpd/anonymize-all-data', [
+            'simde_key' => 'test_simde_key',
+        ]);
 
         $this->assertGreaterThanOrEqual(200, $response->status());
-        $this->assertLessThan(600, $response->status());
+        $this->assertLessThan(300, $response->status());
+        $this->assertTrue($response->json('success'));
+        
+        // Vérifier que tous les utilisateurs ont été anonymisés
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->id,
+            'firstName' => 'Utilisateur',
+            'lastName' => 'Anonymisé',
+        ]);
     }
 
     public function test_delete_all_data_success()
     {
+        $userId = $this->user->id;
         $token = JwtTestHelper::generateToken($this->adminUser->id);
-        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson('/api/rgpd/delete-all-data');
-
+        
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson('/api/rgpd/delete-all-data', [
+            'simde_key' => 'test_simde_key',
+        ]);
 
         $this->assertGreaterThanOrEqual(200, $response->status());
-        $this->assertLessThan(600, $response->status());
+        $this->assertLessThan(300, $response->status());
+        $this->assertTrue($response->json('success'));
+        
+        // Vérifier que tous les utilisateurs ont été supprimés
+        $this->assertDatabaseMissing('users', [
+            'id' => $userId,
+        ]);
     }
 
     public function test_anonymize_my_data_without_token()

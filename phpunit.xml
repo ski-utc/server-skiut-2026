@@ -33,5 +33,6 @@
         <env name="JWT_PRIVATE_KEY_PATH" value="app/private/keys/private.pem"/>
         <env name="JWT_ALGO" value="RS256"/>
         <env name="PCOV_ENABLED" value="1"/>
+        <env name="SIMDE_KEY" value="test_simde_key"/>
     </php>
 </phpunit>
