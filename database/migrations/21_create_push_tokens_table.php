@@ -13,7 +13,7 @@ return new class () extends Migration {
         Schema::create('push_tokens', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('token')->index();
+            $table->string('token');
             $table->enum('device_type', ['ios', 'android'])->nullable();
             $table->string('device_name')->nullable();
             $table->boolean('active')->default(true);

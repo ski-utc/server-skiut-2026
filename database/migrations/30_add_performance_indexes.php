@@ -104,7 +104,7 @@ return new class () extends Migration {
 
         Schema::table('push_tokens', function (Blueprint $table) {
             $table->index('user_id', 'idx_push_tokens_user');
-            $table->index(['user_id', 'device_id'], 'idx_push_tokens_user_device');
+            $table->index(['user_id', 'token'], 'idx_push_tokens_user_token');
         });
 
         Schema::table('transports', function (Blueprint $table) {
@@ -210,7 +210,7 @@ return new class () extends Migration {
 
         Schema::table('push_tokens', function (Blueprint $table) {
             $table->dropIndex('idx_push_tokens_user');
-            $table->dropIndex('idx_push_tokens_user_device');
+            $table->dropIndex('idx_push_tokens_user_token');
         });
 
         Schema::table('transports', function (Blueprint $table) {
