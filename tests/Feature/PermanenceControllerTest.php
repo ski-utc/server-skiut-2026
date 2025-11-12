@@ -68,7 +68,6 @@ class PermanenceControllerTest extends TestCase
 
     public function test_create_permanence_success()
     {
-        // On skip ce test car il dépend de FirebaseService qui peut ne pas être configuré
         $this->markTestSkipped('Test skipped: requires FirebaseService configuration');
     }
 
@@ -97,8 +96,7 @@ class PermanenceControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        // Vérifier que la permanence a été mise à jour en DB
+
         $this->assertDatabaseHas('permanences', [
             'id' => $permanence->id,
             'name' => 'Updated Permanence',
@@ -125,8 +123,7 @@ class PermanenceControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        // Vérifier que la permanence a été supprimée de la DB
+
         $this->assertDatabaseMissing('permanences', [
             'id' => $permanence->id,
         ]);
@@ -156,7 +153,7 @@ class PermanenceControllerTest extends TestCase
     {
         $response = $this->getJson('/api/permanences/my');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 
     public function test_get_all_permanences_without_permission()

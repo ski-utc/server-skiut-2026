@@ -106,6 +106,6 @@ class AnecdoteControllerTest extends TestCase
     {
         $response = $this->getJson('/api/anecdotes');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

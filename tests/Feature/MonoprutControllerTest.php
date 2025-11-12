@@ -161,6 +161,6 @@ class MonoprutControllerTest extends TestCase
     {
         $response = $this->getJson('/api/articles');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

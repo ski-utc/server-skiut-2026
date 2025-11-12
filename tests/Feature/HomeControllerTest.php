@@ -44,7 +44,7 @@ class HomeControllerTest extends TestCase
     {
         $response = $this->getJson('/api/home/random-data');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 
     public function test_get_weather()

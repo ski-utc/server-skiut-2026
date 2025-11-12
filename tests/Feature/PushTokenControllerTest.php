@@ -114,6 +114,6 @@ class PushTokenControllerTest extends TestCase
             'device_type' => 'ios',
         ]);
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

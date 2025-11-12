@@ -43,6 +43,6 @@ class ContactControllerTest extends TestCase
     {
         $response = $this->getJson('/api/contacts');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

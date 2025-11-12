@@ -100,7 +100,7 @@ class NotificationControllerTest extends TestCase
     {
         $response = $this->getJson('/api/notifications');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 
     public function test_admin_notifications_without_permission()

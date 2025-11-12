@@ -66,7 +66,7 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
     Route::get('/skinder/rooms/{roomId}', [SkinderController::class, 'getRoomDetails']);
 
     /* Vitesse de glisse */
-    Route::put('/user-performances', [UserPerformanceController::class, 'updatePerformance']);
+    Route::put('/update-performance', [UserPerformanceController::class, 'updatePerformance']);
     Route::get('/user-performances', [UserPerformanceController::class, 'getUserPerformances']);
     Route::delete('/user-performances/{sessionId}', [UserPerformanceController::class, 'deletePerformanceSession']);
     Route::get('/classement-performances', [ClassementController::class, 'classementPerformances']);
@@ -85,11 +85,11 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
     Route::get('/permanences/my', [PermanenceController::class, 'getUserPermanences']);
 
     /* Tournée des chambres */
-    Route::get('/room-tours/my', [RoomTourController::class, 'getUserTour']);
+    Route::get('/room-tours/my-tour', [RoomTourController::class, 'getUserTour']);
     Route::get('/room-tours/status', [RoomTourController::class, 'getTourStatusForTraveler']);
     Route::post('/room-tours/visits/{visitId}/mark-visited', [RoomTourController::class, 'markRoomVisited']);
     Route::post('/room-tours/visits/{visitId}/unmark-visited', [RoomTourController::class, 'unmarkVisited']);
-    Route::post('/room-tours/my/reorder', [RoomTourController::class, 'reorderRooms']);
+    Route::post('/room-tours/my-tour/reorder', [RoomTourController::class, 'reorderRooms']);
 
     /* Push Tokens */
     Route::post('/push-tokens', [PushTokenController::class, 'store']);

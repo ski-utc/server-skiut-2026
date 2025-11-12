@@ -27,7 +27,7 @@ class EnsureTokenIsValid
         $token = $request->bearerToken();
 
         if (!$token) {
-            return response()->json(['message' => "JWT absent pour l'authentification",'JWT_ERROR' => true], 400);
+            return response()->json(['message' => "JWT absent pour l'authentification",'JWT_ERROR' => true], 401);
         }
         try {
             $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
@@ -36,9 +36,9 @@ class EnsureTokenIsValid
         } catch (SignatureInvalidException) {
             return response()->json(['message' => 'Signature invalide pour le JWT envoyé','JWT_ERROR' => true], 401);
         } catch (LogicException $e) {
-            return response()->json(['message' => 'Erreur dans la configuration ou les clés JWT', 'JWT_ERROR' => true], 400);
+            return response()->json(['message' => 'Erreur dans la configuration ou les clés JWT', 'JWT_ERROR' => true], 401);
         } catch (UnexpectedValueException $e) {
-            return response()->json(['message' => 'Le JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
+            return response()->json(['message' => 'Le JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 401);
         }
         $id = $decoded->key;
         $user = User::find($id);

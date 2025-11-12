@@ -33,7 +33,7 @@ class UserPerformanceControllerTest extends TestCase
     public function test_update_performance_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->putJson('/api/user-performances', [
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->putJson('/api/update-performance', [
             'speed' => 50.5,
             'distance' => 1000,
             'duration' => 120,
@@ -90,11 +90,11 @@ class UserPerformanceControllerTest extends TestCase
 
     public function test_update_performance_without_token()
     {
-        $response = $this->putJson('/api/user-performances', [
+        $response = $this->putJson('/api/update-performance', [
             'speed' => 50.5,
             'distance' => 1000,
         ]);
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

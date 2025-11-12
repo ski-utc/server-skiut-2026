@@ -113,13 +113,13 @@ class SkinderControllerTest extends TestCase
     {
         $response = $this->getJson('/api/skinder/profiles');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 
     public function test_like_skinder_without_token()
     {
         $response = $this->postJson('/api/skinder/profiles/1/like');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

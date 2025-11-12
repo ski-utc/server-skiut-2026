@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\BackOfficeAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use League\OAuth2\Client\Provider\GenericProvider;
 use Illuminate\Support\Facades\Log;
+use League\OAuth2\Client\Provider\GenericProvider;
 
 class AuthBackOfficeController extends Controller
 {

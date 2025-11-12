@@ -43,6 +43,6 @@ class PlanningControllerTest extends TestCase
     {
         $response = $this->getJson('/api/planning');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

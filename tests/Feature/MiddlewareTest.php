@@ -59,11 +59,11 @@ class MiddlewareTest extends TestCase
         $this->assertTrue($response->json('success'));
     }
 
-    public function test_missing_token_returns_400()
+    public function test_missing_token_returns_401()
     {
         $response = $this->getJson('/api/auth/me');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
         $this->assertTrue($response->json('JWT_ERROR'));
     }
 
@@ -91,7 +91,7 @@ class MiddlewareTest extends TestCase
         $this->assertTrue($response->json('JWT_ERROR'));
     }
 
-    public function test_malformed_token_returns_400()
+    public function test_malformed_token_returns_401()
     {
         $token = JwtTestHelper::generateMalformedToken();
 
@@ -99,7 +99,7 @@ class MiddlewareTest extends TestCase
             'Authorization' => "Bearer {$token}",
         ])->getJson('/api/auth/me');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
         $this->assertTrue($response->json('JWT_ERROR'));
     }
 
@@ -155,11 +155,11 @@ class MiddlewareTest extends TestCase
         $this->assertEquals(403, $response->status());
     }
 
-    public function test_missing_admin_token_returns_400()
+    public function test_missing_admin_token_returns_401()
     {
         $response = $this->getJson('/api/admin');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
         $this->assertTrue($response->json('JWT_ERROR'));
     }
 

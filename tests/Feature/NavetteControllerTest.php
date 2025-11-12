@@ -43,6 +43,6 @@ class NavetteControllerTest extends TestCase
     {
         $response = $this->getJson('/api/navettes');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

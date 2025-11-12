@@ -45,7 +45,7 @@ class AuthControllerTest extends TestCase
     {
         $response = $this->getJson('/api/auth/me');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
         $this->assertTrue($response->json('JWT_ERROR'));
     }
 

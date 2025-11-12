@@ -79,7 +79,7 @@ class RoomTourControllerTest extends TestCase
     public function test_get_user_tour_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/room-tours/my');
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/room-tours/my-tour');
 
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(600, $response->status());
@@ -116,7 +116,7 @@ class RoomTourControllerTest extends TestCase
     public function test_reorder_rooms_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/room-tours/my/reorder', [
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/room-tours/my-tour/reorder', [
             'order' => [1, 2, 3],
         ]);
 
@@ -136,9 +136,9 @@ class RoomTourControllerTest extends TestCase
 
     public function test_get_user_tour_without_token()
     {
-        $response = $this->getJson('/api/room-tours/my');
+        $response = $this->getJson('/api/room-tours/my-tour');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 
     public function test_get_all_tours_without_permission()

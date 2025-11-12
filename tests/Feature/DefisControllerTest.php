@@ -117,6 +117,6 @@ class DefisControllerTest extends TestCase
     {
         $response = $this->getJson('/api/challenges');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 }

@@ -5,16 +5,13 @@
 - optimisier ci et Dockerfile
 - clean l'app (commentaires, ...)
 - ecriture inclusive
-- weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
 - back-office complet
 
-- vérifier vitesse de glisse en arrière plan
 - "prochaine activité" dans la homePage ne fonctionne pas
-- route "room-tours/my-tour" couldn't be found
 - vérifier permamences
   - ajouter plus d'info dans le planning ? Une page pour gérer ça côté member ?
 - vérifier les notifications 
-  - token
+  - save des token
   - classique (push)
   - skinder
   - monoprut
@@ -22,7 +19,8 @@
   - lue / non lue
 - vérifier schedule de notification des permanences
 
-- mise en prod 
-- réactiver tous les healthcheck laravel
-
 Revoir design app défi, monopr'ut ... (surtout les shadow)
+
+- mise en prod 
+- weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
+- réactiver tous les healthcheck laravel

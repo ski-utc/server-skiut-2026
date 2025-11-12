@@ -28,7 +28,7 @@ class HealthServiceProvider extends ServiceProvider
         if (!class_exists(\Spatie\Health\Facades\Health::class)) {
             return;
         }
-        
+
         Health::checks([
             // OptimizedAppCheck::new(),
             // DebugModeCheck::new(),

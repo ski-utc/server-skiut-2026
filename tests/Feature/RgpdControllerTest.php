@@ -44,8 +44,7 @@ class RgpdControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        // Vérifier que les données de l'utilisateur ont été anonymisées
+
         $this->assertDatabaseHas('users', [
             'id' => $this->user->id,
             'firstName' => 'Utilisateur',
@@ -62,8 +61,7 @@ class RgpdControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        // Vérifier que l'utilisateur a été supprimé de la DB
+
         $this->assertDatabaseMissing('users', [
             'id' => $userId,
         ]);
@@ -81,7 +79,7 @@ class RgpdControllerTest extends TestCase
     public function test_anonymize_all_data_success()
     {
         $token = JwtTestHelper::generateToken($this->adminUser->id);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/rgpd/anonymize-all-data', [
             'simde_key' => 'test_simde_key',
         ]);
@@ -89,8 +87,7 @@ class RgpdControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        // Vérifier que tous les utilisateurs ont été anonymisés
+
         $this->assertDatabaseHas('users', [
             'id' => $this->user->id,
             'firstName' => 'Utilisateur',
@@ -102,7 +99,7 @@ class RgpdControllerTest extends TestCase
     {
         $userId = $this->user->id;
         $token = JwtTestHelper::generateToken($this->adminUser->id);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson('/api/rgpd/delete-all-data', [
             'simde_key' => 'test_simde_key',
         ]);
@@ -110,8 +107,7 @@ class RgpdControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        
-        // Vérifier que tous les utilisateurs ont été supprimés
+
         $this->assertDatabaseMissing('users', [
             'id' => $userId,
         ]);
@@ -121,7 +117,7 @@ class RgpdControllerTest extends TestCase
     {
         $response = $this->postJson('/api/rgpd/anonymize-my-data');
 
-        $this->assertEquals(400, $response->status());
+        $this->assertEquals(401, $response->status());
     }
 
     public function test_anonymize_all_data_without_permission()
