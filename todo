@@ -1,4 +1,3 @@
-- définir des index sur les tables (et les utiliser)
 - voir pour avoir 100% de coverage ?
 - faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
 - optimisier ci
