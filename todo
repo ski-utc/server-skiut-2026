@@ -1,6 +1,4 @@
-- voir pour avoir 100% de coverage ?
 - faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
-- optimisier ci
 - clean l'app (commentaires, ...)
 - ecriture inclusive
 - back-office complet

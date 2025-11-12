@@ -1,0 +1,239 @@
+name: Verify Test Build Push
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  PROJECT_IMAGE_TAG: ghcr.io/${{ github.repository }}:${{ github.sha }}
+  PROJECT_IMAGE_LATEST: ghcr.io/${{ github.repository }}:latest
+
+jobs:
+  prepare-dependencies:
+    runs-on: ubuntu-latest
+    container: laravelsail/php83-composer:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: composer-cache
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+
+  php-cs-fixer:
+    runs-on: ubuntu-latest
+    needs: prepare-dependencies
+    container: laravelsail/php83-composer:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      - run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  phpstan:
+    runs-on: ubuntu-latest
+    needs: prepare-dependencies
+    container: laravelsail/php83-composer:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      - run: vendor/bin/phpstan analyse --memory-limit=512M app bootstrap config database public routes tests
+
+  security-checker:
+    runs-on: ubuntu-latest
+    needs: prepare-dependencies
+    container: laravelsail/php83-composer:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      - name: Security check
+        run: php vendor/bin/security-checker security:check
+        continue-on-error: true
+
+  composer-outdated:
+    runs-on: ubuntu-latest
+    needs: prepare-dependencies
+    container: laravelsail/php83-composer:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      - name: Check outdated dependencies
+        run: composer outdated --direct
+        continue-on-error: true
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: prepare-dependencies
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    container: laravelsail/php83-composer:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+      
+      - name: Cache PHP extensions
+        uses: actions/cache@v4
+        id: php-ext-cache
+        with:
+          path: /usr/local/lib/php/extensions
+          key: php-ext-gd-apcu-${{ runner.os }}
+      
+      - name: Install PHP extensions
+        if: steps.php-ext-cache.outputs.cache-hit != 'true'
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
+          pecl install apcu
+          docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
+          docker-php-ext-install gd pdo_mysql mysqli
+      
+      - name: Enable extensions
+        run: |
+          docker-php-ext-enable apcu gd
+          echo "apc.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini
+      
+      - name: Prepare Laravel
+        run: |
+          cp .env.ci .env
+          php artisan key:generate
+          php artisan jwt:generate
+          mkdir -p database && touch database/database.sqlite
+      
+      - name: Run migrations
+        run: php artisan migrate --force
+      
+      - name: Run tests
+        run: ./vendor/bin/phpunit
+      
+  build_docker_image:
+    runs-on: ubuntu-latest
+    needs: [phpstan, run-tests]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.SHOTGUN_SUBMODULE_SSH_KEY }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.PROJECT_IMAGE_TAG }}
+            ${{ env.PROJECT_IMAGE_LATEST }}
+          cache-from: type=registry,ref=${{ env.PROJECT_IMAGE_LATEST }}
+          cache-to: type=inline
+
+  integration_test:
+    runs-on: ubuntu-latest
+    needs: build_docker_image
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: skiutc_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Run container
+        run: |
+          docker run -d -p 8090:80 --name app \
+            --network host \
+            -e APP_ENV=testing \
+            -e DB_CONNECTION=mysql \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_PORT=3306 \
+            -e DB_DATABASE=skiutc_test \
+            -e DB_USERNAME=root \
+            -e DB_PASSWORD=root \
+            ${{ env.PROJECT_IMAGE_LATEST }}
+      
+      - name: Initialize application
+        run: |
+          docker exec app php artisan jwt:generate
+          docker exec app php artisan migrate --force --seed
+      
+      - name: Wait for application
+        run: |
+          for i in {1..30}; do
+            if docker exec app curl -f http://localhost:80/skiutc/health 2>/dev/null; then
+              echo "Application is ready!"
+              exit 0
+            fi
+            echo "Waiting for application... ($i/30)"
+            sleep 2
+          done
+          echo "Application failed to start"
+          echo "=== Container logs ==="
+          docker logs app
+          echo "=== Laravel logs ==="
+          docker exec app cat storage/logs/laravel.log || echo "No Laravel logs found"
+          exit 1
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop app || true
+          docker rm app || true
