@@ -13,7 +13,7 @@ return new class () extends Migration {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id('id');
             $table->unsignedInteger('roomNumber')->unique();
-            $table->unsignedTinyInteger('capacity'); // 4 ou 6
+            $table->unsignedTinyInteger('capacity');
             $table->string('name')->unique()->nullable();
             $table->string('mood')->nullable();
             $table->string('photoPath')->nullable();

@@ -12,13 +12,13 @@ return new class () extends Migration {
     {
         Schema::create('transports', function (Blueprint $table) {
             $table->id();
-            $table->string('departure'); // Paris / Compiègne / Les 2 Alpes
+            $table->string('departure');
             $table->time('horaire_depart')->nullable();
-            $table->string('arrival'); // Paris / Compiègne / Les 2 Alpes
+            $table->string('arrival');
             $table->time('horaire_arrivee')->nullable();
             $table->string('colour');
             $table->string('colourName');
-            $table->string('type'); // aller / retour
+            $table->enum('type', ['aller', 'retour']);
             $table->timestamps();
         });
     }
