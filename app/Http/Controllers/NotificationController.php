@@ -30,22 +30,18 @@ class NotificationController extends Controller
         try {
             $user_id = $request->user['id'];
 
-            $generalNotifications = Notification::where('display', true)
-                ->where(function ($query) {
-                    $query->where('type', 'global')
-                          ->orWhere('general', true);
-                })
+            $user = User::findOrFail($user_id);
+
+            $generalNotifications = Notification::displayed()
+                ->global()
                 ->orderBy('created_at', 'desc');
 
-            $targetedNotifications = Notification::where('display', true)
-                ->where('type', 'targeted')
-                ->whereJsonContains('target_users', $user_id)
+            $targetedNotifications = Notification::displayed()
+                ->forUser($user_id)
                 ->orderBy('created_at', 'desc');
 
-            $user = User::find($user_id);
-            $roomNotifications = Notification::where('display', true)
-                ->where('type', 'room_based')
-                ->whereJsonContains('target_rooms', $user->room_id)
+            $roomNotifications = Notification::displayed()
+                ->forRoom($user->getRoomId())
                 ->orderBy('created_at', 'desc');
 
             $allNotifications = $generalNotifications->get()
@@ -55,18 +51,14 @@ class NotificationController extends Controller
                 ->values();
 
             $data = $allNotifications->map(function ($notification) use ($user_id) {
-                $userNotification = UserNotification::where('user_id', $user_id)
-                    ->where('notification_id', $notification->id)
-                    ->first();
-
                 return [
                     'id' => $notification->id,
                     'title' => $notification->title,
                     'description' => $notification->description,
                     'type' => $notification->type,
                     'created_at' => $notification->created_at,
-                    'read' => $userNotification ? $userNotification->read : false,
-                    'read_at' => $userNotification ? $userNotification->read_at : null,
+                    'read' => $notification->isReadBy($user_id),
+                    'read_at' => $notification->userNotifications()->where('user_id', $user_id)->first()?->read_at ?? null,
                 ];
             });
 
@@ -158,7 +150,13 @@ class NotificationController extends Controller
                 'display' => 'boolean'
             ]);
 
-            $notification = Notification::create([
+            $recipientIds = $this->getRecipientIds((object)[
+                'type' => $validated['type'],
+                'target_users' => $validated['target_users'] ?? null,
+                'target_rooms' => $validated['target_rooms'] ?? null,
+            ]);
+
+            $notification = Notification::createWithRecipients([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
                 'sender_id' => $request->user['id'],
@@ -167,17 +165,7 @@ class NotificationController extends Controller
                 'target_rooms' => $validated['target_rooms'] ?? null,
                 'general' => $validated['type'] === 'global',
                 'display' => $validated['display'] ?? true,
-            ]);
-
-            $recipientIds = $this->getRecipientIds($notification);
-
-            foreach ($recipientIds as $recipientId) {
-                UserNotification::create([
-                    'user_id' => $recipientId,
-                    'notification_id' => $notification->id,
-                    'read' => false
-                ]);
-            }
+            ], $recipientIds);
 
             if ($validated['send_push'] ?? true) {
                 $pushResult = $this->firebaseService->sendNotification(
@@ -220,19 +208,13 @@ class NotificationController extends Controller
 
         try {
             $user_id = $request->user['id'];
+            $notification = Notification::findOrFail($notificationId);
 
-            $userNotification = UserNotification::where('user_id', $user_id)
-                ->where('notification_id', $notificationId)
-                ->first();
+            $success = $notification->markAsReadBy($user_id);
 
-            if (!$userNotification) {
+            if (!$success) {
                 return response()->json(['success' => false, 'message' => 'Notification non trouvée'], 404);
             }
-
-            $userNotification->update([
-                'read' => true,
-                'read_at' => now()
-            ]);
 
             return response()->json(['success' => true, 'message' => 'Notification marquée comme lue']);
         } catch (\Exception $e) {

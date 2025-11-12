@@ -43,12 +43,7 @@ class RgpdController extends Controller
 
             DB::beginTransaction();
 
-            $user->update([
-                'firstName' => 'Utilisateur',
-                'lastName' => 'Anonymisé',
-                'email' => 'anonyme_' . $user_id . '@etu.utc.fr',
-                'cas' => 'anonyme_' . $user_id,
-            ]);
+            $user->anonymize();
 
             Anecdote::where('user_id', $user_id)->update([
                 'text' => 'Contenu anonymisé'
@@ -283,12 +278,7 @@ class RgpdController extends Controller
 
             $users = User::all();
             foreach ($users as $user) {
-                $user->update([
-                    'firstName' => 'Utilisateur',
-                    'lastName' => 'Anonymisé',
-                    'email' => 'anonyme_' . $user->id . '@etu.utc.fr',
-                    'cas' => 'anonyme_' . $user->id,
-                ]);
+                $user->anonymize();
             }
 
             Anecdote::query()->update(['text' => 'Contenu anonymisé']);

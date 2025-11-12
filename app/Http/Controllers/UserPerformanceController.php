@@ -43,7 +43,7 @@ class UserPerformanceController extends Controller
                 'session_date' => now(),
             ]);
 
-            $allSessions = PerformanceSession::where('user_id', $user_id)->get();
+            $allSessions = PerformanceSession::byUser($user_id)->get();
             $sessionCount = $allSessions->count();
 
             $globalStats = [
@@ -82,8 +82,8 @@ class UserPerformanceController extends Controller
         try {
             $user_id = $request->user['id'];
 
-            $performanceSessions = PerformanceSession::where('user_id', $user_id)
-                ->orderBy('created_at', 'desc')
+            $performanceSessions = PerformanceSession::byUser($user_id)
+                ->orderByDate()
                 ->get();
 
             $sessions = $performanceSessions->map(function ($session) {

@@ -20,9 +20,9 @@ class AdminController extends Controller
     {
         try {
             $user_id = $request->user['id'];
-            $user = User::find($user_id);
+            $user = User::findOrFail($user_id);
 
-            if ($user && $user->admin) {
+            if ($user->isAdmin()) {
                 return response()->json(['success' => true, 'message' => 'Vous êtes admin.'], 200);
             } else {
                 return response()->json(['success' => false, 'message' => 'Vous n\'êtes pas admin.'], 403);
@@ -52,11 +52,11 @@ class AdminController extends Controller
 
             switch ($filter) {
                 case 'pending':
-                    $query->where('valid', false);
+                    $query->pending();
                     break;
 
                 case 'valid':
-                    $query->where('valid', true);
+                    $query->valid();
                     break;
 
                 case 'all':
@@ -172,14 +172,11 @@ class AdminController extends Controller
 
             switch ($filter) {
                 case 'pending':
-                    $query->where('valid', false);
+                    $query->pending();
                     break;
 
                 case 'reported':
-                    $query->whereHas('warns', function ($q) {
-                        $q->groupBy('anecdote_id')
-                        ->havingRaw('COUNT(*) > 0');
-                    });
+                    $query->reported();
                     break;
 
                 case 'all':
@@ -192,7 +189,7 @@ class AdminController extends Controller
                 ->get();
 
             foreach ($anecdotes as $anecdote) {
-                $anecdote->nbWarns = $anecdote->warns()->count();
+                $anecdote->nbWarns = $anecdote->getWarnsCount();
             }
 
             return response()->json([
@@ -218,14 +215,12 @@ class AdminController extends Controller
         try {
 
             $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
-            $nbLikes = $anecdote->likes()->count();
-            $nbWarns = $anecdote->warns()->count();
 
             return response()->json([
                 'success' => true,
                 'data' => $anecdote,
-                'nbLikes' => $nbLikes,
-                'nbWarns' => $nbWarns
+                'nbLikes' => $anecdote->getLikesCount(),
+                'nbWarns' => $anecdote->getWarnsCount()
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des détails de l\'anecdote: ' . $e->getMessage());

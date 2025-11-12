@@ -51,7 +51,7 @@ class PlanningController extends Controller
 
             $allEvents = collect($activities);
 
-            if ($user && $user->member) {
+            if ($user && $user->isMember()) {
                 $startDate = now()->subDays(1);
                 $endDate = now()->addDays(30);
 
@@ -101,7 +101,7 @@ class PlanningController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $data,
-                'user_is_member' => $user ? $user->member : false
+                'user_is_member' => $user ? $user->isMember() : false
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération du planning: ' . $e->getMessage());

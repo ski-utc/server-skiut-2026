@@ -27,9 +27,9 @@ class PermanenceController extends Controller
     {
         try {
             $user_id = $request->user['id'];
-            $user = User::find($user_id);
+            $user = User::findOrFail($user_id);
 
-            if (!$user || !$user->member) {
+            if (!$user->isMember()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès réservé aux membres de l\'association'
@@ -150,8 +150,8 @@ class PermanenceController extends Controller
         ]);
 
         try {
-            $responsible = User::find($validated['responsible_user_id']);
-            if (!$responsible->member) {
+            $responsible = User::findOrFail($validated['responsible_user_id']);
+            if (!$responsible->isMember()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Le responsable doit être membre de l\'association'
@@ -267,7 +267,7 @@ class PermanenceController extends Controller
     public function getAssociationMembers()
     {
         try {
-            $members = User::where('member', true)
+            $members = User::membersOnly()
                 ->select('id', 'firstName', 'lastName', 'email', 'room_id')
                 ->orderBy('firstName')
                 ->get()

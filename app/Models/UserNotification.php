@@ -40,4 +40,64 @@ class UserNotification extends Model
     {
         return $this->belongsTo(Notification::class);
     }
+
+    /**
+     * Mark notification as read.
+     *
+     * @return bool
+     */
+    public function markAsRead()
+    {
+        return $this->update([
+            'read' => true,
+            'read_at' => now()
+        ]);
+    }
+
+    /**
+     * Mark notification as unread.
+     *
+     * @return bool
+     */
+    public function markAsUnread()
+    {
+        return $this->update([
+            'read' => false,
+            'read_at' => null
+        ]);
+    }
+
+    /**
+     * Scope a query to only include unread notifications.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeUnread($query)
+    {
+        return $query->where('read', false);
+    }
+
+    /**
+     * Scope a query to only include read notifications.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeRead($query)
+    {
+        return $query->where('read', true);
+    }
+
+    /**
+     * Scope a query for notifications of a specific user.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $user_id
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForUser($query, $user_id)
+    {
+        return $query->where('user_id', $user_id);
+    }
 }

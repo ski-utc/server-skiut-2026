@@ -6,7 +6,6 @@ use App\Models\Notification;
 use App\Models\Room;
 use App\Models\SkinderLike;
 use App\Models\User;
-use App\Models\UserNotification;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -24,22 +23,27 @@ class SkinderController extends Controller
     {
         try {
             $user_id = $request->user['id'];
-            $roomId = User::where('id', $user_id)->first()->room_id;
+            $user = User::findOrFail($user_id);
+            $myRoom = Room::findOrFail($user->getRoomId());
 
-            $photoPath = Room::where('id', $roomId)->first()->photoPath;
-            $relativePath = str_replace('storage/', '', $photoPath);
-
-            if (!$photoPath || !Storage::disk('public')->exists($relativePath)) {
+            if (!$myRoom->hasPhoto()) {
                 return response()->json(['success' => false, 'message' => 'NoPhoto']);
             }
 
-            $room = Room::whereNotIn('id', function ($query) use ($roomId) {
+            $photoPath = $myRoom->photoPath;
+            $relativePath = str_replace('storage/', '', $photoPath);
+
+            if (!Storage::disk('public')->exists($relativePath)) {
+                return response()->json(['success' => false, 'message' => 'NoPhoto']);
+            }
+
+            $room = Room::whereNotIn('id', function ($query) use ($myRoom) {
                 $query->select('room_liked_id')
                       ->from('skinder_likes')
-                      ->where('room_liker_id', $roomId);
+                      ->where('room_liker_id', $myRoom->id);
             })
-            ->whereNot('id', $roomId)
-            ->whereNotNull('photoPath')
+            ->whereNot('id', $myRoom->id)
+            ->withPhotos()
             ->inRandomOrder()
             ->first();
 
@@ -77,7 +81,8 @@ class SkinderController extends Controller
 
         try {
             $user_id = $request->user['id'];
-            $roomLikeur = User::where('id', $user_id)->first()->room_id;
+            $user = User::findOrFail($user_id);
+            $roomLikeur = $user->getRoomId();
             $roomLiked = $validated['roomLiked'];
 
             if ($roomLikeur == $roomLiked) {
@@ -89,20 +94,18 @@ class SkinderController extends Controller
                 'room_liked_id' => $roomLiked,
             ]);
 
-            $reverseLike = SkinderLike::where('room_liker_id', $roomLiked)
-                ->where('room_liked_id', $roomLikeur)
-                ->exists();
+            $hasMatch = SkinderLike::hasMatch($roomLikeur, $roomLiked);
 
-            if ($reverseLike) {
-                $otherRoom = Room::where('id', $roomLiked)->first();
-                $otherRoomResp = User::where('id', $otherRoom->user_id)->first();
-                $myRoom = Room::where('id', $roomLikeur)->first();
+            if ($hasMatch) {
+                $otherRoom = Room::findOrFail($roomLiked);
+                $otherRoomResp = User::find($otherRoom->user_id);
+                $myRoom = Room::findOrFail($roomLikeur);
 
                 $this->sendMatchNotifications($myRoom, $otherRoom);
 
                 return response()->json([
                     'success' => true,
-                    'match' => $reverseLike,
+                    'match' => $hasMatch,
                     'myRoomImage' => asset($myRoom->photoPath),
                     'otherRoomImage' => asset($otherRoom->photoPath),
                     'otherRoomNumber' => $otherRoom->roomNumber,
@@ -111,7 +114,7 @@ class SkinderController extends Controller
             } else {
                 return response()->json([
                     'success' => true,
-                    'match' => $reverseLike,
+                    'match' => $hasMatch,
                 ]);
             }
         } catch (\Exception $e) {
@@ -130,10 +133,10 @@ class SkinderController extends Controller
     {
         try {
             $user_id = $request->user['id'];
-            ;
-            $roomId = User::where('id', $user_id)->first()->room_id;
+            $user = User::findOrFail($user_id);
+            $roomId = $user->getRoomId();
 
-            $matchedRooms = SkinderLike::where('room_liker_id', $roomId)
+            $matchedRooms = SkinderLike::fromRoom($roomId)
                 ->whereIn('room_liked_id', function ($query) use ($roomId) {
                     $query->select('room_liker_id')
                           ->from('skinder_likes')
@@ -223,7 +226,8 @@ class SkinderController extends Controller
             ]);
 
             $user_id = $request->user['id'];
-            $roomId = User::where('id', $user_id)->first()->room_id;
+            $user = User::findOrFail($user_id);
+            $roomId = $user->getRoomId();
 
             $room = Room::findOrFail($roomId);
 
@@ -256,8 +260,9 @@ class SkinderController extends Controller
         ]);
 
         $user_id = $request->user['id'];
-        $roomId = User::where('id', $user_id)->first()->room_id;
-        $room = Room::where('id', $roomId)->first();
+        $user = User::findOrFail($user_id);
+        $roomId = $user->getRoomId();
+        $room = Room::findOrFail($roomId);
 
         if (!$room) {
             return response()->json(['success' => false, 'message' => 'Chambre introuvable'], 404);
@@ -296,8 +301,8 @@ class SkinderController extends Controller
             }
 
             $respUser = User::find($room->user_id);
-            $likesReceived = SkinderLike::where('room_liked_id', $roomId)->count();
-            $likesGiven = SkinderLike::where('room_liker_id', $roomId)->count();
+            $likesReceived = SkinderLike::toRoom($roomId)->count();
+            $likesGiven = SkinderLike::fromRoom($roomId)->count();
 
             $matches = SkinderLike::where('room_liker_id', $roomId)
                 ->whereIn('room_liked_id', function ($query) use ($roomId) {
@@ -358,7 +363,7 @@ class SkinderController extends Controller
                 return;
             }
 
-            $notification = Notification::create([
+            $notification = Notification::createWithRecipients([
                 'title' => '🎉 Nouveau match Skinder ! 🎉',
                 'description' => "Les chambres {$room1->roomNumber} et {$room2->roomNumber} ont matché ! C'est le moment de faire connaissance et de se rencontrer. Bonne chance ! 🎉",
                 'sender_id' => null,
@@ -368,15 +373,7 @@ class SkinderController extends Controller
                 'general' => false,
                 'display' => true,
                 'push_sent' => true
-            ]);
-
-            foreach ($allOccupants as $user) {
-                UserNotification::create([
-                    'user_id' => $user->id,
-                    'notification_id' => $notification->id,
-                    'read' => false
-                ]);
-            }
+            ], $allOccupants->pluck('id')->toArray());
 
             $firebaseService = app(FirebaseNotificationService::class);
             $userIds = $allOccupants->pluck('id')->toArray();

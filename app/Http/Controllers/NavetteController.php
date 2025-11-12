@@ -18,14 +18,7 @@ class NavetteController extends Controller
     {
         try {
             $id = $request->user['id'];
-            $user = User::with('transports')->where('id', $id)->first();
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Utilisateur non trouvé'
-                ], 404);
-            }
+            $user = User::with('transports')->findOrFail($id);
 
             $transports = $user->transports;
             $transportsByType = [

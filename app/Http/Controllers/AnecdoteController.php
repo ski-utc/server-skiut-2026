@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anecdote;
-use App\Models\AnecdotesLike;
-use App\Models\AnecdotesWarn;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -29,7 +27,7 @@ class AnecdoteController extends Controller
             $quantity = $validated['quantity'] ?? 10;
 
             $anecdotes = Anecdote::withCount('likes')
-                ->where('valid', true)
+                ->valid()
                 ->orderBy('created_at', 'desc')
                 ->take((int)$quantity)
                 ->get();
@@ -39,9 +37,9 @@ class AnecdoteController extends Controller
                     'id' => $anecdote->id,
                     'text' => $anecdote->text,
                     'room' => $anecdote->room,
-                    'liked' => $anecdote->likes()->where('user_id', $user_id)->exists(),
+                    'liked' => $anecdote->isLikedBy($user_id),
                     'nbLikes' => $anecdote->likes_count,
-                    'warned' => $anecdote->warns()->where('user_id', $user_id)->exists(),
+                    'warned' => $anecdote->isWarnedBy($user_id),
                     'authorId' => $anecdote->user_id,
                 ];
             });
@@ -68,22 +66,14 @@ class AnecdoteController extends Controller
             ]);
 
             $user_id = $request->user['id'];
+            $anecdote = Anecdote::findOrFail($anecdoteId);
 
-            $existingLike = AnecdotesLike::where('user_id', $user_id)
-                ->where('anecdote_id', $anecdoteId)
-                ->first();
+            $changed = $anecdote->toggleLike($user_id, $validated['like']);
 
-            if ($validated['like']) {
-                if (!$existingLike) {
-                    AnecdotesLike::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
-                    return response()->json(['success' => true, 'liked' => true]);
-                }
-            } else {
-                if ($existingLike) {
-                    $existingLike->delete();
-                    return response()->json(['success' => true, 'liked' => false]);
-                }
+            if ($changed) {
+                return response()->json(['success' => true, 'liked' => $validated['like']]);
             }
+
             return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
         } catch (\Exception $e) {
             Log::error('Erreur lors du like: ' . $e->getMessage());
@@ -106,22 +96,14 @@ class AnecdoteController extends Controller
             ]);
 
             $user_id = $request->user['id'];
+            $anecdote = Anecdote::findOrFail($anecdoteId);
 
-            $existingWarn = AnecdotesWarn::where('user_id', $user_id)
-                ->where('anecdote_id', $anecdoteId)
-                ->first();
+            $changed = $anecdote->toggleWarn($user_id, $validated['warn']);
 
-            if ($validated['warn']) {
-                if (!$existingWarn) {
-                    AnecdotesWarn::create(['user_id' => $user_id, 'anecdote_id' => $anecdoteId]);
-                    return response()->json(['success' => true, 'warn' => true]);
-                }
-            } else {
-                if ($existingWarn) {
-                    $existingWarn->delete();
-                    return response()->json(['success' => true, 'warn' => false]);
-                }
+            if ($changed) {
+                return response()->json(['success' => true, 'warn' => $validated['warn']]);
             }
+
             return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
         } catch (\Exception $e) {
             Log::error('Erreur lors du warn: ' . $e->getMessage());

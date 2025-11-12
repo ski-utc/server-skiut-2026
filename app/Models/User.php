@@ -106,4 +106,71 @@ class User extends Authenticatable
     {
         return $this->hasMany(PushToken::class, 'user_id')->where('active', true);
     }
+
+    /**
+     * Check if the user is a member.
+     *
+     * @return bool
+     */
+    public function isMember()
+    {
+        return (bool) $this->member;
+    }
+
+    /**
+     * Check if the user is an admin.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return (bool) $this->admin;
+    }
+
+    /**
+     * Get the room ID of the user.
+     *
+     * @return int|null
+     */
+    public function getRoomId()
+    {
+        return $this->room_id;
+    }
+
+    /**
+     * Scope a query to only include members.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeMembersOnly($query)
+    {
+        return $query->where('member', true);
+    }
+
+    /**
+     * Scope a query to only include admins.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeAdminsOnly($query)
+    {
+        return $query->where('admin', true);
+    }
+
+    /**
+     * Anonymize user data for RGPD compliance.
+     *
+     * @return bool
+     */
+    public function anonymize()
+    {
+        return $this->update([
+            'firstName' => 'Utilisateur',
+            'lastName' => 'Anonymisé',
+            'email' => 'anonyme_' . $this->id . '@etu.utc.fr',
+            'cas' => 'anonyme_' . $this->id,
+        ]);
+    }
 }

@@ -19,7 +19,7 @@ class MonoprutController extends Controller
     public function getArticles(Request $request)
     {
         try {
-            $articles = Monoprut::where('receiver_room_id', null)->get();
+            $articles = Monoprut::available()->get();
             return response()->json([
                 'success' => true,
                 'data' => $articles,
@@ -82,13 +82,9 @@ class MonoprutController extends Controller
     public function shotgunArticle(Request $request, $articleId)
     {
         try {
-            $article = Monoprut::find($articleId);
-            if (!$article) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Article non trouvé.',
-                ], 404);
-            } elseif ($article->receiver_room_id != null) {
+            $article = Monoprut::findOrFail($articleId);
+
+            if (!$article->isAvailable()) {
                 return response()->json([
                     'success' => false,
                     'message' => "Article déjà shotgun par quelqu'un, sorryyy",
@@ -106,14 +102,13 @@ class MonoprutController extends Controller
             }
 
             $room = $receiverUser->room;
-            $article->receiver_room_id = $room->id;
-            $article->save();
+            $article->shotgunBy($room->id);
 
             // Envoyer une notification au donneur
             try {
-                $giverRoom = \App\Models\Room::find($article->giver_room_id);
+                $giverRoom = $article->giverRoom;
                 if ($giverRoom) {
-                    $giverUsers = User::where('room_id', $giverRoom->id)->pluck('id')->toArray();
+                    $giverUsers = $giverRoom->getUserIds();
                     if (!empty($giverUsers)) {
                         $firebaseService = app(\App\Services\FirebaseNotificationService::class);
                         $firebaseService->sendNotification(
@@ -165,7 +160,7 @@ class MonoprutController extends Controller
             }
 
             $room = $user->room;
-            $articles = Monoprut::where('giver_room_id', $room->id)->get();
+            $articles = Monoprut::givenBy($room->id)->get();
 
             $articles = $articles->map(function ($article) {
                 if ($article->receiver_room_id) {
@@ -218,8 +213,8 @@ class MonoprutController extends Controller
             }
 
             $room = $user->room;
-            $articles = Monoprut::where('receiver_room_id', $room->id)
-                ->where('retrieved', false)
+            $articles = Monoprut::receivedBy($room->id)
+                ->notRetrieved()
                 ->get();
 
             $articles = $articles->map(function ($article) {

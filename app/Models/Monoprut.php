@@ -64,4 +64,108 @@ class Monoprut extends Model
     {
         return $this->receiver_room_id == $user->room_id;
     }
+
+    /**
+     * Check if the article is available (not shotgunned).
+     *
+     * @return bool
+     */
+    public function isAvailable()
+    {
+        return $this->receiver_room_id === null;
+    }
+
+    /**
+     * Shotgun the article by a room.
+     *
+     * @param int $room_id
+     * @return bool
+     */
+    public function shotgunBy($room_id)
+    {
+        if (!$this->isAvailable()) {
+            return false;
+        }
+
+        return $this->update(['receiver_room_id' => $room_id]);
+    }
+
+    /**
+     * Mark article as retrieved.
+     *
+     * @return bool
+     */
+    public function markAsRetrieved()
+    {
+        return $this->update(['retrieved' => true]);
+    }
+
+    /**
+     * Scope a query to only include available articles.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeAvailable($query)
+    {
+        return $query->whereNull('receiver_room_id');
+    }
+
+    /**
+     * Scope a query for articles given by a room.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $room_id
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeGivenBy($query, $room_id)
+    {
+        return $query->where('giver_room_id', $room_id);
+    }
+
+    /**
+     * Scope a query for articles received by a room.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $room_id
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeReceivedBy($query, $room_id)
+    {
+        return $query->where('receiver_room_id', $room_id);
+    }
+
+    /**
+     * Scope a query to only include retrieved articles.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeRetrieved($query)
+    {
+        return $query->where('retrieved', true);
+    }
+
+    /**
+     * Scope a query to only include non-retrieved articles.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeNotRetrieved($query)
+    {
+        return $query->where('retrieved', false);
+    }
+
+    /**
+     * Scope a query by article type.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $type
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeOfType($query, $type)
+    {
+        return $query->where('type', $type);
+    }
 }

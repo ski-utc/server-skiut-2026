@@ -21,13 +21,9 @@ class DefisController extends Controller
     {
         try {
             $id = $request->user['id'];
-            $user = User::with('room')->where('id', $id)->first();
+            $user = User::with('room')->findOrFail($id);
 
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-            }
-
-            $userRoomId = $user->room_id;
+            $userRoomId = $user->getRoomId();
 
             $challenges = Challenge::with(['challengeProofs' => function ($query) use ($userRoomId) {
                 $query->where('room_id', $userRoomId);
@@ -77,14 +73,11 @@ class DefisController extends Controller
     {
         try {
             $id = $request->user['id'];
-            $user = User::with('room')->where('id', $id)->first();
+            $user = User::with('room')->findOrFail($id);
 
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-            }
-            $userRoomId = $user->room_id;
+            $userRoomId = $user->getRoomId();
 
-            $proof = ChallengeProof::where('challenge_id', $challengeId)->where('room_id', $userRoomId)->first();
+            $proof = ChallengeProof::byChallenge($challengeId)->byRoom($userRoomId)->first();
 
             if (!$proof) {
                 return response()->json([
@@ -129,12 +122,9 @@ class DefisController extends Controller
         ]);
 
         $id = $request->user['id'];
-        $user = User::with('room')->where('id', $id)->first();
+        $user = User::with('room')->findOrFail($id);
 
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-        }
-        $userRoomId = $user->room_id;
+        $userRoomId = $user->getRoomId();
 
         $defiId = $validated['defiId'];
         $file = $request->file('media');
@@ -162,8 +152,8 @@ class DefisController extends Controller
 
         try {
 
-            $existingProof = ChallengeProof::where('challenge_id', $defiId)
-                ->where('room_id', $userRoomId)
+            $existingProof = ChallengeProof::byChallenge($defiId)
+                ->byRoom($userRoomId)
                 ->first();
 
             if ($existingProof) {
@@ -207,17 +197,13 @@ class DefisController extends Controller
 
         try {
             $id = $request->user['id'];
-            $user = User::with('room')->where('id', $id)->first();
+            $user = User::with('room')->findOrFail($id);
 
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-            }
-
-            $userRoomId = $user->room_id;
+            $userRoomId = $user->getRoomId();
 
             $defiId = $validated['defiId'];
-            $proof = ChallengeProof::where('challenge_id', $defiId)
-                ->where('room_id', $userRoomId)
+            $proof = ChallengeProof::byChallenge($defiId)
+                ->byRoom($userRoomId)
                 ->first();
 
             if (!$proof) {

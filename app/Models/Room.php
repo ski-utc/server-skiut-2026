@@ -95,4 +95,66 @@ class Room extends Model
     {
         return $this->hasMany(SkinderLike::class, 'room_liker_id');
     }
+
+    /**
+     * Get all user IDs in this room.
+     *
+     * @return array
+     */
+    public function getUserIds()
+    {
+        return $this->users()->pluck('id')->toArray();
+    }
+
+    /**
+     * Get all member users in this room.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getMemberUsers()
+    {
+        return $this->users()->where('member', true)->get();
+    }
+
+    /**
+     * Get all member user IDs in this room.
+     *
+     * @return array
+     */
+    public function getMemberUserIds()
+    {
+        return $this->users()->where('member', true)->pluck('id')->toArray();
+    }
+
+    /**
+     * Add points to the room.
+     *
+     * @param int $points
+     * @return bool
+     */
+    public function addPoints($points)
+    {
+        return $this->increment('totalPoints', $points);
+    }
+
+    /**
+     * Check if room has a photo.
+     *
+     * @return bool
+     */
+    public function hasPhoto()
+    {
+        return !empty($this->photoPath);
+    }
+
+    /**
+     * Scope a query to only include rooms with photos.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithPhotos($query)
+    {
+        return $query->whereNotNull('photoPath');
+    }
 }

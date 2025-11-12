@@ -198,9 +198,9 @@ class RoomTourController extends Controller
     {
         try {
             $user_id = $request->user['id'];
-            $user = User::find($user_id);
+            $user = User::findOrFail($user_id);
 
-            if (!$user || !$user->member) {
+            if (!$user->isMember()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès réservé aux membres de l\'association'
@@ -383,9 +383,9 @@ class RoomTourController extends Controller
 
         try {
             $user_id = $request->user['id'];
-            $user = User::find($user_id);
+            $user = User::findOrFail($user_id);
 
-            if (!$user || !$user->member) {
+            if (!$user->isMember()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès réservé aux membres de l\'association'
@@ -436,9 +436,9 @@ class RoomTourController extends Controller
     {
         try {
             $user_id = $request->user['id'];
-            $user = User::find($user_id);
+            $user = User::findOrFail($user_id);
 
-            if (!$user || !$user->member) {
+            if (!$user->isMember()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès réservé aux membres de l\'association'
@@ -490,9 +490,9 @@ class RoomTourController extends Controller
 
         try {
             $user_id = $request->user['id'];
-            $user = User::find($user_id);
+            $user = User::findOrFail($user_id);
 
-            if (!$user || !$user->member) {
+            if (!$user->isMember()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès réservé aux membres de l\'association'
