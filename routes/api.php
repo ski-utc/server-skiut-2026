@@ -15,7 +15,7 @@ use App\Http\Controllers\PlanningController;
 use App\Http\Controllers\PushTokenController;
 use App\Http\Controllers\RoomTourController;
 use App\Http\Controllers\SkinderController;
-use App\Http\Controllers\UserPerformanceController;
+use App\Http\Controllers\UerformanceController;
 use App\Http\Middleware\EnsureAdminTokenIsValid;
 use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Support\Facades\Route;
@@ -66,9 +66,9 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
     Route::get('/skinder/rooms/{roomId}', [SkinderController::class, 'getRoomDetails']);
 
     /* Vitesse de glisse */
-    Route::put('/update-performance', [UserPerformanceController::class, 'updatePerformance']);
-    Route::get('/user-performances', [UserPerformanceController::class, 'getUserPerformances']);
-    Route::delete('/user-performances/{sessionId}', [UserPerformanceController::class, 'deletePerformanceSession']);
+    Route::post('/create-performance', [PerformanceController::class, 'createPerformance']);
+    Route::get('/user-performances', [PerformanceController::class, 'getUserPerformances']);
+    Route::delete('/user-performances/{sessionId}', [PerformanceController::class, 'deletePerformanceSession']);
     Route::get('/classement-performances', [ClassementController::class, 'classementPerformances']);
 
     /* Monoprut */
@@ -146,5 +146,3 @@ Route::middleware([EnsureAdminTokenIsValid::class])->group(function () {
     Route::put('/admin/notifications/{id}/display', [NotificationController::class, 'toggleDisplay']);
     Route::delete('/admin/notifications/{id}', [NotificationController::class, 'deleteNotification']);
 });
-
-// require __DIR__.'/auth.php';

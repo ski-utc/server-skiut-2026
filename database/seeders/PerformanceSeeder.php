@@ -24,7 +24,6 @@ class PerformanceSeeder extends Seeder
         foreach ($users as $user) {
             $sessionCount = fake()->numberBetween(3, 12);
 
-            // Créer des sessions de performance pour chaque utilisateur
             for ($i = 0; $i < $sessionCount; $i++) {
                 $maxSpeed = fake()->randomFloat(2, 15, 85);
                 $averageSpeed = fake()->randomFloat(2, 10, $maxSpeed * 0.8);
@@ -43,7 +42,6 @@ class PerformanceSeeder extends Seeder
             }
         }
 
-        // Ajouter des sessions exceptionnelles aux meilleurs utilisateurs
         $topUsers = $users->take(3);
 
         foreach ($topUsers as $user) {

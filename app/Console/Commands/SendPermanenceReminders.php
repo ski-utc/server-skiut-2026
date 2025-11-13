@@ -29,8 +29,6 @@ class SendPermanenceReminders extends Command
             $firebaseService = app(FirebaseNotificationService::class);
             $controller = new PermanenceController($firebaseService);
 
-            // Simuler une requête pour la méthode
-            $request = new \Illuminate\Http\Request();
             $result = $controller->sendReminders();
 
             $data = $result->getData(true);

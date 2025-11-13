@@ -59,7 +59,6 @@ class FirebaseNotificationService
                     'status' => $response->status()
                 ];
 
-                // Log de debug
                 Log::info('Firebase notification sent', [
                     'tokens_count' => count($tokenChunk),
                     'title' => $title,

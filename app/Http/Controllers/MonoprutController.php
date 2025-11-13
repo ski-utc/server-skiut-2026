@@ -104,7 +104,6 @@ class MonoprutController extends Controller
             $room = $receiverUser->room;
             $article->shotgunBy($room->id);
 
-            // Envoyer une notification au donneur
             try {
                 $giverRoom = $article->giverRoom;
                 if ($giverRoom) {

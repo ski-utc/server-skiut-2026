@@ -6,7 +6,7 @@ use App\Models\PerformanceSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class UserPerformanceController extends Controller
+class PerformanceController extends Controller
 {
     /**
      * Update the performance of a user with a new session.
@@ -14,7 +14,7 @@ class UserPerformanceController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function updatePerformance(Request $request)
+    public function createPerformance(Request $request)
     {
         $validated = $request->validate([
             'speed' => 'required|numeric|min:0|max:300',

@@ -23,7 +23,7 @@ class PushTokenFactory extends Factory
                 'Google Pixel 7',
                 'OnePlus 11',
             ]),
-            'active' => $this->faker->boolean(90), // 90% de tokens actifs
+            'active' => $this->faker->boolean(90),
             'last_used_at' => $this->faker->optional(0.7)->dateTimeBetween('-30 days', 'now'),
         ];
     }

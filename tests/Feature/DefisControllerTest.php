@@ -93,7 +93,6 @@ class DefisControllerTest extends TestCase
         $token = JwtTestHelper::generateToken($this->user->id);
         $challenge = Challenge::factory()->create();
 
-        // Create a fake file first
         $filePath = 'defiProofImages/test_proof.jpg';
         Storage::disk('public')->put($filePath, 'fake_content');
 

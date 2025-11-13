@@ -311,8 +311,8 @@ S'il y a peut-être un point important à mentionner c'est que grâce au middlew
 
 ---
 
-### **11. Vitesse de glisse (UserPerformanceController)**  
-- `/update-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
+### **11. Vitesse de glisse (PerformanceController)**  
+- `/create-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
 - `/classement-performances` : Renvoie le classement des perfomances user-vitesse
 
 ---

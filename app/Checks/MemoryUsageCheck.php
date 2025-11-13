@@ -59,10 +59,8 @@ class MemoryUsageCheck extends Check
         switch ($last) {
             case 'g':
                 $value = (int)$value * 1024;
-                // no break
             case 'm':
                 $value = (int)$value * 1024;
-                // no break
             case 'k':
                 $value = (int)$value * 1024;
                 break;

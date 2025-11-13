@@ -1,22 +1,27 @@
-- faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
-- clean l'app (commentaires, ...)
-- ecriture inclusive
-- back-office complet
+- [X] "prochaine activité" dans la homePage ne fonctionne pas
+- [X] faire les TODO
 
-- "prochaine activité" dans la homePage ne fonctionne pas
-- vérifier permamences
-  - ajouter plus d'info dans le planning ? Une page pour gérer ça côté member ?
-- vérifier les notifications 
-  - save des token
-  - classique (push)
-  - skinder
-  - monoprut
-  - perms
-  - lue / non lue
-- vérifier schedule de notification des permanences
+- [ ] vérifier permamences dans le planning (l'implem de base)
+  - [ ] ajouter plus d'info dans la page planning ? Une nouvelle page pour gérer ça côté member ? Ou juste une petit description avec le lieu en lightMuted ?
 
-Revoir design app défi, monopr'ut ... (surtout les shadow)
+- [ ] vérifier les notifications 
+  - [ ] save des token
+  - [ ] classique (push)
+  - [ ] skinder
+  - [ ] monoprut
+  - [ ] perms
+  - [ ] lue / non lue
 
-- mise en prod 
-- weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
-- réactiver tous les healthcheck laravel
+- [ ] vérifier schedule de notification des permanences
+
+- [X] faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
+- [X] ecriture inclusive partout
+
+- [ ] Revoir design app défi, monopr'ut ... (surtout les shadow)
+
+
+########### Pour plus tard ##########
+- [ ] back-office complet
+- [ ] mise en prod 
+- [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
+- [ ] réactiver tous les healthcheck laravel
