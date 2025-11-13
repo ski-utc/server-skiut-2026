@@ -63,6 +63,7 @@ RUN cp .env.ci .env \
     && mkdir -p storage/{logs,framework,app/public} bootstrap/cache \
     && touch storage/logs/laravel.log \
     && chown -R www-data:www-data /var/www/html \
+    && chown -R www-data:www-data /var/www/html/storage \
     && chmod -R 775 storage bootstrap/cache
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
