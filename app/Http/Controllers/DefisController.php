@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Storage;
 class DefisController extends Controller
 {
     /**
+     * Maximum file size for images in bytes (5MB)
+     */
+    private const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+    /**
+     * Maximum file size for videos in bytes (15MB)
+     */
+    private const MAX_VIDEO_SIZE = 15 * 1024 * 1024;
+
+    /**
      * Get the challenges for the connected user
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -104,7 +114,13 @@ class DefisController extends Controller
      */
     public function getMaxFileSize()
     {
-        return response()->json(['success' => true, 'data' => 1024 * 1024 * 5]);
+        return response()->json([
+            'success' => true, 
+            'data' => [
+                'maxImageSize' => self::MAX_IMAGE_SIZE,
+                'maxVideoSize' => self::MAX_VIDEO_SIZE
+            ]
+        ]);
     }
 
     /**
@@ -144,7 +160,7 @@ class DefisController extends Controller
         $extension = $isVideo ? '.mp4' : '.jpg';
         $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
 
-        $maxSize = $isVideo ? 15 * 1024 * 1024 : 5 * 1024 * 1024; // 15MB pour vidéos, 5MB pour images
+        $maxSize = $isVideo ? self::MAX_VIDEO_SIZE : self::MAX_IMAGE_SIZE;
         if ($file->getSize() > $maxSize) {
             $maxSizeText = $isVideo ? '15MB' : '5MB';
             return response()->json(['success' => false, 'message' => "Fichier trop volumineux (max: {$maxSizeText})"], 400);
