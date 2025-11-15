@@ -1,6 +1,6 @@
-- [X] Définir le cache in storage pour les GET/POST
-- [X] faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, mais ne pas mettre les requetes en cache pour autant) et les requetes du serveur
-- [ ] register le token de notification juste 1 fois
+- [ ] Modifier le planning pour calculer le status d'une activité en interne, si elle est passée, active ou future (@planningController @planningScreen)
+- [ ] Ajouter un bouton annuler ou rafraichier en plus du bouton "Retour" sur le ErrorScreen. Ce bouton refresh la page sur laquelle on est pour la reset complètement
+- [ ] Faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, memo ...)
 - [ ] vérifier les notifications 
   - [ ] save des token
   - [ ] classique (push)
@@ -10,8 +10,9 @@
   - [ ] lue / non lue
 - [ ] vérifier schedule de notification des permanences
 
-########### Pour plus tard ##########
-- [X] back-office complet
+########### Pas de deadline ##########
+- [X] Back-office complet
+- [ ] Update la charte RGPD, l'export, anonymisation et suppression des données
 - [ ] mise en prod 
 - [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
 - [ ] réactiver tous les healthcheck laravel
