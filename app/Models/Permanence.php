@@ -12,7 +12,6 @@ class Permanence extends Model
     protected $table = 'permanences';
     protected $fillable = [
         'name',
-        'description',
         'start_datetime',
         'end_datetime',
         'responsible_user_id',

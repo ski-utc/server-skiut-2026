@@ -49,7 +49,6 @@ class PermanenceFactory extends Factory
 
         return [
             'name' => $this->faker->randomElement($permanenceTypes),
-            'description' => $this->faker->paragraph(2),
             'start_datetime' => $startDate,
             'end_datetime' => $endDate,
             'location' => $this->faker->randomElement($locations),

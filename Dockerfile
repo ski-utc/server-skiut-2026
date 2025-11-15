@@ -46,6 +46,8 @@ RUN { \
         echo 'decorate_workers_output = no'; \
         echo 'php_admin_flag[log_errors] = on'; \
         echo 'php_admin_value[error_log] = /proc/self/fd/2'; \
+        echo "post_max_size=32M" >> /usr/local/etc/php/conf.d/uploads.ini && \
+        echo "upload_max_filesize=32M" >> /usr/local/etc/php/conf.d/uploads.ini
     } >> /usr/local/etc/php-fpm.d/www.conf
 
 WORKDIR /var/www/html

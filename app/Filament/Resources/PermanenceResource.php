@@ -43,11 +43,6 @@ class PermanenceResource extends Resource
                             ->required()
                             ->maxLength(255),
 
-                        Textarea::make('description')
-                            ->label('Description')
-                            ->rows(3)
-                            ->nullable(),
-
                         DateTimePicker::make('start_datetime')
                             ->label('Date et heure de début')
                             ->required()

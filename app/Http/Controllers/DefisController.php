@@ -180,7 +180,7 @@ class DefisController extends Controller
         $extension = $isVideo ? '.mp4' : '.jpg';
         $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
 
-        $maxSize = $isVideo ? self::MAX_VIDEO_SIZE : self::MAX_IMAGE_SIZE;
+        $maxSize = $isVideo ? (self::MAX_VIDEO_SIZE * $clientMultiplier) : self::MAX_IMAGE_SIZE;
         if ($file->getSize() > $maxSize) {
             $maxSizeText = $isVideo ? '15MB' : '5MB';
             return response()->json(['success' => false, 'message' => "Fichier trop volumineux (max: {$maxSizeText})"], 400);

@@ -49,7 +49,6 @@ class PermanenceController extends Controller
                 return [
                     'id' => $permanence->id,
                     'name' => $permanence->name,
-                    'description' => $permanence->description,
                     'start_datetime' => $permanence->start_datetime->toISOString(),
                     'end_datetime' => $permanence->end_datetime->toISOString(),
                     'location' => $permanence->location,
@@ -103,7 +102,6 @@ class PermanenceController extends Controller
                 return [
                     'id' => $permanence->id,
                     'name' => $permanence->name,
-                    'description' => $permanence->description,
                     'start_datetime' => $permanence->start_datetime->toISOString(),
                     'end_datetime' => $permanence->end_datetime->toISOString(),
                     'location' => $permanence->location,
@@ -141,8 +139,7 @@ class PermanenceController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'start_datetime' => 'required|date|after:now',
+            'start_datetime' => 'required|date|after_or_equal:now',
             'end_datetime' => 'required|date|after:start_datetime',
             'responsible_user_id' => 'required|exists:users,id',
             'location' => 'nullable|string|max:255',
@@ -160,7 +157,6 @@ class PermanenceController extends Controller
 
             $permanence = Permanence::create([
                 'name' => $validated['name'],
-                'description' => $validated['description'],
                 'start_datetime' => $validated['start_datetime'],
                 'end_datetime' => $validated['end_datetime'],
                 'responsible_user_id' => $validated['responsible_user_id'],
@@ -204,7 +200,6 @@ class PermanenceController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
             'start_datetime' => 'sometimes|required|date',
             'end_datetime' => 'sometimes|required|date|after:start_datetime',
             'responsible_user_id' => 'sometimes|required|exists:users,id',

@@ -13,7 +13,6 @@ return new class () extends Migration {
         Schema::create('permanences', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('description')->nullable();
             $table->timestamp('start_datetime');
             $table->timestamp('end_datetime');
             $table->foreignId('responsible_user_id')->constrained('users')->onDelete('cascade');
