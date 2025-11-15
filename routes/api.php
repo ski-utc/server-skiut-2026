@@ -83,6 +83,7 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () {
 
     /* Permanences */
     Route::get('/permanences/my', [PermanenceController::class, 'getUserPermanences']);
+    Route::get('/permanences/{id}', [PermanenceController::class, 'getPermanenceById']);
 
     /* Tournée des chambres */
     Route::get('/room-tours/my-tour', [RoomTourController::class, 'getUserTour']);

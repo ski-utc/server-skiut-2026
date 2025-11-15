@@ -47,6 +47,17 @@ class Permanence extends Model
     }
 
     /**
+     * Check if the user is responsible for the permanence.
+     *
+     * @param int $user_id
+     * @return bool
+     */
+    public function hasUser($user_id)
+    {
+        return $this->responsible_user_id === $user_id;
+    }
+
+    /**
      * Check if the permanence should notify.
      *
      * @return bool

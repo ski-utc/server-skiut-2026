@@ -77,6 +77,65 @@ class PermanenceController extends Controller
     }
 
     /**
+     * Get a specific permanence by ID
+     * @param Request $request
+     * @param int $permanenceId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function getPermanenceById(Request $request, $permanenceId)
+    {
+        try {
+            $user_id = $request->user['id'];
+            $user = User::findOrFail($user_id);
+
+            if (!$user->isMember()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Accès réservé aux membres de l\'association'
+                ], 403);
+            }
+
+            $permanence = Permanence::with('responsibleUser')->findOrFail($permanenceId);
+
+            if (!$permanence->hasUser($user_id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous n\'avez pas accès à cette permanence'
+                ], 403);
+            }
+
+            $data = [
+                'id' => $permanence->id,
+                'name' => $permanence->name,
+                'start_datetime' => $permanence->start_datetime->toISOString(),
+                'end_datetime' => $permanence->end_datetime->toISOString(),
+                'location' => $permanence->location,
+                'status' => $permanence->status,
+                'is_responsible' => $permanence->responsible_user_id === $user_id,
+                'responsible' => [
+                    'id' => $permanence->responsibleUser->id,
+                    'name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName,
+                    'email' => $permanence->responsibleUser->email
+                ],
+                'duration_minutes' => $permanence->getDurationInMinutes(),
+                'notes' => $permanence->notes
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération de la permanence: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération de la permanence: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get all the permanences for the admin
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
