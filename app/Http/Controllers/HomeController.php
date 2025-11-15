@@ -26,9 +26,17 @@ class HomeController extends Controller
     {
         try {
             $currentDate = Carbon::today();
+            $currentDateTime = Carbon::now();
 
-            $closestActivity = Activity::whereDate('date', '>=', $currentDate)
-                ->whereNotNull('startTime')
+            $closestActivity = Activity::where(function ($query) use ($currentDate, $currentDateTime) {
+                $query->where('date', '>', $currentDate) // First activity of tomorrow
+                    ->orWhere(function ($q) use ($currentDate, $currentDateTime) { // Next activity of the day
+                        $q->whereDate('date', '=', $currentDate)
+                            ->whereNotNull('startTime')
+                            ->whereRaw('TIME(startTime) >= ?', [$currentDateTime->format('H:i:s')]);
+                    });
+            })
+                ->whereNotNull('startTime') // And take the first one
                 ->orderBy('date', 'ASC')
                 ->orderBy('startTime', 'ASC')
                 ->first();
