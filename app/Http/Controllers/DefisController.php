@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Challenge;
 use App\Models\ChallengeProof;
 use App\Models\User;
+use App\Services\VideoCompressionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +21,19 @@ class DefisController extends Controller
      * Maximum file size for videos in bytes (15MB)
      */
     private const MAX_VIDEO_SIZE = 15 * 1024 * 1024;
+
+    /**
+     * Video compression service
+     */
+    protected VideoCompressionService $videoCompression;
+
+    /**
+     * Constructor
+     */
+    public function __construct(VideoCompressionService $videoCompression)
+    {
+        $this->videoCompression = $videoCompression;
+    }
 
     /**
      * Get the challenges for the connected user
@@ -114,11 +128,14 @@ class DefisController extends Controller
      */
     public function getMaxFileSize()
     {
+        $clientMultiplier = config('video.client_upload_multiplier', 2.0);
+        $maxVideoSizeForClient = (int) (self::MAX_VIDEO_SIZE * $clientMultiplier); // Define a  factor of 2 because the server will compress the video
+
         return response()->json([
             'success' => true, 
             'data' => [
                 'maxImageSize' => self::MAX_IMAGE_SIZE,
-                'maxVideoSize' => self::MAX_VIDEO_SIZE
+                'maxVideoSize' => $maxVideoSizeForClient
             ]
         ]);
     }
@@ -131,9 +148,12 @@ class DefisController extends Controller
      */
     public function uploadProofMedia(Request $request)
     {
+        $clientMultiplier = config('video.client_upload_multiplier', 2.0);
+        $maxVideoKb = (int) ((self::MAX_VIDEO_SIZE * $clientMultiplier) / 1024);
+        
         $validated = $request->validate([
             'defiId' => 'required|integer|exists:challenges,id',
-            'media' => 'required|file|mimes:jpeg,png,gif,mp4,quicktime,x-msvideo|max:15360',
+            'media' => 'required|file|mimes:jpeg,png,gif,mp4,quicktime,x-msvideo|max:' . $maxVideoKb,
             'mediaType' => 'nullable|string|in:image,video',
         ]);
 
@@ -183,6 +203,29 @@ class DefisController extends Controller
 
             $filename = "challenge_{$defiId}_room_{$userRoomId}_" . time() . $extension;
             $filePath = $file->storeAs($folder, $filename, 'public');
+
+            if ($isVideo) {
+                $fullPath = storage_path('app/public/' . $filePath);
+                $result = $this->videoCompression->compress($fullPath, self::MAX_VIDEO_SIZE);
+                
+                if ($result['success'] && $result['meetsRequirement']) {
+                    Log::info("Compression vidéo défi {$defiId}: {$result['message']}");
+                } elseif (!$result['meetsRequirement']) {
+                    Storage::disk('public')->delete($filePath);
+                    
+                    Log::warning("Vidéo défi {$defiId} trop volumineuse après compression", [
+                        'original_size' => $result['originalSize'],
+                        'message' => $result['message']
+                    ]);
+                    
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vidéo trop volumineuse. Veuillez utiliser une vidéo plus courte ou de plus faible qualité.'
+                    ], 413);
+                } else {
+                    Log::warning("Compression vidéo défi {$defiId} échouée: {$result['message']}");
+                }
+            }
 
             ChallengeProof::create([
                 'file' => 'storage/' . $filePath,
