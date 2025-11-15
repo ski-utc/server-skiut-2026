@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
 class RgpdController extends Controller
@@ -232,7 +233,10 @@ class RgpdController extends Controller
                 }
             }
 
-            $zipPath = storage_path('app/temp/mes_infos_' . Carbon::now()->format('Y-m-d-H-i-s') . '.zip');
+            $this->cleanOldZipFiles();
+
+            $zipFilename = 'mes_infos_' . Carbon::now()->format('Y-m-d-H-i-s') . '.zip';
+            $zipPath = storage_path('app/temp/' . $zipFilename);
             $zip = new ZipArchive();
             if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
                 $this->addFolderToZip($zip, $tempDir, '');
@@ -240,7 +244,13 @@ class RgpdController extends Controller
 
                 $this->deleteDirectory($tempDir);
 
-                return response()->download($zipPath)->deleteFileAfterSend(true); // TODO : doesn't work for now, zip file remain in storage
+                $response = new BinaryFileResponse($zipPath);
+                $response->headers->set('Content-Type', 'application/zip');
+                $response->headers->set('Content-Disposition', 'attachment; filename="' . $zipFilename . '"');
+                
+                $response->deleteFileAfterSend(true);
+
+                return $response;
             } else {
                 return response()->json([
                     'success' => false,
@@ -522,5 +532,26 @@ class RgpdController extends Controller
             }
         }
         rmdir($dir);
+    }
+
+    /**
+     * Clean old zip files (older than 1 hour) from temp directory.
+     * @return void
+     */
+    private function cleanOldZipFiles()
+    {
+        $tempPath = storage_path('app/temp');
+        if (!is_dir($tempPath)) {
+            return;
+        }
+
+        $zipFiles = glob($tempPath . '/mes_infos_*.zip');
+        $oneHourAgo = time() - 3600;
+
+        foreach ($zipFiles as $file) {
+            if (file_exists($file) && filemtime($file) < $oneHourAgo) {
+                @unlink($file);
+            }
+        }
     }
 }
