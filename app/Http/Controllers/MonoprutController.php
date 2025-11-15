@@ -19,7 +19,8 @@ class MonoprutController extends Controller
     public function getArticles(Request $request)
     {
         try {
-            $articles = Monoprut::available()->get();
+            $room_id = $request->user['room_id'];
+            $articles = Monoprut::where('giver_room_id', '!=', $room_id)->where('receiver_room_id', null)->get();
             return response()->json([
                 'success' => true,
                 'data' => $articles,
