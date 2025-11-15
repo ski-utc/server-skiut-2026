@@ -14,6 +14,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('numero')->unique();
             $table->integer('nb_places');
+            $table->string('name')->nullable();
             $table->string('responsable_chambre')->nullable();
             $table->enum('ambiance', ['mega grosse night', 'grosse night', 'petite night', 'calme'])->nullable();
             $table->timestamp('locked_until')->nullable();

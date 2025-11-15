@@ -13,6 +13,7 @@ class RoomShotgun extends Model
     protected $fillable = [
         'numero',
         'nb_places',
+        'name',
         'responsable_chambre',
         'ambiance',
         'locked_until',

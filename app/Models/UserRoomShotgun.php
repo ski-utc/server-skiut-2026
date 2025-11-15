@@ -13,7 +13,9 @@ class UserRoomShotgun extends Model
     protected $table = 'user_room_shotguns';
     protected $fillable = [
         'user_id',
-        'room_shotgun_id'
+        'room_shotgun_id',
+        'email',
+        'is_vegetarian'
     ];
 
     /**
