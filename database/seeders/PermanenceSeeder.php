@@ -31,61 +31,61 @@ class PermanenceSeeder extends Seeder
         $permanenceTypes = [
             [
                 'name' => 'Accueil voyageurs',
-                'description' => 'Accueillir les nouveaux arrivants, leur expliquer les règles et leur remettre les clés.',
+                'notes' => 'Accueillir les nouveaux arrivants, leur expliquer les règles et leur remettre les clés.',
                 'location' => 'Hall d\'accueil',
                 'duration' => 2,
             ],
             [
                 'name' => 'Maintenance matériel',
-                'description' => 'Vérifier l\'état du matériel de ski, effectuer les réparations mineures et la maintenance préventive.',
+                'notes' => 'Vérifier l\'état du matériel de ski, effectuer les réparations mineures et la maintenance préventive.',
                 'location' => 'Local matériel',
                 'duration' => 3,
             ],
             [
                 'name' => 'Gestion logistique',
-                'description' => 'Coordination des livraisons, gestion des stocks et organisation des espaces communs.',
+                'notes' => 'Coordination des livraisons, gestion des stocks et organisation des espaces communs.',
                 'location' => 'Bureau organisation',
                 'duration' => 2,
             ],
             [
                 'name' => 'Animation soirée',
-                'description' => 'Préparer et animer les soirées thématiques, jeux et activités de groupe.',
+                'notes' => 'Préparer et animer les soirées thématiques, jeux et activités de groupe.',
                 'location' => 'Salle commune',
                 'duration' => 4,
             ],
             [
                 'name' => 'Nettoyage espaces communs',
-                'description' => 'Maintenir la propreté des cuisines, salles communes et espaces de détente.',
+                'notes' => 'Maintenir la propreté des cuisines, salles communes et espaces de détente.',
                 'location' => 'Espaces communs',
                 'duration' => 2,
             ],
             [
                 'name' => 'Préparation repas',
-                'description' => 'Aider à la préparation des repas collectifs et gérer la cuisine commune.',
+                'notes' => 'Aider à la préparation des repas collectifs et gérer la cuisine commune.',
                 'location' => 'Cuisine',
                 'duration' => 3,
             ],
             [
                 'name' => 'Surveillance matériel',
-                'description' => 'S\'assurer de la sécurité du matériel et aider les autres avec les équipements.',
+                'notes' => 'S\'assurer de la sécurité du matériel et aider les autres avec les équipements.',
                 'location' => 'Zone stockage',
                 'duration' => 2,
             ],
             [
                 'name' => 'Support technique',
-                'description' => 'Aider avec les problèmes techniques, WiFi, applications et équipements électroniques.',
+                'notes' => 'Aider avec les problèmes techniques, WiFi, applications et équipements électroniques.',
                 'location' => 'Local technique',
                 'duration' => 2,
             ],
             [
                 'name' => 'Coordination transport',
-                'description' => 'Organiser les navettes, coordonner les déplacements et gérer les plannings de transport.',
+                'notes' => 'Organiser les navettes, coordonner les déplacements et gérer les plannings de transport.',
                 'location' => 'Point de rendez-vous',
                 'duration' => 2,
             ],
             [
                 'name' => 'Première aide',
-                'description' => 'Assurer une présence formée aux premiers secours et gérer la trousse de secours.',
+                'notes' => 'Assurer une présence formée aux premiers secours et gérer la trousse de secours.',
                 'location' => 'Infirmerie',
                 'duration' => 4,
             ]
@@ -155,7 +155,6 @@ class PermanenceSeeder extends Seeder
 
                 $permanence = Permanence::create([
                     'name' => $permanenceType['name'],
-                    'description' => $permanenceType['description'],
                     'start_datetime' => $startDateTime,
                     'end_datetime' => $endDateTime,
                     'location' => $permanenceType['location'],
@@ -176,7 +175,6 @@ class PermanenceSeeder extends Seeder
 
             Permanence::create([
                 'name' => $permanenceType['name'] . ' (Urgent)',
-                'description' => 'URGENT - ' . $permanenceType['description'] . ' Merci de vous présenter à l\'heure !',
                 'start_datetime' => $startDateTime,
                 'end_datetime' => $endDateTime,
                 'location' => $permanenceType['location'],
