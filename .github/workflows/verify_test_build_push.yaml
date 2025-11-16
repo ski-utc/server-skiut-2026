@@ -107,7 +107,7 @@ jobs:
         with:
           path: /usr/local/lib/php/extensions
           key: php-ext-gd-apcu-${{ runner.os }}
-      
+
       - name: Install PHP extensions
         if: steps.php-ext-cache.outputs.cache-hit != 'true'
         run: |
