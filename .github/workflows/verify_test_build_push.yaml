@@ -101,17 +101,21 @@ jobs:
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
       
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
+      
       - name: Cache PHP extensions
         uses: actions/cache@v4
         id: php-ext-cache
         with:
           path: /usr/local/lib/php/extensions
-          key: php-ext-gd-apcu-${{ runner.os }}
-
-      - name: Install PHP extensions
+          key: php-ext-gd-apcu-${{ runner.os }}-v2
+      
+      - name: Compile PHP extensions
         if: steps.php-ext-cache.outputs.cache-hit != 'true'
         run: |
-          apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
           pecl install apcu
           docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
           docker-php-ext-install gd pdo pdo_mysql mysqli
@@ -129,7 +133,7 @@ jobs:
           mkdir -p database && touch database/database.sqlite
       
       - name: Run migrations
-        run: php artisan migrate --force
+        run: php artisan migrate --force --seed
       
       - name: Run tests
         run: ./vendor/bin/phpunit
@@ -179,11 +183,6 @@ jobs:
           MYSQL_DATABASE: skiutc_test
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     steps:
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -208,7 +207,6 @@ jobs:
       - name: Initialize application
         run: |
           docker exec app php artisan jwt:generate
-          docker exec app php artisan migrate --force --seed
       
       - name: Wait for application
         run: |
