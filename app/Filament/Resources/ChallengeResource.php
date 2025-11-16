@@ -5,16 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ChallengeResource\Pages;
 use App\Models\Challenge;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -22,9 +18,9 @@ class ChallengeResource extends Resource
 {
     protected static ?string $model = Challenge::class;
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
-    protected static ?string $navigationLabel = 'Challenges';
-    protected static ?string $modelLabel = 'Challenge';
-    protected static ?string $pluralModelLabel = 'Challenges';
+    protected static ?string $navigationLabel = 'Défis';
+    protected static ?string $modelLabel = 'Défis';
+    protected static ?string $pluralModelLabel = 'Défis';
     protected static ?string $navigationGroup = 'Gestion du voyage';
 
     public static function canViewAny(): bool
@@ -36,28 +32,18 @@ class ChallengeResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Informations du challenge')
+                Section::make('Informations du défi')
                     ->schema([
-                        TextInput::make('text')
-                            ->label('Nom du challenge')
+                        TextInput::make('title')
+                            ->label('Nom du défi')
                             ->required()
                             ->maxLength(255),
 
-                        Textarea::make('description')
-                            ->label('Description détaillée')
-                            ->rows(4)
-                            ->helperText('Description complète du challenge et des conditions de validation'),
-
-                        TextInput::make('points')
+                        TextInput::make('nbPoints')
                             ->label('Points attribués')
                             ->numeric()
                             ->default(0)
-                            ->helperText('Nombre de points gagnés en réussissant ce challenge'),
-
-                        Toggle::make('isActive')
-                            ->label('Challenge actif')
-                            ->default(true)
-                            ->helperText('Seuls les challenges actifs sont visibles dans l\'application'),
+                            ->helperText('Nombre de points gagnés en réussissant ce défi'),
                     ])
                     ->columns(2),
             ]);
@@ -67,47 +53,20 @@ class ChallengeResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('text')
-                    ->label('Challenge')
+                TextColumn::make('title')
+                    ->label('Défi')
                     ->searchable()
                     ->sortable()
                     ->wrap(),
 
-                TextColumn::make('points')
+                TextColumn::make('nbPoints')
                     ->label('Points')
                     ->numeric()
                     ->sortable()
                     ->badge()
-                    ->color('success'),
-
-                BadgeColumn::make('isActive')
-                    ->label('Statut')
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Actif' : 'Inactif')
-                    ->colors([
-                        'success' => true,
-                        'danger' => false,
-                    ]),
-
-                TextColumn::make('challenge_proofs_count')
-                    ->label('Preuves soumises')
-                    ->counts('challengeProofs')
-                    ->badge()
-                    ->color('info'),
-
-                TextColumn::make('created_at')
-                    ->label('Créé le')
-                    ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                Tables\Filters\TernaryFilter::make('isActive')
-                    ->label('Statut')
-                    ->trueLabel('Actifs seulement')
-                    ->falseLabel('Inactifs seulement')
-                    ->native(false),
+                    ->color('primary'),
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
@@ -116,9 +75,9 @@ class ChallengeResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('points', 'desc')
-            ->emptyStateHeading('Aucun challenge')
-            ->emptyStateDescription('Créez votre premier challenge pour motiver les participants')
+            ->defaultSort('nbPoints', 'desc')
+            ->emptyStateHeading('Aucun défi')
+            ->emptyStateDescription('Créez votre premier défi pour le voyage')
             ->emptyStateIcon('heroicon-o-trophy');
     }
 
