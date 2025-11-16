@@ -11,7 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -40,20 +39,15 @@ class ContactResource extends Resource
                             ->required()
                             ->maxLength(255),
 
-                        TextInput::make('phone')
-                            ->label('Téléphone')
-                            ->tel()
-                            ->maxLength(255),
-
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->maxLength(255),
-
                         TextInput::make('role')
                             ->label('Rôle/Fonction')
                             ->maxLength(255)
-                            ->placeholder('Ex: Hôtel, Restaurant, Transport...'),
+                            ->placeholder('Prez, Secours ...'),
+
+                        TextInput::make('phoneNumber')
+                            ->label('Téléphone')
+                            ->tel()
+                            ->maxLength(255),
                     ])
                     ->columns(2),
             ]);
@@ -74,30 +68,13 @@ class ContactResource extends Resource
                     ->badge()
                     ->color('info'),
 
-                TextColumn::make('phone')
+                TextColumn::make('phoneNumber')
                     ->label('Téléphone')
                     ->searchable()
                     ->copyable()
                     ->copyMessage('Numéro copié!'),
-
-                TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable()
-                    ->copyable()
-                    ->copyMessage('Email copié!'),
-
-                TextColumn::make('created_at')
-                    ->label('Ajouté le')
-                    ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('role')
-                    ->searchable()
-                    ->multiple(),
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
