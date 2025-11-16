@@ -78,7 +78,7 @@ class AuthBackOfficeController extends Controller
             session(['admin' => $isAdmin]);
             session(['email' => $userDetails['email']]);
 
-            return redirect()->route('filament.back-office.pages.dashboard');
+            return redirect('/skiutc/back-office');
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'authentification: ' . $e->getMessage());
             abort(401, 'Erreur d\'authentification : ' . $e->getMessage());
