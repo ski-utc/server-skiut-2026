@@ -4,17 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransportResource\Pages;
 use App\Models\Transport;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TimePicker;
+use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\BadgeColumn;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class TransportResource extends Resource
@@ -35,45 +29,86 @@ class TransportResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Informations du transport')
+                Forms\Components\Section::make('Informations du transport')
                     ->schema([
-                        TextInput::make('departure')
-                            ->label('Départ')
-                            ->required()
-                            ->maxLength(255),
-
-                        TextInput::make('arrival')
-                            ->label('Arrivée')
-                            ->required()
-                            ->maxLength(255),
-
-                        TextInput::make('colour')
-                            ->label('Couleur (code)')
-                            ->maxLength(255)
-                            ->nullable(),
-
-                        TextInput::make('colourName')
-                            ->label('Nom de la couleur')
-                            ->maxLength(255)
-                            ->nullable(),
-
-                        Select::make('type')
-                            ->label('Type')
+                        Forms\Components\Select::make('type')
+                            ->label('Type de trajet')
                             ->options([
                                 'aller' => 'Aller',
                                 'retour' => 'Retour',
                             ])
-                            ->required(),
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state === 'aller') {
+                                    $set('departure', 'Compiègne');
+                                    $set('arrival', 'Pas de la Casa');
+                                } elseif ($state === 'retour') {
+                                    $set('departure', 'Pas de la Casa');
+                                    $set('arrival', 'Compiègne');
+                                }
+                            }),
 
-                        TimePicker::make('horaire_depart')
+                        Forms\Components\ColorPicker::make('colour')
+                            ->label('Couleur')
+                            ->required()
+                            ->helperText('Couleur d\'identification du transport'),
+
+                        Forms\Components\TextInput::make('colourName')
+                            ->label('Nom du transport')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('Bleu, Rouge...'),
+                    ])
+                    ->columns(3),
+
+                Forms\Components\Section::make('Départ')
+                    ->schema([
+                        Forms\Components\Select::make('departure')
+                            ->label('Lieu de départ')
+                            ->required()
+                            ->options(function (Forms\Get $get) {
+                                $type = $get('type');
+                                if ($type === 'aller') {
+                                    return ['Compiègne' => 'Compiègne', 'Paris' => 'Paris'];
+                                } elseif ($type === 'retour') {
+                                    return ['Pas de la Casa' => 'Pas de la Casa'];
+                                }
+                                return ['Compiègne' => 'Compiègne', 'Paris' => 'Paris', 'Pas de la Casa' => 'Pas de la Casa'];
+                            })
+                            ->native(false)
+                            ->live(),
+
+                        Forms\Components\TimePicker::make('horaire_depart')
                             ->label('Heure de départ')
-                            ->native(false)
-                            ->nullable(),
+                            ->seconds(false)
+                            ->native(false),
+                    ])
+                    ->columns(2),
 
-                        TimePicker::make('horaire_arrivee')
-                            ->label('Heure d\'arrivée')
+                Forms\Components\Section::make('Arrivée')
+                    ->schema([
+                        Forms\Components\Select::make('arrival')
+                            ->label('Lieu d\'arrivée')
+                            ->required()
+                            ->options(function (Forms\Get $get) {
+                                $type = $get('type');
+                                if ($type === 'aller') {
+                                    return ['Pas de la Casa' => 'Pas de la Casa'];
+                                } elseif ($type === 'retour') {
+                                    return ['Compiègne' => 'Compiègne', 'Paris' => 'Paris'];
+                                }
+                                return ['Compiègne' => 'Compiègne', 'Paris' => 'Paris', 'Pas de la Casa' => 'Pas de la Casa'];
+                            })
                             ->native(false)
-                            ->nullable(),
+                            ->live(),
+
+                        Forms\Components\TimePicker::make('horaire_arrivee')
+                            ->label('Heure d\'arrivée')
+                            ->seconds(false)
+                            ->native(false)
+                            ->after('horaire_depart'),
                     ])
                     ->columns(2),
             ]);
@@ -83,73 +118,84 @@ class TransportResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('departure')
-                    ->label('Départ')
+                Tables\Columns\TextColumn::make('colourName')
+                    ->label('Transport')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold')
+                    ->formatStateUsing(fn (string $state): string => match($state) {
+                        'Compiègne' => 'Compiègne',
+                        'Paris' => 'Paris',
+                        'Pas de la Casa' => 'Pas de la Casa',
+                        default => $state
+                    }),
 
-                TextColumn::make('arrival')
-                    ->label('Arrivée')
-                    ->searchable()
-                    ->sortable(),
-
-                BadgeColumn::make('type')
-                    ->label('Type')
-                    ->formatStateUsing(fn (string $state): string => $state === 'aller' ? 'Aller' : 'Retour')
-                    ->colors([
-                        'primary' => 'aller',
-                        'warning' => 'retour',
-                    ]),
-
-                TextColumn::make('colourName')
+                Tables\Columns\ColorColumn::make('colour')
                     ->label('Couleur')
-                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->label('Type')
                     ->badge()
-                    ->color('info'),
+                    ->color(fn (string $state): string => match ($state) {
+                        'aller' => 'success',
+                        'retour' => 'warning',
+                    })
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->sortable(),
 
-                TextColumn::make('horaire_depart')
+                Tables\Columns\TextColumn::make('departure')
                     ->label('Départ')
-                    ->time('H:i')
-                    ->sortable(),
+                    ->searchable()
+                    ->sortable()
+                    ->icon('heroicon-o-map-pin'),
 
-                TextColumn::make('horaire_arrivee')
+                Tables\Columns\TextColumn::make('horaire_depart')
+                    ->label('Heure départ')
+                    ->time('H:i')
+                    ->sortable()
+                    ->placeholder('Non défini'),
+
+                Tables\Columns\TextColumn::make('arrival')
                     ->label('Arrivée')
-                    ->time('H:i')
-                    ->sortable(),
+                    ->searchable()
+                    ->sortable()
+                    ->icon('heroicon-o-flag'),
 
-                TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('horaire_arrivee')
+                    ->label('Heure arrivée')
+                    ->time('H:i')
+                    ->sortable()
+                    ->placeholder('Non défini'),
+
+                Tables\Columns\TextColumn::make('created_at')
                     ->label('Créé le')
                     ->dateTime('d/m/Y H:i')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Type')
+                SelectFilter::make('type')
+                    ->label('Type de trajet')
                     ->options([
                         'aller' => 'Aller',
                         'retour' => 'Retour',
-                    ]),
+                    ])
+                    ->native(false),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('horaire_depart')
+            ->defaultSort('type', 'asc')
             ->emptyStateHeading('Aucun transport')
-            ->emptyStateDescription('Ajoutez les transports pour le voyage')
+            ->emptyStateDescription('Commencez par créer des trajets')
             ->emptyStateIcon('heroicon-o-truck');
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array
