@@ -19,7 +19,7 @@ return new class () extends Migration {
             $table->unsignedBigInteger('room_id')->nullable();
             $table->boolean('admin');
             $table->boolean('member')->default(false);
-            $table->boolean('alumniOrExte');
+            $table->boolean('alumniOrExte')->default(false);
             $table->timestamps();
         });
     }
