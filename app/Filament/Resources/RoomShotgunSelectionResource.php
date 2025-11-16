@@ -29,7 +29,7 @@ class RoomShotgunSelectionResource extends Resource
     protected static ?string $navigationLabel = 'Choisir ma chambre';
     protected static ?string $modelLabel = 'Chambre';
     protected static ?string $pluralModelLabel = 'Chambres';
-    protected static ?string $navigationGroup = 'Réservation';
+    protected static ?string $navigationGroup = 'Espace participant.e.s';
 
     public static function canViewAny(): bool
     {
