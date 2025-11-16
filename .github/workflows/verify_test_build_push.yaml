@@ -97,7 +97,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-    container: ghcr.io/laravel/sail-php83:latest
+    container: laravelsail/php83-composer:latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
