@@ -97,7 +97,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-    container: laravelsail/php83-composer:latest
+    container: ghcr.io/laravel/sail-php83:latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -119,7 +119,8 @@ jobs:
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
           pecl install apcu
           docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
-          docker-php-ext-install gd pdo_mysql mysqli
+          docker-php-ext-install gd pdo pdo_mysql mysqli
+          docker-php-ext-enable pdo_mysql
       
       - name: Enable extensions
         run: |
