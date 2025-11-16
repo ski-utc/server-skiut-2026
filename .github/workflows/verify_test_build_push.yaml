@@ -92,11 +92,6 @@ jobs:
           MYSQL_DATABASE: testing
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     container: laravelsail/php83-composer:latest
     steps:
       - uses: actions/checkout@v4
@@ -118,13 +113,12 @@ jobs:
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libwebp-dev libfreetype6-dev
           pecl install apcu
-          docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
           docker-php-ext-install gd pdo pdo_mysql mysqli
-          docker-php-ext-enable pdo_mysql
+          docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
       
       - name: Enable extensions
         run: |
-          docker-php-ext-enable apcu gd
+          docker-php-ext-enable apcu gd pdo_mysql
           echo "apc.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-apcu.ini
       
       - name: Prepare Laravel
