@@ -26,7 +26,7 @@ return [
         'video_codec' => env('VIDEO_CODEC', 'libx264'),
         'crf' => env('VIDEO_CRF', 28), // Quality (lower = better quality, 18-28 recommended)
         'preset' => env('VIDEO_PRESET', 'fast'), // fast, medium, slow
-        
+
         // Audio settings
         'audio_codec' => env('AUDIO_CODEC', 'aac'),
         'audio_bitrate' => env('AUDIO_BITRATE', '128k'),
@@ -60,4 +60,3 @@ return [
     'client_upload_multiplier' => env('VIDEO_CLIENT_MULTIPLIER', 2.0),
 
 ];
-

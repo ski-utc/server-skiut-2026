@@ -17,9 +17,9 @@ return new class () extends Migration {
             $table->timestamp('end_datetime');
             $table->foreignId('responsible_user_id')->constrained('users')->onDelete('cascade');
             $table->string('location')->nullable();
+            $table->text('notes')->nullable();
             $table->enum('status', ['scheduled', 'in_progress', 'completed', 'cancelled'])->default('scheduled');
             $table->boolean('notification_sent')->default(false);
-            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

@@ -66,9 +66,25 @@ class PermanenceControllerTest extends TestCase
         $this->assertTrue($response->json('success'));
     }
 
-    public function test_create_permanence_success()
+    public function test_get_permanence_by_id_success()
     {
-        $this->markTestSkipped('Test skipped: requires FirebaseService configuration');
+        $token = JwtTestHelper::generateToken($this->adminUser->id);
+
+        $permanence = Permanence::create([
+            'name' => 'Original Permanence',
+            'start_datetime' => now()->addDays(1),
+            'end_datetime' => now()->addDays(1)->addHours(2),
+            'responsible_user_id' => $this->adminUser->id,
+            'notes' => 'Original',
+            'location' => 'Room 101',
+            'status' => 'scheduled',
+        ]);
+
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson("/api/permanences/{$permanence->id}");
+
+        $this->assertGreaterThanOrEqual(200, $response->status());
+        $this->assertLessThan(300, $response->status());
+        $this->assertTrue($response->json('success'));
     }
 
     public function test_update_permanence_success()
@@ -77,20 +93,20 @@ class PermanenceControllerTest extends TestCase
 
         $permanence = Permanence::create([
             'name' => 'Original Permanence',
-            'description' => 'Original',
             'start_datetime' => now()->addDays(1),
             'end_datetime' => now()->addDays(1)->addHours(2),
             'responsible_user_id' => $this->adminUser->id,
+            'notes' => 'Original',
             'location' => 'Room 101',
             'status' => 'scheduled',
         ]);
 
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->putJson("/api/admin/permanences/{$permanence->id}", [
             'name' => 'Updated Permanence',
-            'description' => 'Updated',
             'start_datetime' => now()->addDays(3)->toDateTimeString(),
             'end_datetime' => now()->addDays(3)->addHours(2)->toDateTimeString(),
             'responsible_user_id' => $this->adminUser->id,
+            'notes' => 'Updated',
         ]);
 
         $this->assertGreaterThanOrEqual(200, $response->status());
@@ -100,7 +116,6 @@ class PermanenceControllerTest extends TestCase
         $this->assertDatabaseHas('permanences', [
             'id' => $permanence->id,
             'name' => 'Updated Permanence',
-            'description' => 'Updated',
         ]);
     }
 
@@ -110,10 +125,10 @@ class PermanenceControllerTest extends TestCase
 
         $permanence = Permanence::create([
             'name' => 'To Delete',
-            'description' => 'Test',
             'start_datetime' => now()->addDays(1),
             'end_datetime' => now()->addDays(1)->addHours(2),
             'responsible_user_id' => $this->adminUser->id,
+            'notes' => 'Test',
             'location' => 'Room 101',
             'status' => 'scheduled',
         ]);

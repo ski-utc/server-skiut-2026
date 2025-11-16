@@ -62,7 +62,7 @@ class RoomShotgunSelectionResource extends Resource
                             ->getStateUsing(function (RoomShotgun $record) {
                                 $email = session('email');
                                 $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
-                                
+
                                 if ($userRoomId === $record->id) {
                                     return 'Votre chambre';
                                 } elseif ($record->isLockedByOther($email)) {
@@ -74,7 +74,7 @@ class RoomShotgunSelectionResource extends Resource
                             ->color(function (RoomShotgun $record) {
                                 $email = session('email');
                                 $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
-                                
+
                                 if ($userRoomId === $record->id) {
                                     return 'primary';
                                 } elseif ($record->isLockedByOther($email)) {
@@ -88,18 +88,18 @@ class RoomShotgunSelectionResource extends Resource
             ])
             ->query(function () {
                 $email = session('email');
-                
+
                 $userRoomId = UserRoomShotgun::where('email', $email)
                     ->value('room_shotgun_id');
-                
+
                 $query = RoomShotgun::query();
-                
+
                 if ($userRoomId) {
                     $query->where('id', $userRoomId);
                 } else {
                     $query->whereNull('responsable_chambre');
                 }
-                
+
                 return $query;
             })
             ->actions([
@@ -116,7 +116,7 @@ class RoomShotgunSelectionResource extends Resource
                 ->action(function (array $data, RoomShotgun $record) {
                     self::handleSelection($data, $record);
                 }),
-                
+
                 Action::make('view-info')
                 ->label('Voir les infos')
                 ->icon('heroicon-o-information-circle')
@@ -140,12 +140,12 @@ class RoomShotgunSelectionResource extends Resource
     protected static function getViewInfoFormSchema(?RoomShotgun $record = null): array
     {
         $email = session('email');
-        
+
         $roomMembers = UserRoomShotgun::where('room_shotgun_id', $record->id)
             ->get()
             ->map(fn ($member) => $member->email . ($member->is_vegetarian ? ' (Végé)' : ''))
             ->implode("\n");
-        
+
         return [
             Section::make('Informations de votre chambre')
                 ->schema([
@@ -154,13 +154,13 @@ class RoomShotgunSelectionResource extends Resource
                         ->default(fn () => "Chambre {$record->numero} - {$record->nb_places} places")
                         ->dehydrated(false)
                         ->disabled(),
-                    
+
                     TextInput::make('name_display')
                         ->label('Nom de la chambre')
                         ->default(fn () => $record->name)
                         ->dehydrated(false)
                         ->disabled(),
-                    
+
                     TextInput::make('ambiance_display')
                         ->label('Ambiance')
                         ->default(fn () => $record->ambiance ?? 'Non définie')
@@ -168,7 +168,7 @@ class RoomShotgunSelectionResource extends Resource
                         ->disabled(),
                 ])
                 ->columns(3),
-            
+
             Section::make('Participant·e·s de la chambre')
                 ->schema([
                     Textarea::make('members_list')
@@ -294,9 +294,9 @@ class RoomShotgunSelectionResource extends Resource
                                                     ->options(function (Get $get) use ($usedEmails) {
                                                         $responsableEmail = $get('responsable_email');
                                                         $participants = collect($get('participants') ?? [])->pluck('email')->toArray();
-                                                        
+
                                                         $excludedEmails = array_filter(array_merge($usedEmails, $participants, [$responsableEmail]));
-                                                        
+
                                                         return Shotguns::whereNotIn('email', $excludedEmails)->pluck('email', 'email');
                                                     })
                                                     ->searchable()
@@ -390,7 +390,7 @@ class RoomShotgunSelectionResource extends Resource
                     Log::warning('Participant email is empty at index ' . $index);
                     continue;
                 }
-                
+
                 UserRoomShotgun::create([
                     'room_shotgun_id' => $room->id,
                     'email' => $participant['email'],

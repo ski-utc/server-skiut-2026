@@ -247,7 +247,7 @@ class RgpdController extends Controller
                 $response = new BinaryFileResponse($zipPath);
                 $response->headers->set('Content-Type', 'application/zip');
                 $response->headers->set('Content-Disposition', 'attachment; filename="' . $zipFilename . '"');
-                
+
                 $response->deleteFileAfterSend(true);
 
                 return $response;

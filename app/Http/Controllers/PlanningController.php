@@ -24,16 +24,6 @@ class PlanningController extends Controller
             $user = User::find($user_id);
 
             $activities = Activity::all()->map(function ($activity) {
-                $activityStatus = 'future';
-                $endDateTime = Carbon::parse($activity->date . ' ' . $activity->endTime);
-                $startDateTime = Carbon::parse($activity->date . ' ' . $activity->startTime);
-
-                if ($endDateTime->isPast()) {
-                    $activityStatus = 'past';
-                } elseif ($startDateTime->isPast() && $endDateTime->isFuture()) {
-                    $activityStatus = 'current';
-                }
-
                 return [
                     'id' => $activity->id,
                     'activity' => $activity->text,
@@ -43,7 +33,6 @@ class PlanningController extends Controller
                     ],
                     'payant' => $activity->payant,
                     'date' => $activity->date,
-                    'status' => $activityStatus,
                     'type' => 'activity',
                     'is_permanence' => false
                 ];
@@ -59,13 +48,6 @@ class PlanningController extends Controller
                     ->inPeriod($startDate, $endDate)
                     ->get()
                     ->map(function ($permanence) {
-                        $status = 'future';
-                        if ($permanence->end_datetime->isPast()) {
-                            $status = 'past';
-                        } elseif ($permanence->start_datetime->isPast() && $permanence->end_datetime->isFuture()) {
-                            $status = 'current';
-                        }
-
                         return [
                             'id' => 'permanence_' . $permanence->id,
                             'activity' => $permanence->name,
@@ -75,7 +57,6 @@ class PlanningController extends Controller
                             ],
                             'payant' => false,
                             'date' => $permanence->start_datetime->format('Y-m-d'),
-                            'status' => $status,
                             'type' => 'permanence',
                             'is_permanence' => true,
                             'permanence_data' => [

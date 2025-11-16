@@ -82,7 +82,7 @@ class VideoCompressionService
         try {
             // Try compression with multiple quality levels if needed
             $result = $this->compressWithQualityLevels($videoPath, $originalSize, $targetSize);
-            
+
             return $result;
 
         } catch (\Exception $e) {
@@ -123,7 +123,7 @@ class VideoCompressionService
 
         foreach ($qualityLevels as $index => $level) {
             $command = $this->buildCompressionCommand($videoPath, $tempPath, $level['crf'], $level['resolution']);
-            
+
             exec($command, $output, $returnCode);
 
             if ($returnCode !== 0) {
@@ -245,7 +245,7 @@ class VideoCompressionService
             $output = [];
             $returnCode = 0;
             exec(sprintf('%s -version 2>&1', escapeshellarg($path)), $output, $returnCode);
-            
+
             if ($returnCode === 0) {
                 Log::info('FFmpeg trouvé', ['path' => $path]);
                 return $path;
@@ -269,7 +269,7 @@ class VideoCompressionService
         }
 
         $ffprobePath = str_replace('ffmpeg', 'ffprobe', $this->ffmpegPath);
-        
+
         $command = sprintf(
             '%s -v quiet -print_format json -show_format -show_streams %s 2>&1',
             escapeshellarg($ffprobePath),
@@ -285,4 +285,3 @@ class VideoCompressionService
         return null;
     }
 }
-

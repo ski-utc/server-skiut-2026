@@ -132,7 +132,7 @@ class DefisController extends Controller
         $maxVideoSizeForClient = (int) (self::MAX_VIDEO_SIZE * $clientMultiplier); // Define a  factor of 2 because the server will compress the video
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'data' => [
                 'maxImageSize' => self::MAX_IMAGE_SIZE,
                 'maxVideoSize' => $maxVideoSizeForClient
@@ -150,7 +150,7 @@ class DefisController extends Controller
     {
         $clientMultiplier = config('video.client_upload_multiplier', 2.0);
         $maxVideoKb = (int) ((self::MAX_VIDEO_SIZE * $clientMultiplier) / 1024);
-        
+
         $validated = $request->validate([
             'defiId' => 'required|integer|exists:challenges,id',
             'media' => 'required|file|mimes:jpeg,png,gif,mp4,quicktime,x-msvideo|max:' . $maxVideoKb,
@@ -207,17 +207,17 @@ class DefisController extends Controller
             if ($isVideo) {
                 $fullPath = storage_path('app/public/' . $filePath);
                 $result = $this->videoCompression->compress($fullPath, self::MAX_VIDEO_SIZE);
-                
+
                 if ($result['success'] && $result['meetsRequirement']) {
                     Log::info("Compression vidéo défi {$defiId}: {$result['message']}");
                 } elseif (!$result['meetsRequirement']) {
                     Storage::disk('public')->delete($filePath);
-                    
+
                     Log::warning("Vidéo défi {$defiId} trop volumineuse après compression", [
                         'original_size' => $result['originalSize'],
                         'message' => $result['message']
                     ]);
-                    
+
                     return response()->json([
                         'success' => false,
                         'message' => 'Vidéo trop volumineuse. Veuillez utiliser une vidéo plus courte ou de plus faible qualité.'

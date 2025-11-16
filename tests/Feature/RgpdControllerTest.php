@@ -70,12 +70,12 @@ class RgpdControllerTest extends TestCase
     public function test_export_my_data_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-        
+
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/rgpd/export-my-data');
 
         $this->assertGreaterThanOrEqual(200, $response->getStatusCode());
         $this->assertLessThan(300, $response->getStatusCode());
-        
+
         $tempPath = storage_path('app/temp');
         $zipFiles = glob($tempPath . '/mes_infos_*.zip');
         foreach ($zipFiles as $file) {
