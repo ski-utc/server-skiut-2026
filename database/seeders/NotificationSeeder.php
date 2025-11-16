@@ -17,14 +17,9 @@ class NotificationSeeder extends Seeder
         $users = User::limit(10)->get();
         $admin = User::where('admin', true)->first();
 
-        if ($users->isEmpty()) {
-            $this->command->warn('Aucun utilisateur trouvé pour créer les notifications');
-            return;
-        }
-
         $globalNotifications = [
             [
-                'title' => '🎿ienvenue sur SkiUT !',
+                'title' => 'Bienvenue sur SkiUT !',
                 'description' => 'Votre application compagnon pour une semaine de ski inoubliable. Découvrez toutes les fonctionnalités disponibles !',
                 'sender_id' => $admin?->id,
                 'type' => 'global',
