@@ -1,6 +1,14 @@
-- [ ] Modifier le planning pour calculer le status d'une activité en interne, si elle est passée, active ou future (@planningController @planningScreen)
-- [ ] Ajouter un bouton annuler ou rafraichier en plus du bouton "Retour" sur le ErrorScreen. Ce bouton refresh la page sur laquelle on est pour la reset complètement
-- [ ] Faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, memo ...)
+- [X] Modifier le planning pour calculer le status d'une activité en interne, si elle est passée, active ou future (@planningController @planningScreen)
+- [X] Ajouter un bouton annuler ou rafraichier en plus du bouton "Retour" sur le ErrorScreen. Ce bouton refresh la page sur laquelle on est pour la reset complètement
+
+- [ ] Fix la CI du serveur
+- [~] Faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, memo ...)
+  - Pour celles qui n'apparaissent pas sur un git status
+- [~] Définir des interfaces/types partout où c'est nécessaire dans l'app et passer npm run lint sans warning
+- [~] Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
+  - Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
+
+- [ ] vérifier tournée des chambres
 - [ ] vérifier les notifications 
   - [ ] save des token
   - [ ] classique (push)
@@ -11,8 +19,8 @@
 - [ ] vérifier schedule de notification des permanences
 
 ########### Pas de deadline ##########
-- [X] Back-office complet
-- [ ] Update la charte RGPD, l'export, anonymisation et suppression des données
+- [~] Update la charte RGPD, l'export, anonymisation et suppression des données
+- [~] Vérifier que l'uml est correct
 - [ ] mise en prod 
 - [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
 - [ ] réactiver tous les healthcheck laravel
