@@ -6,7 +6,6 @@ use App\Filament\Resources\ActivityResource\Pages;
 use App\Models\Activity;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Toggle;
@@ -15,7 +14,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -44,11 +42,6 @@ class ActivityResource extends Resource
                             ->label('Nom de l\'activité')
                             ->required()
                             ->maxLength(255),
-
-                        Textarea::make('description')
-                            ->label('Description')
-                            ->rows(3)
-                            ->nullable(),
 
                         DatePicker::make('date')
                             ->label('Date')
@@ -103,14 +96,9 @@ class ActivityResource extends Resource
                     ->label('Type')
                     ->formatStateUsing(fn (bool $state): string => $state ? 'Payant' : 'Gratuit')
                     ->colors([
-                        'warning' => true,
-                        'success' => false,
+                        'warning' => fn ($state) => $state == true,
+                        'success' => fn ($state) => $state == false,
                     ]),
-
-                TextColumn::make('created_at')
-                    ->label('Créé le')
-                    ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('payant')
@@ -134,7 +122,6 @@ class ActivityResource extends Resource
                     }),
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])
