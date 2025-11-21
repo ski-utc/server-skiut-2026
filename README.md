@@ -339,7 +339,6 @@ Elle s'occupe de :
 
 Pour plus d'informations, tu peux voir le fichier .gitlab-ci.yml
 
-
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
 
