@@ -58,7 +58,6 @@ class RgpdController extends Controller
             TourBinome::where('member_1_id', $user_id)->orWhere('member_2_id', $user_id)->delete();
             Permanence::where('responsible_user_id', $user_id)->delete();
 
-
             $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
@@ -77,7 +76,6 @@ class RgpdController extends Controller
                     'description' => 'Description anonymisée',
                     'passions' => json_encode([])
                 ]);
-
 
                 if ($room->photoPath) {
                     $relativePath = str_replace('storage/', '', $room->photoPath);
@@ -206,7 +204,6 @@ class RgpdController extends Controller
 
             $dataContent = $this->formatUserData($user);
             file_put_contents($tempDir . '/mes_donnees.txt', $dataContent);
-
 
             $photosDir = $tempDir . '/photos';
             if (!file_exists($photosDir)) {

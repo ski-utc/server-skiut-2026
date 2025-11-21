@@ -44,7 +44,6 @@ class PerformanceControllerTest extends TestCase
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
 
-
         $this->assertDatabaseHas('performance_sessions', [
             'user_id' => $this->user->id,
             'max_speed' => 50.5,
@@ -66,7 +65,6 @@ class PerformanceControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
 
-
         $sessionId = 'test_session_' . time();
         PerformanceSession::create([
             'user_id' => $this->user->id,
@@ -83,7 +81,6 @@ class PerformanceControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-
 
         $this->assertDatabaseMissing('performance_sessions', ['session_id' => $sessionId]);
     }

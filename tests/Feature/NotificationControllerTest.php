@@ -53,7 +53,6 @@ class NotificationControllerTest extends TestCase
         $token = JwtTestHelper::generateToken($this->user->id);
         $notification = Notification::factory()->create();
 
-
         UserNotification::create([
             'user_id' => $this->user->id,
             'notification_id' => $notification->id,
@@ -67,7 +66,6 @@ class NotificationControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-
 
         $this->assertDatabaseHas('user_notifications', [
             'user_id' => $this->user->id,

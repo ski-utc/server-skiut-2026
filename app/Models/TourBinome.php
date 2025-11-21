@@ -57,6 +57,17 @@ class TourBinome extends Model
     }
 
     /**
+     * Get the teammate of a user.
+     *
+     * @param int $user_id
+     * @return User
+     */
+    public function getTeammate($user_id)
+    {
+        return $this->member1->id == $user_id ? $this->member2 : $this->member1;
+    }
+
+    /**
      * Get the 2 members of the binome.
      *
      * @return Collection

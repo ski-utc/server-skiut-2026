@@ -132,7 +132,7 @@ jobs:
           php artisan jwt:generate
           mkdir -p database && touch database/database.sqlite
       
-      - name: Run migrations
+      - name: Run migrations & seeders
         run: php artisan migrate --force --seed
       
       - name: Run tests

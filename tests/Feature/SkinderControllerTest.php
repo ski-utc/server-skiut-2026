@@ -26,7 +26,6 @@ class SkinderControllerTest extends TestCase
         parent::setUp();
         Storage::fake('public');
 
-
         $this->room = Room::factory()->create([
             'photoPath' => 'storage/room_images/test_room.jpg',
         ]);
@@ -41,7 +40,6 @@ class SkinderControllerTest extends TestCase
     public function test_get_profil_skinder_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-
 
         $otherRoom = Room::factory()->create([
             'photoPath' => 'storage/room_images/other_room.jpg',
@@ -67,7 +65,6 @@ class SkinderControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-
 
         $this->assertDatabaseHas('skinder_likes', [
             'room_liker_id' => $this->room->id,

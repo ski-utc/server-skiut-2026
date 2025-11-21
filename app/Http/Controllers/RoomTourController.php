@@ -232,12 +232,7 @@ class RoomTourController extends Controller
 
             $binomeStats = $userBinome->getVisitStats();
 
-            $members = $userBinome->getMembers()->map(function ($member) {
-                return [
-                    'id' => $member->id,
-                    'name' => $member->firstName . ' ' . $member->lastName
-                ];
-            });
+            $teammate = $userBinome->getTeammate($user_id);
 
             $data = [
                 'tour_id' => $todayTour->id,
@@ -245,7 +240,10 @@ class RoomTourController extends Controller
                 'binome' => [
                     'id' => $userBinome->id,
                     'name' => $userBinome->binome_name,
-                    'members' => $members,
+                    'teammate' => [
+                        'id' => $teammate->id,
+                        'name' => $teammate->firstName . ' ' . $teammate->lastName
+                    ],
                     'stats' => $binomeStats
                 ],
                 'visits' => $userBinome->visits()

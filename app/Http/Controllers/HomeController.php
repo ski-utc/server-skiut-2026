@@ -119,7 +119,6 @@ class HomeController extends Controller
 
             $fullData = $response->json();
 
-
             $optimizedData = $this->extractWeatherData($fullData);
 
             $cacheData = [

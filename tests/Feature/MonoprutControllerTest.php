@@ -72,7 +72,6 @@ class MonoprutControllerTest extends TestCase
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
 
-
         $this->assertDatabaseHas('monoprut', ['id' => $article->id, 'receiver_room_id' => $this->room->id]);
     }
 
@@ -113,7 +112,6 @@ class MonoprutControllerTest extends TestCase
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
 
-
         $this->assertDatabaseHas('monoprut', ['id' => $article->id, 'retrieved' => true]);
     }
 
@@ -134,7 +132,6 @@ class MonoprutControllerTest extends TestCase
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
 
-
         $this->assertDatabaseHas('monoprut', ['id' => $article->id, 'receiver_room_id' => null]);
     }
 
@@ -152,7 +149,6 @@ class MonoprutControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-
 
         $this->assertDatabaseMissing('monoprut', ['id' => $article->id]);
     }

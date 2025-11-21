@@ -292,7 +292,7 @@ class NotificationController extends Controller
                     ];
                 });
 
-            $rooms = Room::select('id', 'name')->orderBy('name')->get();
+            $rooms = Room::select('id', 'roomNumber', 'name')->orderBy('name')->get();
 
             return response()->json([
                 'success' => true,

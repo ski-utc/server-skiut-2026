@@ -62,7 +62,6 @@ class PushTokenControllerTest extends TestCase
     {
         $token = JwtTestHelper::generateToken($this->user->id);
 
-
         $pushTokenValue = 'test_token_' . time();
         PushToken::create([
             'user_id' => $this->user->id,
@@ -79,14 +78,12 @@ class PushTokenControllerTest extends TestCase
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
 
-
         $this->assertDatabaseHas('push_tokens', ['token' => $pushTokenValue, 'active' => false]);
     }
 
     public function test_destroy_push_token_success()
     {
         $token = JwtTestHelper::generateToken($this->user->id);
-
 
         $pushTokenValue = 'test_token_' . time();
         PushToken::create([
@@ -103,7 +100,6 @@ class PushTokenControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-
 
         $this->assertDatabaseMissing('push_tokens', ['token' => $pushTokenValue]);
     }
