@@ -184,8 +184,9 @@ class NotificationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Notification créée et envoyée',
-                'data' => $notification,
-                'recipients_count' => count($recipientIds)
+                'data' => [
+                    'recipients_count' => count($recipientIds)
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la création de la notification: ' . $e->getMessage());

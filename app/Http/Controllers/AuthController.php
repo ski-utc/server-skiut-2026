@@ -220,13 +220,15 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'id' => $user->id,
-                'name' => $user->firstName,
-                'lastName' => $user->lastName,
-                'room' => $room->roomNumber,
-                'roomName' => $room->name ? $room->name : null,
-                'admin' => $user->admin,
-                'member' => $user->member
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->firstName,
+                    'lastName' => $user->lastName,
+                    'room' => $room->roomNumber,
+                    'roomName' => $room->name ? $room->name : null,
+                    'admin' => $user->admin,
+                    'member' => $user->member
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des users infos: ' . $e->getMessage());

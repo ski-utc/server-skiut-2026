@@ -71,7 +71,7 @@ class AnecdoteController extends Controller
             $changed = $anecdote->toggleLike($user_id, $validated['like']);
 
             if ($changed) {
-                return response()->json(['success' => true, 'liked' => $validated['like']]);
+                return response()->json(['success' => true, 'data' => ['liked' => $validated['like']]]);
             }
 
             return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);
@@ -101,7 +101,7 @@ class AnecdoteController extends Controller
             $changed = $anecdote->toggleWarn($user_id, $validated['warn']);
 
             if ($changed) {
-                return response()->json(['success' => true, 'warn' => $validated['warn']]);
+                return response()->json(['success' => true, 'data' => ['warn' => $validated['warn']]]);
             }
 
             return response()->json(['success' => false, 'message' => 'Aucune modification effectuée.']);

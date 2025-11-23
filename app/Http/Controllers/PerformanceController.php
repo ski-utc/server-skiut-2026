@@ -109,8 +109,10 @@ class PerformanceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'sessions' => $sessions,
-                'stats' => $stats
+                'data' => [
+                    'sessions' => $sessions,
+                    'stats' => $stats
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des performances: ' . $e->getMessage());

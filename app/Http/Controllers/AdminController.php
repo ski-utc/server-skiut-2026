@@ -93,8 +93,10 @@ class AdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $challenge,
-                'imagePath' => asset($challenge->file)
+                'data' => [
+                    'challenge' => $challenge,
+                    'imagePath' => asset($challenge->file),
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -168,7 +170,7 @@ class AdminController extends Controller
         try {
             $filter = $validated['filter'] ?? 'all';
 
-            $query = Anecdote::with(['user', 'likes', 'warns']);
+            $query = Anecdote::with(['user', 'likes', 'warns']); // Might can remove likes and warns joins
 
             switch ($filter) {
                 case 'pending':

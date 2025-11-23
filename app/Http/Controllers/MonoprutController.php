@@ -45,7 +45,7 @@ class MonoprutController extends Controller
     {
         $validated = $request->validate([
             'product' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|string|max:255',
             'type' => 'required|string|max:50',
         ]);
 
