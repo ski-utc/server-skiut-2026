@@ -38,7 +38,7 @@ class AuthControllerTest extends TestCase
         $this->assertGreaterThanOrEqual(200, $response->status());
         $this->assertLessThan(300, $response->status());
         $this->assertTrue($response->json('success'));
-        $this->assertEquals($this->user->id, $response->json('id'));
+        $this->assertEquals($this->user->id, $response->json('data.id'));
     }
 
     public function test_get_user_data_without_token()

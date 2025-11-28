@@ -109,7 +109,7 @@ class RoomShotgunSelectionResource extends Resource
                         $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
                         return !$record->isLockedByOther($email) && $userRoomId !== $record->id;
                     })
-                    ->form(fn(RoomShotgun $record) => self::getSelectionFormSchema($record))
+                    ->form(fn (RoomShotgun $record) => self::getSelectionFormSchema($record))
                     ->action(function (array $data, RoomShotgun $record) {
                         self::handleSelection($data, $record);
                     }),
@@ -123,7 +123,7 @@ class RoomShotgunSelectionResource extends Resource
                         $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
                         return $userRoomId === $record->id;
                     })
-                    ->form(fn(RoomShotgun $record) => self::getViewInfoFormSchema($record))
+                    ->form(fn (RoomShotgun $record) => self::getViewInfoFormSchema($record))
                     ->action(function (array $data, RoomShotgun $record) {
                         // No-op for viewing info
                     })
@@ -140,7 +140,7 @@ class RoomShotgunSelectionResource extends Resource
 
         $roomMembers = UserRoomShotgun::where('room_shotgun_id', $record->id)
             ->get()
-            ->map(fn($member) => $member->email . ($member->is_vegetarian ? ' (Végé)' : ''))
+            ->map(fn ($member) => $member->email . ($member->is_vegetarian ? ' (Végé)' : ''))
             ->implode("\n");
 
         return [
@@ -148,19 +148,19 @@ class RoomShotgunSelectionResource extends Resource
                 ->schema([
                     TextInput::make('chambre_info')
                         ->label('Chambre')
-                        ->default(fn() => "Chambre {$record->numero} - {$record->nb_places} places")
+                        ->default(fn () => "Chambre {$record->numero} - {$record->nb_places} places")
                         ->dehydrated(false)
                         ->disabled(),
 
                     TextInput::make('name_display')
                         ->label('Nom de la chambre')
-                        ->default(fn() => $record->name)
+                        ->default(fn () => $record->name)
                         ->dehydrated(false)
                         ->disabled(),
 
                     TextInput::make('ambiance_display')
                         ->label('Ambiance')
-                        ->default(fn() => $record->ambiance ?? 'Non définie')
+                        ->default(fn () => $record->ambiance ?? 'Non définie')
                         ->dehydrated(false)
                         ->disabled(),
                 ])
@@ -170,7 +170,7 @@ class RoomShotgunSelectionResource extends Resource
                 ->schema([
                     Textarea::make('members_list')
                         ->label('Liste des participant·e·s')
-                        ->default(fn() => $roomMembers)
+                        ->default(fn () => $roomMembers)
                         ->dehydrated(false)
                         ->disabled()
                         ->rows(5),
@@ -230,7 +230,7 @@ class RoomShotgunSelectionResource extends Resource
                 ->schema([
                     TextInput::make('chambre_info')
                         ->label('Chambre sélectionnée')
-                        ->default(fn(RoomShotgun $record) => "Chambre {$record->nb_places} places")
+                        ->default(fn (RoomShotgun $record) => "Chambre {$record->nb_places} places")
                         ->dehydrated(false)
                         ->disabled(),
 
@@ -242,7 +242,7 @@ class RoomShotgunSelectionResource extends Resource
                             'petite night' => 'Petite night',
                             'calme' => 'Calme',
                         ])
-                        ->default(fn(RoomShotgun $record) => $record->ambiance)
+                        ->default(fn (RoomShotgun $record) => $record->ambiance)
                         ->nullable()
                         ->dehydrated(true),
 
@@ -261,7 +261,7 @@ class RoomShotgunSelectionResource extends Resource
                                 ->schema([
                                     Select::make('responsable_email')
                                         ->label('Responsable de la chambre')
-                                        ->options(fn() => Shotguns::whereNotIn('email', $usedEmails)->pluck('email', 'email'))
+                                        ->options(fn () => Shotguns::whereNotIn('email', $usedEmails)->pluck('email', 'email'))
                                         ->searchable()
                                         ->required()
                                         ->default(session('email'))
@@ -282,7 +282,7 @@ class RoomShotgunSelectionResource extends Resource
                     Grid::make(['default' => 1, 'lg' => 2])
                         ->schema(
                             array_map(
-                                fn($i) => Section::make()
+                                fn ($i) => Section::make()
                                     ->schema([
                                         Grid::make(6)
                                             ->schema([

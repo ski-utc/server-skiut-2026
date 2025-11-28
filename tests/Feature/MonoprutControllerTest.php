@@ -45,7 +45,7 @@ class MonoprutControllerTest extends TestCase
         $token = JwtTestHelper::generateToken($this->user->id);
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/articles', [
             'product' => 'Test Product',
-            'quantity' => 5,
+            'quantity' => '5',
             'type' => 'fruit',
         ]);
 
