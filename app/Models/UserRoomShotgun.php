@@ -14,6 +14,7 @@ class UserRoomShotgun extends Model
     protected $fillable = [
         'user_id',
         'room_shotgun_id',
+        'partial_room_shotgun_id',
         'email',
         'is_vegetarian'
     ];
@@ -36,5 +37,15 @@ class UserRoomShotgun extends Model
     public function roomShotgun(): BelongsTo
     {
         return $this->belongsTo(RoomShotgun::class, 'room_shotgun_id');
+    }
+
+    /**
+     * Get the partial room shotgun that owns the user room shotgun.
+     *
+     * @return BelongsTo
+     */
+    public function partialRoomShotgun(): BelongsTo
+    {
+        return $this->belongsTo(PartialRoomShotgun::class, 'partial_room_shotgun_id');
     }
 }

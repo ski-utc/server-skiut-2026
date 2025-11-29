@@ -11,11 +11,12 @@ class RoomShotgun extends Model
     use HasFactory;
     protected $table = 'room_shotguns';
     protected $fillable = [
-        'numero',
         'nb_places',
         'name',
         'responsable_chambre',
         'ambiance',
+        'firstNeighbourChoice',
+        'secondNeighbourChoice',
         'locked_until',
         'locked_by_email',
     ];
@@ -24,7 +25,7 @@ class RoomShotgun extends Model
     ];
 
     /**
-     * Get the users that belong to the room shotgun.
+     * Get the users that belong to the room shotgun (full room assignments).
      *
      * @return HasMany
      */

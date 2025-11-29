@@ -12,7 +12,8 @@ return new class () extends Migration {
     {
         Schema::create('user_room_shotguns', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('room_shotgun_id')->constrained('room_shotguns')->onDelete('cascade');
+            $table->foreignId('room_shotgun_id')->nullable()->constrained('room_shotguns');
+            $table->foreignId('partial_room_shotgun_id')->nullable()->constrained('partial_room_shotguns');
             $table->string('email');
             $table->boolean('is_vegetarian')->default(false);
             $table->timestamps();

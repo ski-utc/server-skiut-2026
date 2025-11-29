@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoomShotgunSelectionResource\Pages;
+use App\Models\PartialRoomShotgun;
 use App\Models\RoomShotgun;
 use App\Models\Shotguns;
 use App\Models\UserRoomShotgun;
@@ -52,13 +53,36 @@ class RoomShotgunSelectionResource extends Resource
                             ->prefix('Chambre ')
                             ->suffix(' places')
                             ->weight('bold')
-                            ->size('lg'),
+                            ->size('lg')
+                            ->getStateUsing(function (RoomShotgun $record) {
+                                $email = session('email');
+
+                                $userPartialRoom = UserRoomShotgun::where('email', $email)
+                                    ->whereNotNull('partial_room_shotgun_id')
+                                    ->first();
+
+                                if ($userPartialRoom) {
+                                    return $userPartialRoom->partialRoomShotgun->nb_personas;
+                                }
+
+                                return $record->nb_places;
+                            }),
 
                         TextColumn::make('status')
                             ->label('Statut')
                             ->getStateUsing(function (RoomShotgun $record) {
                                 $email = session('email');
-                                $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
+
+                                $userPartialRoom = UserRoomShotgun::where('email', $email)
+                                    ->whereNotNull('partial_room_shotgun_id')
+                                    ->first();
+                                if ($userPartialRoom) {
+                                    return 'Vous avez une chambre personnalisée';
+                                }
+
+                                $userRoomId = UserRoomShotgun::where('email', $email)
+                                    ->whereNotNull('room_shotgun_id')
+                                    ->value('room_shotgun_id');
 
                                 if ($userRoomId === $record->id) {
                                     return 'Votre chambre';
@@ -70,7 +94,17 @@ class RoomShotgunSelectionResource extends Resource
                             })
                             ->color(function (RoomShotgun $record) {
                                 $email = session('email');
-                                $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
+
+                                $userPartialRoom = UserRoomShotgun::where('email', $email)
+                                    ->whereNotNull('partial_room_shotgun_id')
+                                    ->first();
+                                if ($userPartialRoom) {
+                                    return 'info';
+                                }
+
+                                $userRoomId = UserRoomShotgun::where('email', $email)
+                                    ->whereNotNull('room_shotgun_id')
+                                    ->value('room_shotgun_id');
 
                                 if ($userRoomId === $record->id) {
                                     return 'primary';
@@ -86,7 +120,16 @@ class RoomShotgunSelectionResource extends Resource
             ->query(function () {
                 $email = session('email');
 
+                $userPartialRoom = UserRoomShotgun::where('email', $email)
+                    ->whereNotNull('partial_room_shotgun_id')
+                    ->first();
+
+                if ($userPartialRoom) {
+                    return RoomShotgun::query()->whereNull('responsable_chambre')->limit(1);
+                }
+
                 $userRoomId = UserRoomShotgun::where('email', $email)
+                    ->whereNotNull('room_shotgun_id')
                     ->value('room_shotgun_id');
 
                 $query = RoomShotgun::query();
@@ -106,10 +149,15 @@ class RoomShotgunSelectionResource extends Resource
                     ->color('success')
                     ->visible(function (RoomShotgun $record) {
                         $email = session('email');
-                        $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
-                        return !$record->isLockedByOther($email) && $userRoomId !== $record->id;
+
+                        $existingAssignment = UserRoomShotgun::where('email', $email)->first();
+                        if ($existingAssignment) {
+                            return false;
+                        }
+
+                        return !$record->isLockedByOther($email);
                     })
-                    ->form(fn (RoomShotgun $record) => self::getSelectionFormSchema($record))
+                    ->form(fn(RoomShotgun $record) => self::getSelectionFormSchema($record))
                     ->action(function (array $data, RoomShotgun $record) {
                         self::handleSelection($data, $record);
                     }),
@@ -120,10 +168,34 @@ class RoomShotgunSelectionResource extends Resource
                     ->color('primary')
                     ->visible(function (RoomShotgun $record) {
                         $email = session('email');
-                        $userRoomId = UserRoomShotgun::where('email', $email)->value('room_shotgun_id');
+
+                        $userPartialRoom = UserRoomShotgun::where('email', $email)
+                            ->whereNotNull('partial_room_shotgun_id')
+                            ->first();
+                        if ($userPartialRoom) {
+                            return true;
+                        }
+
+                        $userRoomId = UserRoomShotgun::where('email', $email)
+                            ->whereNotNull('room_shotgun_id')
+                            ->value('room_shotgun_id');
                         return $userRoomId === $record->id;
                     })
-                    ->form(fn (RoomShotgun $record) => self::getViewInfoFormSchema($record))
+                    ->form(function (RoomShotgun $record) {
+                        $email = session('email');
+
+                        $userPartialRoom = UserRoomShotgun::where('email', $email)
+                            ->whereNotNull('partial_room_shotgun_id')
+                            ->first();
+
+                        if ($userPartialRoom) {
+                            return self::getPartialRoomInfoFormSchema($userPartialRoom->partialRoomShotgun);
+                        }
+
+                        return self::getViewInfoFormSchema($record);
+                    })
+                    ->modalSubmitActionLabel("Fermer")
+                    ->modalCancelAction(false)
                     ->action(function (array $data, RoomShotgun $record) {
                         // No-op for viewing info
                     })
@@ -140,7 +212,7 @@ class RoomShotgunSelectionResource extends Resource
 
         $roomMembers = UserRoomShotgun::where('room_shotgun_id', $record->id)
             ->get()
-            ->map(fn ($member) => $member->email . ($member->is_vegetarian ? ' (Végé)' : ''))
+            ->map(fn($member) => $member->email . ($member->is_vegetarian ? ' (Végé)' : ''))
             ->implode("\n");
 
         return [
@@ -148,19 +220,19 @@ class RoomShotgunSelectionResource extends Resource
                 ->schema([
                     TextInput::make('chambre_info')
                         ->label('Chambre')
-                        ->default(fn () => "Chambre {$record->numero} - {$record->nb_places} places")
+                        ->default(fn() => "Chambre {$record->nb_places} places")
                         ->dehydrated(false)
                         ->disabled(),
 
                     TextInput::make('name_display')
                         ->label('Nom de la chambre')
-                        ->default(fn () => $record->name)
+                        ->default(fn() => $record->name)
                         ->dehydrated(false)
                         ->disabled(),
 
                     TextInput::make('ambiance_display')
                         ->label('Ambiance')
-                        ->default(fn () => $record->ambiance ?? 'Non définie')
+                        ->default(fn() => $record->ambiance ?? 'Non définie')
                         ->dehydrated(false)
                         ->disabled(),
                 ])
@@ -170,11 +242,89 @@ class RoomShotgunSelectionResource extends Resource
                 ->schema([
                     Textarea::make('members_list')
                         ->label('Liste des participant·e·s')
-                        ->default(fn () => $roomMembers)
+                        ->default(fn() => $roomMembers)
                         ->dehydrated(false)
                         ->disabled()
                         ->rows(5),
                 ]),
+            Section::make("J'aimerai être voisin.e avec...")
+                ->schema([
+                    TextInput::make('firstNeighbourChoice')
+                        ->label('Premier choix')
+                        ->default(fn() => $record->firstNeighbourChoice)
+                        ->visible(fn() => $record->firstNeighbourChoice)
+                        ->dehydrated(false)
+                        ->disabled(),
+
+                    TextInput::make('secondNeighbourChoice')
+                        ->label('Deuxième choix')
+                        ->default(fn() => $record->secondNeighbourChoice)
+                        ->visible(fn() => $record->secondNeighbourChoice)
+                        ->dehydrated(false)
+                        ->disabled(),
+                ])
+                ->visible(fn() => $record->firstNeighbourChoice || $record->secondNeighbourChoice),
+        ];
+    }
+
+    protected static function getPartialRoomInfoFormSchema(?PartialRoomShotgun $record = null): array
+    {
+        $email = session('email');
+
+        $roomMembers = UserRoomShotgun::where('partial_room_shotgun_id', $record->id)
+            ->get()
+            ->map(fn($member) => $member->email . ($member->is_vegetarian ? ' (Végé)' : ''))
+            ->implode("\n");
+
+        return [
+            Section::make('Informations de votre chambre personnalisée')
+                ->schema([
+                    TextInput::make('chambre_info')
+                        ->label('Type de chambre')
+                        ->default(fn() => "Chambre personnalisée - {$record->nb_personas} participant·e·s")
+                        ->dehydrated(false)
+                        ->disabled(),
+
+                    TextInput::make('name_display')
+                        ->label('Nom de la chambre')
+                        ->default(fn() => $record->name)
+                        ->dehydrated(false)
+                        ->disabled(),
+
+                    TextInput::make('ambiance_display')
+                        ->label('Ambiance')
+                        ->default(fn() => $record->ambiance ?? 'Non définie')
+                        ->dehydrated(false)
+                        ->disabled(),
+                ])
+                ->columns(3),
+
+            Section::make('Participant·e·s de la chambre')
+                ->schema([
+                    Textarea::make('members_list')
+                        ->label('Liste des participant·e·s')
+                        ->default(fn() => $roomMembers)
+                        ->dehydrated(false)
+                        ->disabled()
+                        ->rows(5),
+                ]),
+            Section::make("J'aimerai être voisin.e avec...")
+                ->schema([
+                    TextInput::make('firstNeighbourChoice')
+                        ->label('Premier choix')
+                        ->default(fn() => $record->firstNeighbourChoice)
+                        ->visible(fn() => $record->firstNeighbourChoice)
+                        ->dehydrated(false)
+                        ->disabled(),
+
+                    TextInput::make('secondNeighbourChoice')
+                        ->label('Deuxième choix')
+                        ->default(fn() => $record->secondNeighbourChoice)
+                        ->visible(fn() => $record->secondNeighbourChoice)
+                        ->dehydrated(false)
+                        ->disabled(),
+                ])
+                ->visible(fn() => $record->firstNeighbourChoice || $record->secondNeighbourChoice),
         ];
     }
 
@@ -230,7 +380,7 @@ class RoomShotgunSelectionResource extends Resource
                 ->schema([
                     TextInput::make('chambre_info')
                         ->label('Chambre sélectionnée')
-                        ->default(fn (RoomShotgun $record) => "Chambre {$record->nb_places} places")
+                        ->default(fn(RoomShotgun $record) => "Chambre {$record->nb_places} places")
                         ->dehydrated(false)
                         ->disabled(),
 
@@ -242,7 +392,7 @@ class RoomShotgunSelectionResource extends Resource
                             'petite night' => 'Petite night',
                             'calme' => 'Calme',
                         ])
-                        ->default(fn (RoomShotgun $record) => $record->ambiance)
+                        ->default(fn(RoomShotgun $record) => $record->ambiance)
                         ->nullable()
                         ->dehydrated(true),
 
@@ -261,7 +411,7 @@ class RoomShotgunSelectionResource extends Resource
                                 ->schema([
                                     Select::make('responsable_email')
                                         ->label('Responsable de la chambre')
-                                        ->options(fn () => Shotguns::whereNotIn('email', $usedEmails)->pluck('email', 'email'))
+                                        ->options(fn() => Shotguns::whereNotIn('email', $usedEmails)->pluck('email', 'email'))
                                         ->searchable()
                                         ->required()
                                         ->default(session('email'))
@@ -282,7 +432,7 @@ class RoomShotgunSelectionResource extends Resource
                     Grid::make(['default' => 1, 'lg' => 2])
                         ->schema(
                             array_map(
-                                fn ($i) => Section::make()
+                                fn($i) => Section::make()
                                     ->schema([
                                         Grid::make(6)
                                             ->schema([
@@ -314,6 +464,22 @@ class RoomShotgunSelectionResource extends Resource
                                 range(0, $nbSlots - 1)
                             )
                         ),
+                ]),
+            Section::make("Si possible, j'aimerai être voisin.e avec...")
+                ->schema([
+                    Grid::make(['default' => 1, 'lg' => 2])
+                        ->schema([
+                            TextInput::make('firstNeighbourChoice')
+                                ->label("Nom de chambre de mon premier choix")
+                                ->default(fn() => $record->firstNeighbourChoice)
+                                ->dehydrated(false)
+                                ->disabled(),
+                            TextInput::make('secondNeighbourChoice')
+                                ->label("Nom de chambre de mon deuxième choix")
+                                ->default(fn() => $record->secondNeighbourChoice)
+                                ->dehydrated(false)
+                                ->disabled(),
+                        ]),
                 ]),
         ];
     }
