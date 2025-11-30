@@ -29,14 +29,17 @@ class AnecdoteController extends Controller
             $anecdotes = Anecdote::withCount('likes')
                 ->valid()
                 ->orderBy('created_at', 'desc')
-                ->take((int)$quantity)
+                ->take((int) $quantity)
                 ->get();
 
             $data = $anecdotes->map(function ($anecdote) use ($user_id) {
                 return [
                     'id' => $anecdote->id,
                     'text' => $anecdote->text,
-                    'room' => $anecdote->room,
+                    'room' => [
+                        'name' => $anecdote->room->name ?? null,
+                        'roomNumber' => $anecdote->room->roomNumber ?? null,
+                    ],
                     'liked' => $anecdote->isLikedBy($user_id),
                     'nbLikes' => $anecdote->likes_count,
                     'warned' => $anecdote->isWarnedBy($user_id),
@@ -141,7 +144,7 @@ class AnecdoteController extends Controller
             return response()->json(['success' => true, 'message' => 'Anecdote postée ! Elle sera visible une fois validée par le bureau']);
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi de l\'anecdote: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Erreur'.$e]);
+            return response()->json(['success' => false, 'message' => 'Erreur' . $e]);
         }
     }
 

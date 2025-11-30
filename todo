@@ -11,6 +11,24 @@
 - Faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, memo, callback, ...)
 - Définir des interfaces/types partout où c'est nécessaire dans l'app et passer npm run lint sans warning
 - Ne plus avoir de type any et tout typer (sauf pour les erreur comme on ne semble pas pouvoir faire string[])
+- Clean des lib deprecated
+Limiter les réponses serveur à ce que les interfaces react ont besoin
+
+
+
+### Avant de continuer 
+- Faire les TODO et autres commentaires notés
+- Verifier que tout fonctionne 
+  - bug sur l'envoie des defis: envoie de defis qui est considéré en pending puis n'update pas le state du screen précédent (et ne reste pas en mémoire, il faudrait peut etre modifier le cache de apiGet avec le nouveau défi)
+  - Skinder   
+  - tournée des chambres
+  - admin
+- Verifier le mode hors ligne 
+- veirifer le vitesseDeGlisse en background 
+
+- Envoyer une et une seule alerte si la personne est déconnecter (attention comme plusieurs requêtes se lancent au logout, il va sûrement falloir retirer la désactivation de token push au logout pour ne pas avoir plusieurs alert d'un coup), 
+- Modifier les écrans de login pour détailler d'avantage les features
+- Debug notification
 
 
 
@@ -20,18 +38,7 @@
 
 
 
-##### TODO slow
-- Run es lint et fixer et tout réparer (c'est majoritairement du typage/interfacage)
-- Envoyer une et une seule alerte si la personne est déconnecter (attention comme plusieurs requêtes se lancent au logout, il va sûrement falloir retirer la désactivation de token push au logout pour ne pas avoir plusieurs alert d'un coup), 
-- Modifier les écrans de login pour détailler d'avantage les features
-- Faire un widget alert curstom plutôt que celui par défaut ?
-- Debug notification
-
-
-
-##### Verification à la main
-- [X] vérifier tournée des chambres
-- Verifier defiScreen container visuel 
+##### Verification finales à la main
 - [ ] vérifier les notifications 
   - [ ] save des token
   - [ ] classique (push)
@@ -45,6 +52,7 @@
 
 ########### Pas de deadline ##########
 - [~] Update la charte RGPD, l'export, anonymisation et suppression des données
+  - updater / verifier les fonctions du RGPD controller
 - [~] Vérifier que l'uml est correct
 - [ ] mise en prod 
 - [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)

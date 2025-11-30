@@ -60,7 +60,7 @@ class PushTokenController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Push token saved successfully',
-                    'data' => $pushToken,
+                'data' => $pushToken,
             ], 200);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la sauvegarde du token de push: ' . $e->getMessage());
@@ -91,9 +91,20 @@ class PushTokenController extends Controller
 
             $tokens = PushToken::where('user_id', $userId)->get();
 
+            $data = $tokens->map(function ($token) {
+                return [
+                    'id' => $token->id,
+                    'token' => $token->token,
+                    'device_type' => $token->device_type,
+                    'device_name' => $token->device_name,
+                    'active' => $token->active,
+                    'last_used_at' => $token->last_used_at,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $tokens,
+                'data' => $data,
             ], 200);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des tokens de push: ' . $e->getMessage());
@@ -190,7 +201,7 @@ class PushTokenController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Push token deleted successfully',
-                ], 200);
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la suppression du token de push: ' . $e->getMessage());
             return response()->json([

@@ -67,9 +67,33 @@ class AdminController extends Controller
             $challenges = $query->orderBy('id', 'desc')
                 ->get();
 
+            $data = $challenges->map(function ($proof) {
+                return [
+                    'id' => $proof->id,
+                    'challenge' => [
+                        'id' => $proof->challenge->id,
+                        'title' => $proof->challenge->title,
+                        'description' => $proof->challenge->description,
+                    ],
+                    'user' => [
+                        'id' => $proof->user->id,
+                        'firstName' => $proof->user->firstName,
+                        'lastName' => $proof->user->lastName,
+                    ],
+                    'room' => [
+                        'id' => $proof->room->id,
+                        'name' => $proof->room->name,
+                    ],
+                    'proof_media' => asset($proof->file),
+                    'proof_media_type' => $proof->media_type,
+                    'valid' => (bool) $proof->valid,
+                    'delete' => (bool) $proof->delete,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $challenges,
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des défis: ' . $e->getMessage());
@@ -94,8 +118,25 @@ class AdminController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'challenge' => $challenge,
-                    'imagePath' => asset($challenge->file),
+                    'id' => $challenge->id,
+                    'challenge' => [
+                        'id' => $challenge->challenge->id,
+                        'title' => $challenge->challenge->title,
+                        'description' => $challenge->challenge->description,
+                    ],
+                    'user' => [
+                        'id' => $challenge->user->id,
+                        'firstName' => $challenge->user->firstName,
+                        'lastName' => $challenge->user->lastName,
+                    ],
+                    'room' => [
+                        'id' => $challenge->room->id,
+                        'name' => $challenge->room->name,
+                    ],
+                    'proof_media' => asset($challenge->file),
+                    'proof_media_type' => $challenge->media_type,
+                    'valid' => (bool) $challenge->valid,
+                    'delete' => (bool) $challenge->delete,
                 ],
             ]);
 
@@ -190,13 +231,30 @@ class AdminController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
 
-            foreach ($anecdotes as $anecdote) {
-                $anecdote->nbWarns = $anecdote->getWarnsCount();
-            }
+            $data = $anecdotes->map(function ($anecdote) {
+                return [
+                    'id' => $anecdote->id,
+                    'text' => $anecdote->text,
+                    'user' => [
+                        'id' => $anecdote->user->id,
+                        'firstName' => $anecdote->user->firstName,
+                        'lastName' => $anecdote->user->lastName,
+                    ],
+                    'room' => [
+                        'id' => $anecdote->room->id,
+                        'name' => $anecdote->room->name,
+                        'roomNumber' => $anecdote->room->roomNumber,
+                    ],
+                    'nbLikes' => $anecdote->getLikesCount(),
+                    'nbWarns' => $anecdote->getWarnsCount(),
+                    'valid' => (bool) $anecdote->valid,
+                    'alert' => (bool) $anecdote->alert,
+                ];
+            });
 
             return response()->json([
                 'success' => true,
-                'data' => $anecdotes,
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -211,7 +269,7 @@ class AdminController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
-    */
+     */
     public function getAnecdoteDetails($id)
     {
         try {
@@ -220,7 +278,16 @@ class AdminController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $anecdote,
+                'data' => [
+                    'id' => $anecdote->id,
+                    'text' => $anecdote->text,
+                    'room_id' => $anecdote->room_id,
+                    'user_id' => $anecdote->user_id,
+                    'valid' => (bool) $anecdote->valid,
+                    'alert' => (bool) $anecdote->alert,
+                    'delete' => (bool) $anecdote->delete,
+                    'created_at' => $anecdote->created_at,
+                ],
                 'nbLikes' => $anecdote->getLikesCount(),
                 'nbWarns' => $anecdote->getWarnsCount()
             ]);
@@ -239,7 +306,7 @@ class AdminController extends Controller
      * @param int $anecdoteId
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
-    */
+     */
     public function updateAnecdoteStatus(Request $request, $anecdoteId)
     {
         $validated = $request->validate([

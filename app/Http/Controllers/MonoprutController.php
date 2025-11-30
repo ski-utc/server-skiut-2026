@@ -21,9 +21,21 @@ class MonoprutController extends Controller
         try {
             $room_id = $request->user['room_id'];
             $articles = Monoprut::where('giver_room_id', '!=', $room_id)->where('receiver_room_id', null)->get();
+
+            $data = $articles->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'product' => $article->product,
+                    'quantity' => $article->quantity,
+                    'type' => $article->type,
+                    'giver_room_id' => $article->giver_room_id,
+                    'receiver_room_id' => $article->receiver_room_id,
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'data' => $articles,
+                'data' => $data,
                 'message' => 'Articles récupérés avec succès.',
             ]);
         } catch (\Exception $e) {

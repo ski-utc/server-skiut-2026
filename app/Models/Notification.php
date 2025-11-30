@@ -99,18 +99,14 @@ class Notification extends Model
      */
     public function markAsReadBy($user_id)
     {
-        $userNotification = $this->userNotifications()
-            ->where('user_id', $user_id)
-            ->first();
+        UserNotification::create([
+            'user_id' => $user_id,
+            'notification_id' => $this->id,
+            'read' => true,
+            'read_at' => now()
+        ]);
 
-        if ($userNotification) {
-            return $userNotification->update([
-                'read' => true,
-                'read_at' => now()
-            ]);
-        }
-
-        return false;
+        return true;
     }
 
     /**
