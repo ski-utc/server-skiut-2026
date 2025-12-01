@@ -136,7 +136,7 @@ class PartialRoomShotgunResource extends Resource
                                 )
                         ];
                     })
-                    ->visible(fn($record) => $record !== null)
+                    ->visible(fn ($record) => $record !== null)
                     ->collapsed(false)
                     ->columnSpanFull(),
             ]);

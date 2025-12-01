@@ -134,7 +134,7 @@ class RoomShotgunResource extends Resource
                                 )
                         ];
                     })
-                    ->visible(fn($record) => $record !== null)
+                    ->visible(fn ($record) => $record !== null)
                     ->collapsed(false)
                     ->columnSpanFull(),
             ]);
@@ -206,10 +206,10 @@ class RoomShotgunResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_available')
                     ->label('Disponible')
                     ->queries(
-                        true: fn($query) => $query->whereDoesntHave('users')->where(function ($q) {
+                        true: fn ($query) => $query->whereDoesntHave('users')->where(function ($q) {
                             $q->whereNull('locked_until')->orWhere('locked_until', '<=', now());
                         }),
-                        false: fn($query) => $query->where(function ($q) {
+                        false: fn ($query) => $query->where(function ($q) {
                             $q->whereHas('users')->orWhere('locked_until', '>', now());
                         }),
                     ),
