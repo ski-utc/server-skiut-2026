@@ -12,33 +12,26 @@
 - Définir des interfaces/types partout où c'est nécessaire dans l'app et passer npm run lint sans warning
 - Ne plus avoir de type any et tout typer (sauf pour les erreur comme on ne semble pas pouvoir faire string[])
 - Clean des lib deprecated
-Limiter les réponses serveur à ce que les interfaces react ont besoin
+- Limiter les réponses serveur à ce que les interfaces react ont besoin
+- Skinder dans la navbar 
+- 
 
 
 
 ### Avant de continuer 
+- notifications admin
 - Faire les TODO et autres commentaires notés
-- Verifier que tout fonctionne 
-  - bug sur l'envoie des defis: envoie de defis qui est considéré en pending puis n'update pas le state du screen précédent (et ne reste pas en mémoire, il faudrait peut etre modifier le cache de apiGet avec le nouveau défi)
-  - Skinder   
-  - tournée des chambres
-  - admin
+- Améliorer les gesture des loginScreen et du weatherWidget pas très fluide (réagit tard après le contact avec le doigt)
 - Verifier le mode hors ligne 
-- veirifer le vitesseDeGlisse en background 
-
+- veriifer le vitesseDeGlisse en background 
 - Envoyer une et une seule alerte si la personne est déconnecter (attention comme plusieurs requêtes se lancent au logout, il va sûrement falloir retirer la désactivation de token push au logout pour ne pas avoir plusieurs alert d'un coup), 
 - Modifier les écrans de login pour détailler d'avantage les features
 - Debug notification
 
 
 
-##### TODO fast
-- Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
-  - Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
-
-
-
 ##### Verification finales à la main
+- [ ] Vérifier que le problème de vidéo noire en plein écran (uniquement pour celles qu'on récupère du serveur) est résolu
 - [ ] vérifier les notifications 
   - [ ] save des token
   - [ ] classique (push)
@@ -47,6 +40,12 @@ Limiter les réponses serveur à ce que les interfaces react ont besoin
   - [ ] perms
   - [ ] lue / non lue
 - [ ] vérifier schedule de notification des permanences
+
+
+
+##### TODO fast
+- Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
+  - Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
 
 
 

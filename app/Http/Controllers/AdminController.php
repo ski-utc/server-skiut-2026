@@ -118,25 +118,21 @@ class AdminController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'id' => $challenge->id,
                     'challenge' => [
-                        'id' => $challenge->challenge->id,
-                        'title' => $challenge->challenge->title,
-                        'description' => $challenge->challenge->description,
+                        'id' => $challenge->id,
+                        'valid' => (bool) $challenge->valid,
+                        'created_at' => $challenge->created_at,
+                        'user' => [
+                            'firstName' => $challenge->user->firstName,
+                            'lastName' => $challenge->user->lastName,
+                        ],
+                        'challenge' => [
+                            'title' => $challenge->challenge->title,
+                            'points' => $challenge->challenge->points ?? 0,
+                        ],
                     ],
-                    'user' => [
-                        'id' => $challenge->user->id,
-                        'firstName' => $challenge->user->firstName,
-                        'lastName' => $challenge->user->lastName,
-                    ],
-                    'room' => [
-                        'id' => $challenge->room->id,
-                        'name' => $challenge->room->name,
-                    ],
-                    'proof_media' => asset($challenge->file),
-                    'proof_media_type' => $challenge->media_type,
-                    'valid' => (bool) $challenge->valid,
-                    'delete' => (bool) $challenge->delete,
+                    'imagePath' => asset($challenge->file),
+                    'mediaType' => $challenge->media_type,
                 ],
             ]);
 
@@ -274,7 +270,7 @@ class AdminController extends Controller
     {
         try {
 
-            $anecdote = Anecdote::with(['user', 'likes', 'warns'])->findOrFail($id);
+            $anecdote = Anecdote::with(['user.room', 'likes', 'warns'])->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -283,13 +279,18 @@ class AdminController extends Controller
                     'text' => $anecdote->text,
                     'room_id' => $anecdote->room_id,
                     'user_id' => $anecdote->user_id,
-                    'valid' => (bool) $anecdote->valid,
+                    'valid' => (int) $anecdote->valid,
                     'alert' => (bool) $anecdote->alert,
                     'delete' => (bool) $anecdote->delete,
                     'created_at' => $anecdote->created_at,
+                    'user' => [
+                        'firstName' => $anecdote->user->firstName,
+                        'lastName' => $anecdote->user->lastName,
+                        'room' => $anecdote->user->room ? $anecdote->user->room->name : 'N/A',
+                    ],
+                    'nbLikes' => $anecdote->getLikesCount(),
+                    'nbWarns' => $anecdote->getWarnsCount()
                 ],
-                'nbLikes' => $anecdote->getLikesCount(),
-                'nbWarns' => $anecdote->getWarnsCount()
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des détails de l\'anecdote: ' . $e->getMessage());
@@ -328,6 +329,33 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la mise à jour du statut de l\'anecdote : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete an anecdote (soft delete by setting delete flag)
+     * @param int $anecdoteId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function deleteAnecdote($anecdoteId)
+    {
+        try {
+            $anecdote = Anecdote::findOrFail($anecdoteId);
+
+            $anecdote->delete = true;
+            $anecdote->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Anecdote supprimée avec succès.',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de l\'anecdote: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression de l\'anecdote : ' . $e->getMessage(),
             ], 500);
         }
     }

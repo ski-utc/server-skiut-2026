@@ -27,28 +27,28 @@ class SkinderController extends Controller
             $myRoom = Room::findOrFail($user->getRoomId());
 
             if (!$myRoom->hasPhoto()) {
-                return response()->json(['success' => false, 'message' => 'NoPhoto']);
+                return response()->json(['success' => true, 'message' => 'NoPhoto']);
             }
 
             $photoPath = $myRoom->photoPath;
             $relativePath = str_replace('storage/', '', $photoPath);
 
             if (!Storage::disk('public')->exists($relativePath)) {
-                return response()->json(['success' => false, 'message' => 'NoPhoto']);
+                return response()->json(['success' => true, 'message' => 'NoPhoto']);
             }
 
             $room = Room::whereNotIn('id', function ($query) use ($myRoom) {
                 $query->select('room_liked_id')
-                      ->from('skinder_likes')
-                      ->where('room_liker_id', $myRoom->id);
+                    ->from('skinder_likes')
+                    ->where('room_liker_id', $myRoom->id);
             })
-            ->whereNot('id', $myRoom->id)
-            ->withPhotos()
-            ->inRandomOrder()
-            ->first();
+                ->whereNot('id', $myRoom->id)
+                ->withPhotos()
+                ->inRandomOrder()
+                ->first();
 
             if (!$room) {
-                return response()->json(['success' => false, 'message' => 'TooMuch']);
+                return response()->json(['success' => true, 'message' => 'TooMuch']);
             }
 
             return response()->json([
@@ -63,7 +63,7 @@ class SkinderController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération du profil: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération du profil : '. $e]);
+            return response()->json(['success' => false, 'message' => 'Erreur lors de la récupération du profil : ' . $e]);
         }
     }
 
@@ -105,16 +105,20 @@ class SkinderController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'match' => $hasMatch,
-                    'myRoomImage' => asset($myRoom->photoPath),
-                    'otherRoomImage' => asset($otherRoom->photoPath),
-                    'otherRoomNumber' => $otherRoom->roomNumber,
-                    'otherRoomResp' => $otherRoomResp ? $otherRoomResp->firstName . ' ' . $otherRoomResp->lastName : null
+                    'data' => [
+                        'match' => $hasMatch,
+                        'myRoomImage' => asset($myRoom->photoPath),
+                        'otherRoomImage' => asset($otherRoom->photoPath),
+                        'otherRoomNumber' => $otherRoom->roomNumber,
+                        'otherRoomResp' => $otherRoomResp ? $otherRoomResp->firstName . ' ' . $otherRoomResp->lastName : null
+                    ]
                 ]);
             } else {
                 return response()->json([
                     'success' => true,
-                    'match' => $hasMatch,
+                    'data' => [
+                        'match' => $hasMatch,
+                    ]
                 ]);
             }
         } catch (\Exception $e) {
@@ -139,8 +143,8 @@ class SkinderController extends Controller
             $matchedRooms = SkinderLike::fromRoom($roomId)
                 ->whereIn('room_liked_id', function ($query) use ($roomId) {
                     $query->select('room_liker_id')
-                          ->from('skinder_likes')
-                          ->where('room_liked_id', $roomId);
+                        ->from('skinder_likes')
+                        ->where('room_liked_id', $roomId);
                 })
                 ->get();
 
@@ -240,7 +244,11 @@ class SkinderController extends Controller
             }
 
             $room->save();
-            return response()->json(['success' => true, 'message' => 'Profil mis à jour avec succès.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Profil mis à jour avec succès.',
+                'data' => []
+            ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la modification du profil: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors de la modification du profil: ' . $e->getMessage()], 500);
@@ -256,7 +264,7 @@ class SkinderController extends Controller
     public function uploadRoomImage(Request $request)
     {
         $validated = $request->validate([
-            'image' => 'required|file|mimes:jpeg,png,gif|max:5120',
+            'media' => 'required|file|mimes:jpeg,png,gif|max:5120',
         ]);
 
         $user_id = $request->user['id'];
@@ -268,14 +276,18 @@ class SkinderController extends Controller
             return response()->json(['success' => false, 'message' => 'Chambre introuvable'], 404);
         }
 
-        $file = $request->file('image');
+        $file = $request->file('media');
 
         try {
             $filePath = $file->storeAs('roomImages', "room_{$room->id}.jpg", 'public');
             $room->photoPath = 'storage/' . $filePath;
             $room->save();
 
-            return response()->json(['success' => true, 'message' => 'Image téléversée avec succès']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Image téléversée avec succès',
+                'data' => []
+            ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors du téléversement: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du téléversement : ' . $e->getMessage()], 500);
@@ -307,8 +319,8 @@ class SkinderController extends Controller
             $matches = SkinderLike::where('room_liker_id', $roomId)
                 ->whereIn('room_liked_id', function ($query) use ($roomId) {
                     $query->select('room_liker_id')
-                          ->from('skinder_likes')
-                          ->where('room_liked_id', $roomId);
+                        ->from('skinder_likes')
+                        ->where('room_liked_id', $roomId);
                 })
                 ->count();
 
