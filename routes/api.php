@@ -22,9 +22,11 @@ use Illuminate\Support\Facades\Route;
 
 /* Auth */
 Route::get('/connected', function () {
-    return view('api-connected'); })->name('api-connected');
+    return view('api-connected');
+})->name('api-connected');
 Route::get('/notConnected', function () {
-    return view('api-not-connected'); })->name('api-not-connected');
+    return view('api-not-connected');
+})->name('api-not-connected');
 
 Route::middleware([EnsureTokenIsValid::class])->group(function () {
     /* Auth */
