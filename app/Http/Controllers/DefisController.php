@@ -181,9 +181,9 @@ class DefisController extends Controller
         $maxVideoKb = (int) ((self::MAX_VIDEO_SIZE * $clientMultiplier) / 1024);
 
         $messages = [
-            'media.uploaded' => "Le fichier n'a pas pu être téléversé. Il dépasse probablement la taille maximale autorisée par le serveur (" . ini_get('upload_max_filesize') . ").",
-            'media.max' => "Le fichier est trop volumineux.",
-            'media.mimes' => "Format de fichier non supporté.",
+            'media.uploaded' => "Le fichier n'a pas pu être téléversé. Il dépasse probablement la taille maximale autorisée par le serveur (" . ini_get('upload_max_filesize') . ').',
+            'media.max' => 'Le fichier est trop volumineux.',
+            'media.mimes' => 'Format de fichier non supporté.',
         ];
 
         $validated = $request->validate([
@@ -240,7 +240,8 @@ class DefisController extends Controller
 
             if ($isVideo) {
                 $fullPath = storage_path('app/public/' . $filePath);
-                $result = $this->videoCompression->compress($fullPath, self::MAX_VIDEO_SIZE); // TODO : update this to reach max compression (but without loosing too much quality) instead of reaching php limit
+                $targetSize = config('video.compression.target_size_mb', 10) * 1024 * 1024;
+                $result = $this->videoCompression->compress($fullPath, $targetSize);
 
                 if ($result['success'] && $result['meetsRequirement']) {
                     Log::info("Compression vidéo défi {$defiId}: {$result['message']}");
