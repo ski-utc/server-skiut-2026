@@ -1,36 +1,11 @@
-##### Done 
-- Ajouter un bouton annuler ou rafraichier en plus du bouton "Retour" sur le ErrorScreen. Ce bouton refresh la page sur laquelle on est pour la reset complètement
-- Fermer la modal perm si clique sur le planning, 
-- ajouter du word wrap sur le title de la modal planning, 
-- eviter que la background muted glisse avec la modal, 
-- bug sur les likes et warn offline qui partent en négatif, 
-- bug sur la navigation dans valideDefisScreen : si je suis dans le menu "en attente" -> je clique sur un défi -> je reviens en arrière, je suis encore sur l'onglet "défis en attente", mais c'est tous les défis qui apparaissent (sans filtre), idem sur valideAnecdoteScreen et notification 
-- Mode rapide sur les anecdotes pas encore validees comme pour les défis, 
-- Proposer la création d'une permanence que quand tous les champs sont remplis 
-- app qui plante (après le login en arrivant sur le homeScreen, quand on remonte le volet de notification, quand on upload une video)
-- Faire une passe d'optimisation partout sur l'app (navigation, chargement, cache, memo, callback, ...)
-- Définir des interfaces/types partout où c'est nécessaire dans l'app et passer npm run lint sans warning
-- Ne plus avoir de type any et tout typer (sauf pour les erreur comme on ne semble pas pouvoir faire string[])
-- Clean des lib deprecated
-- Limiter les réponses serveur à ce que les interfaces react ont besoin
-- Skinder dans la navbar 
-- 
-
-
-
 ### Avant de continuer 
-- notifications admin
-- Faire les TODO et autres commentaires notés
-- Améliorer les gesture des loginScreen et du weatherWidget pas très fluide (réagit tard après le contact avec le doigt)
 - Verifier le mode hors ligne 
-- veriifer le vitesseDeGlisse en background 
-- Envoyer une et une seule alerte si la personne est déconnecter (attention comme plusieurs requêtes se lancent au logout, il va sûrement falloir retirer la désactivation de token push au logout pour ne pas avoir plusieurs alert d'un coup), 
 - Modifier les écrans de login pour détailler d'avantage les features
-- Debug notification
 
 
 
 ##### Verification finales à la main
+- verifer le vitesseDeGlisse en background 
 - [ ] Vérifier que le problème de vidéo noire en plein écran (uniquement pour celles qu'on récupère du serveur) est résolu
 - [ ] vérifier les notifications 
   - [ ] save des token

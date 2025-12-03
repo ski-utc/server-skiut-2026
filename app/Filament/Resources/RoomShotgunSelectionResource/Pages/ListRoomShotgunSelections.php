@@ -176,7 +176,6 @@ class ListRoomShotgunSelections extends ListRecords
                 'ambiance' => $data['ambiance'] ?? null,
             ]);
 
-            // Add all participants
             foreach ($participantsData as $participant) {
                 if (empty($participant['email'])) {
                     continue;
@@ -189,7 +188,6 @@ class ListRoomShotgunSelections extends ListRecords
                 ]);
             }
 
-            // Add responsable
             UserRoomShotgun::create([
                 'partial_room_shotgun_id' => $partialRoom->id,
                 'email' => $data['responsable_email'],

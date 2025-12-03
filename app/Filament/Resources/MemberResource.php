@@ -53,7 +53,7 @@ class MemberResource extends Resource
                             })
                             ->searchable()
                             ->native(false)
-                            ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'existing')
+                            ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'existing')
                             ->hiddenOn('edit')
                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                 if ($state) {
@@ -74,19 +74,19 @@ class MemberResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
-                            ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
+                            ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
 
                         Forms\Components\TextInput::make('firstName')
                             ->label('Prénom')
                             ->required()
                             ->maxLength(255)
-                            ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
+                            ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
 
                         Forms\Components\TextInput::make('lastName')
                             ->label('Nom')
                             ->required()
                             ->maxLength(255)
-                            ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
+                            ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
 
                         Forms\Components\TextInput::make('email')
                             ->label('Email')
@@ -94,7 +94,7 @@ class MemberResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
-                            ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
+                            ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
 
                         Forms\Components\Select::make('room_id')
                             ->label('Chambre')
@@ -102,8 +102,8 @@ class MemberResource extends Resource
                             ->searchable()
                             ->preload()
                             ->native(false)
-                            ->getOptionLabelFromRecordUsing(fn (Room $record) => "Chambre {$record->roomNumber}" . ($record->name ? " - {$record->name}" : ''))
-                            ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit'))
+                            ->getOptionLabelFromRecordUsing(fn(Room $record) => "Chambre {$record->roomNumber}" . ($record->name ? " - {$record->name}" : ''))
+                            ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit'))
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('roomNumber')
                                     ->label('Numéro de chambre')
@@ -121,7 +121,7 @@ class MemberResource extends Resource
                             ]),
                     ])
                     ->columns(2)
-                    ->visible(fn (Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
+                    ->visible(fn(Forms\Get $get) => $get('creation_mode') === 'new' || request()->routeIs('*.edit')),
 
                 Forms\Components\Section::make('Rôles')
                     ->schema([
@@ -147,7 +147,7 @@ class MemberResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')
                     ->label('Nom complet')
-                    ->getStateUsing(fn (User $record) => "{$record->firstName} {$record->lastName}")
+                    ->getStateUsing(fn(User $record) => "{$record->firstName} {$record->lastName}")
                     ->searchable(['firstName', 'lastName'])
                     ->sortable()
                     ->weight('bold'),
@@ -169,8 +169,8 @@ class MemberResource extends Resource
                 Tables\Columns\TextColumn::make('role')
                     ->label('Rôle')
                     ->badge()
-                    ->getStateUsing(fn (User $record) => $record->admin ? 'Admin' : 'Membre')
-                    ->color(fn (string $state): string => match ($state) {
+                    ->getStateUsing(fn(User $record) => $record->admin ? 'Admin' : 'Membre')
+                    ->color(fn(string $state): string => match ($state) {
                         'Admin' => 'danger',
                         'Membre' => 'success',
                     }),
@@ -190,7 +190,7 @@ class MemberResource extends Resource
                     ->searchable()
                     ->preload()
                     ->native(false)
-                    ->getOptionLabelFromRecordUsing(fn (Room $record) => "Chambre {$record->roomNumber}"),
+                    ->getOptionLabelFromRecordUsing(fn(Room $record) => "Chambre {$record->roomNumber}"),
 
                 SelectFilter::make('alumniOrExte')
                     ->label('Type')
@@ -202,12 +202,12 @@ class MemberResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('toggle_admin')
-                    ->label(fn (User $record) => $record->admin ? 'Retirer admin' : 'Rendre admin')
-                    ->icon(fn (User $record) => $record->admin ? 'heroicon-o-shield-exclamation' : 'heroicon-o-shield-check')
-                    ->color(fn (User $record) => $record->admin ? 'warning' : 'success')
+                    ->label(fn(User $record) => $record->admin ? 'Retirer admin' : 'Rendre admin')
+                    ->icon(fn(User $record) => $record->admin ? 'heroicon-o-shield-exclamation' : 'heroicon-o-shield-check')
+                    ->color(fn(User $record) => $record->admin ? 'warning' : 'success')
                     ->requiresConfirmation()
-                    ->modalHeading(fn (User $record) => $record->admin ? 'Retirer les droits administrateur' : 'Accorder les droits administrateur')
-                    ->modalDescription(fn (User $record) => $record->admin
+                    ->modalHeading(fn(User $record) => $record->admin ? 'Retirer les droits administrateur' : 'Accorder les droits administrateur')
+                    ->modalDescription(fn(User $record) => $record->admin
                         ? 'Cette action retirera les droits administrateur et supprimera l\'email de la table back_office_admin.'
                         : 'Cette action accordera les droits administrateur et ajoutera l\'email à la table back_office_admin.')
                     ->action(function (User $record) {
@@ -231,7 +231,6 @@ class MemberResource extends Resource
                                 ->body("{$record->firstName} {$record->lastName} n'est plus administrateur.")
                                 ->send();
                         } else {
-                            // Accorder les droits admin
                             $record->update(['admin' => true]);
                             BackOfficeAdmin::firstOrCreate(['email' => $record->email]);
 
@@ -265,7 +264,7 @@ class MemberResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->before(function ($records) {
-                            $adminRecords = $records->filter(fn ($r) => $r->admin);
+                            $adminRecords = $records->filter(fn($r) => $r->admin);
                             if ($adminRecords->isNotEmpty()) {
                                 $totalAdmins = User::where('admin', true)->count();
                                 if ($totalAdmins - $adminRecords->count() < 1) {

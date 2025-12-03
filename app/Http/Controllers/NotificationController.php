@@ -223,13 +223,14 @@ class NotificationController extends Controller
             $user_id = $request->user['id'];
             $notification = Notification::findOrFail($notificationId);
 
-            $success = $notification->markAsReadBy($user_id);
+            $success = $notification->markAsReadBy($user_id, $validated['read']);
 
             if (!$success) {
                 return response()->json(['success' => false, 'message' => 'Notification non trouvée'], 404);
             }
 
-            return response()->json(['success' => true, 'message' => 'Notification marquée comme lue']);
+            $message = $validated['read'] ? 'Notification marquée comme lue' : 'Notification marquée comme non lue';
+            return response()->json(['success' => true, 'message' => $message]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la mise à jour de la notification: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
