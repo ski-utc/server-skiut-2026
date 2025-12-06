@@ -21,8 +21,12 @@ use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Support\Facades\Route;
 
 /* Auth */
-Route::get('/connected', function () { return view('api-connected');})->name('api-connected');
-Route::get('/notConnected', function () { return view('api-not-connected');})->name('api-not-connected');
+Route::get('/connected', function () {
+    return view('api-connected');
+})->name('api-connected');
+Route::get('/notConnected', function () {
+    return view('api-not-connected');
+})->name('api-not-connected');
 
 Route::middleware([EnsureTokenIsValid::class])->group(function () {
     /* Auth */
@@ -118,6 +122,7 @@ Route::middleware([EnsureAdminTokenIsValid::class])->group(function () {
     Route::get('/admin/anecdotes', [AdminController::class, 'getAdminAnecdotes']);
     Route::get('/admin/anecdotes/{anecdoteId}', [AdminController::class, 'getAnecdoteDetails']);
     Route::put('/admin/anecdotes/{anecdoteId}/status', [AdminController::class, 'updateAnecdoteStatus']);
+    Route::delete('/admin/anecdotes/{anecdoteId}', [AdminController::class, 'deleteAnecdote']);
 
     /* Challenges */
     Route::get('/admin/challenges', [AdminController::class, 'getAdminChallenges']);

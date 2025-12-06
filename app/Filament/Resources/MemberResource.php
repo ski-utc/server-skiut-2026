@@ -231,7 +231,6 @@ class MemberResource extends Resource
                                 ->body("{$record->firstName} {$record->lastName} n'est plus administrateur.")
                                 ->send();
                         } else {
-                            // Accorder les droits admin
                             $record->update(['admin' => true]);
                             BackOfficeAdmin::firstOrCreate(['email' => $record->email]);
 

@@ -118,7 +118,19 @@ class NotificationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $notification
+                'data' => [
+                    'id' => $notification->id,
+                    'title' => $notification->title,
+                    'description' => $notification->description,
+                    'type' => $notification->type,
+                    'general' => $notification->general,
+                    'display' => $notification->display,
+                    'push_sent' => $notification->push_sent,
+                    'target_users' => $notification->target_users,
+                    'target_rooms' => $notification->target_rooms,
+                    'sender_id' => $notification->sender_id,
+                    'created_at' => $notification->created_at,
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des détails de la notification: ' . $e->getMessage());
@@ -150,7 +162,7 @@ class NotificationController extends Controller
                 'display' => 'boolean'
             ]);
 
-            $recipientIds = $this->getRecipientIds((object)[
+            $recipientIds = $this->getRecipientIds((object) [
                 'type' => $validated['type'],
                 'target_users' => $validated['target_users'] ?? null,
                 'target_rooms' => $validated['target_rooms'] ?? null,
@@ -211,13 +223,14 @@ class NotificationController extends Controller
             $user_id = $request->user['id'];
             $notification = Notification::findOrFail($notificationId);
 
-            $success = $notification->markAsReadBy($user_id);
+            $success = $notification->markAsReadBy($user_id, $validated['read']);
 
             if (!$success) {
                 return response()->json(['success' => false, 'message' => 'Notification non trouvée'], 404);
             }
 
-            return response()->json(['success' => true, 'message' => 'Notification marquée comme lue']);
+            $message = $validated['read'] ? 'Notification marquée comme lue' : 'Notification marquée comme non lue';
+            return response()->json(['success' => true, 'message' => $message]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la mise à jour de la notification: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);

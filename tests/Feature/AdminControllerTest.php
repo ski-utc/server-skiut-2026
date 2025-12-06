@@ -135,6 +135,20 @@ class AdminControllerTest extends TestCase
         $this->assertDatabaseHas('anecdotes', ['id' => $anecdote->id, 'valid' => true]);
     }
 
+    public function test_delete_anecdote_success()
+    {
+        $token = JwtTestHelper::generateToken($this->adminUser->id);
+        $anecdote = Anecdote::factory()->create(['room_id' => $this->room->id, 'user_id' => $this->user->id]);
+
+        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->deleteJson("/api/admin/anecdotes/{$anecdote->id}");
+
+        $this->assertGreaterThanOrEqual(200, $response->status());
+        $this->assertLessThan(300, $response->status());
+        $this->assertTrue($response->json('success'));
+
+        $this->assertDatabaseHas('anecdotes', ['id' => $anecdote->id, 'delete' => true]);
+    }
+
     public function test_get_admin_without_permission()
     {
         $token = JwtTestHelper::generateToken($this->user->id);

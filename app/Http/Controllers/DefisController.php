@@ -49,9 +49,11 @@ class DefisController extends Controller
 
             $userRoomId = $user->getRoomId();
 
-            $challenges = Challenge::with(['challengeProofs' => function ($query) use ($userRoomId) {
-                $query->where('room_id', $userRoomId);
-            }])->get();
+            $challenges = Challenge::with([
+                'challengeProofs' => function ($query) use ($userRoomId) {
+                    $query->where('room_id', $userRoomId);
+                }
+            ])->get();
 
             $challengeData = $challenges->map(function ($challenge) use ($userRoomId) {
                 $proof = $challenge->challengeProofs->first();
@@ -82,7 +84,7 @@ class DefisController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des défis: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : '.$e], 500);
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : ' . $e], 500);
         }
     }
 
@@ -112,12 +114,35 @@ class DefisController extends Controller
 
             return response()->json([
                 'success' => true,
-                'media' => asset($proof->file),
-                'mediaType' => $proof->media_type ?? 'image',
+                'data' => [
+                    'media' => asset($proof->file),
+                    'mediaType' => $proof->media_type ?? 'image',
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération de la preuve de défi: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e], 500);
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : ' . $e], 500);
+        }
+    }
+
+    /**
+     * Helper to get the max upload size from php.ini in bytes
+     */
+    private function getUploadMaxFilesize()
+    {
+        $uploadMax = $this->parseSize(ini_get('upload_max_filesize'));
+        $postMax = $this->parseSize(ini_get('post_max_size'));
+        return min($uploadMax, $postMax);
+    }
+
+    private function parseSize($size)
+    {
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size);
+        $size = preg_replace('/[^0-9\.]/', '', $size);
+        if ($unit) {
+            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+        } else {
+            return round($size);
         }
     }
 
@@ -131,10 +156,14 @@ class DefisController extends Controller
         $clientMultiplier = config('video.client_upload_multiplier', 2.0);
         $maxVideoSizeForClient = (int) (self::MAX_VIDEO_SIZE * $clientMultiplier); // Define a  factor of 2 because the server will compress the video
 
+        $phpLimit = $this->getUploadMaxFilesize();
+        $maxVideoSizeForClient = min($maxVideoSizeForClient, $phpLimit);
+        $maxImageSize = min(self::MAX_IMAGE_SIZE, $phpLimit);
+
         return response()->json([
             'success' => true,
             'data' => [
-                'maxImageSize' => self::MAX_IMAGE_SIZE,
+                'maxImageSize' => $maxImageSize,
                 'maxVideoSize' => $maxVideoSizeForClient
             ]
         ]);
@@ -151,11 +180,17 @@ class DefisController extends Controller
         $clientMultiplier = config('video.client_upload_multiplier', 2.0);
         $maxVideoKb = (int) ((self::MAX_VIDEO_SIZE * $clientMultiplier) / 1024);
 
+        $messages = [
+            'media.uploaded' => "Le fichier n'a pas pu être téléversé. Il dépasse probablement la taille maximale autorisée par le serveur (" . ini_get('upload_max_filesize') . ').',
+            'media.max' => 'Le fichier est trop volumineux.',
+            'media.mimes' => 'Format de fichier non supporté.',
+        ];
+
         $validated = $request->validate([
             'defiId' => 'required|integer|exists:challenges,id',
-            'media' => 'required|file|mimes:jpeg,png,gif,mp4,quicktime,x-msvideo|max:' . $maxVideoKb,
+            'media' => 'required|file|mimes:jpeg,png,gif,mp4,mov,avi|max:' . $maxVideoKb,
             'mediaType' => 'nullable|string|in:image,video',
-        ]);
+        ], $messages);
 
         $id = $request->user['id'];
         $user = User::with('room')->findOrFail($id);
@@ -193,7 +228,6 @@ class DefisController extends Controller
                 ->first();
 
             if ($existingProof) {
-
                 $oldPath = str_replace('storage/', '', $existingProof->file);
                 if (Storage::disk('public')->exists($oldPath)) {
                     Storage::disk('public')->delete($oldPath);
@@ -206,7 +240,8 @@ class DefisController extends Controller
 
             if ($isVideo) {
                 $fullPath = storage_path('app/public/' . $filePath);
-                $result = $this->videoCompression->compress($fullPath, self::MAX_VIDEO_SIZE);
+                $targetSize = config('video.compression.target_size_mb', 10) * 1024 * 1024;
+                $result = $this->videoCompression->compress($fullPath, $targetSize);
 
                 if ($result['success'] && $result['meetsRequirement']) {
                     Log::info("Compression vidéo défi {$defiId}: {$result['message']}");
@@ -245,14 +280,12 @@ class DefisController extends Controller
     /**
      * Delete a challenge proof (image or video)
      * @param Request $request
+     * @param int $challengeId
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function deleteProofMedia(Request $request)
+    public function deleteProofMedia(Request $request, $challengeId)
     {
-        $validated = $request->validate([
-            'defiId' => 'required|integer|exists:challenges,id',
-        ]);
 
         try {
             $id = $request->user['id'];
@@ -260,8 +293,7 @@ class DefisController extends Controller
 
             $userRoomId = $user->getRoomId();
 
-            $defiId = $validated['defiId'];
-            $proof = ChallengeProof::byChallenge($defiId)
+            $proof = ChallengeProof::byChallenge($challengeId)
                 ->byRoom($userRoomId)
                 ->first();
 
@@ -293,7 +325,7 @@ class DefisController extends Controller
             Storage::disk('public')->delete($relativePath);
 
             $proof->delete = true;
-            $proof->delete();
+            $proof->save();
 
             return response()->json([
                 'success' => true,

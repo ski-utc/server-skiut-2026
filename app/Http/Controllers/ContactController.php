@@ -19,10 +19,18 @@ class ContactController extends Controller
         try {
             $contacts = Contact::all();
 
+            $data = $contacts->map(function ($contact) {
+                return [
+                    'name' => $contact->name,
+                    'role' => $contact->role,
+                    'phoneNumber' => $contact->phoneNumber,
+                ];
+            });
+
             return response()->json([
-                    'success' => true,
-                    'data' => $contacts
-                ]);
+                'success' => true,
+                'data' => $data
+            ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des contacts: ' . $e->getMessage());
             return response()->json([

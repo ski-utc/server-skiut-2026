@@ -92,25 +92,26 @@ class Notification extends Model
     }
 
     /**
-     * Mark notification as read by a specific user.
+     * Mark notification as read or unread by a specific user.
      *
      * @param int $user_id
+     * @param bool $read
      * @return bool
      */
-    public function markAsReadBy($user_id)
+    public function markAsReadBy($user_id, $read = true)
     {
-        $userNotification = $this->userNotifications()
-            ->where('user_id', $user_id)
-            ->first();
+        UserNotification::updateOrCreate(
+            [
+                'user_id' => $user_id,
+                'notification_id' => $this->id,
+            ],
+            [
+                'read' => $read,
+                'read_at' => $read ? now() : null
+            ]
+        );
 
-        if ($userNotification) {
-            return $userNotification->update([
-                'read' => true,
-                'read_at' => now()
-            ]);
-        }
-
-        return false;
+        return true;
     }
 
     /**

@@ -19,31 +19,35 @@ class ClassementController extends Controller
     public function classementChambres()
     {
         try {
-            $rooms = Room::with(['challengeProofs' => function ($query) {
-                $query->where('valid', 1);
-            }])
-            ->get()
-            ->map(function ($room) {
-                $totalPoints = $room->challengeProofs->sum(function ($proof) {
-                    return $proof->challenge ? $proof->challenge->nbPoints : 0;
-                });
+            $rooms = Room::with([
+                'challengeProofs' => function ($query) {
+                    $query->where('valid', 1);
+                }
+            ])
+                ->get()
+                ->map(function ($room) {
+                    $totalPoints = $room->challengeProofs->sum(function ($proof) {
+                        return $proof->challenge ? $proof->challenge->nbPoints : 0;
+                    });
 
-                return [
-                    'roomNumber' => $room->name,
-                    'totalPoints' => $totalPoints,
-                ];
-            })
-            ->sortByDesc('totalPoints')
-            ->values();
+                    return [
+                        'roomNumber' => $room->name,
+                        'totalPoints' => $totalPoints,
+                    ];
+                })
+                ->sortByDesc('totalPoints')
+                ->values();
 
             $podiumRooms = $rooms->take(3);
 
-            $restRooms = $rooms->slice(3);
+            $restRooms = $rooms->slice(3)->values();
 
             return response()->json([
                 'success' => true,
-                'podium' => $podiumRooms,
-                'rest' => $restRooms,
+                'data' => [
+                    'podium' => $podiumRooms,
+                    'rest' => $restRooms,
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors du classement des chambres: ' . $e->getMessage());
@@ -69,7 +73,7 @@ class ClassementController extends Controller
 
             $type = $validated['type'] ?? 'speed';
 
-            $orderColumn = match($type) {
+            $orderColumn = match ($type) {
                 'distance' => 'distance',
                 'duration' => 'duration',
                 default => 'max_speed',
@@ -83,7 +87,7 @@ class ClassementController extends Controller
                 DB::raw('AVG(average_speed) as average_speed')
             )
                 ->groupBy('user_id')
-                ->orderByRaw(match($type) {
+                ->orderByRaw(match ($type) {
                     'distance' => 'SUM(distance) DESC',
                     'duration' => 'SUM(duration) DESC',
                     default => 'MAX(max_speed) DESC',
@@ -96,10 +100,10 @@ class ClassementController extends Controller
             foreach ($userStats as $stat) {
                 $user = User::find($stat->user_id);
                 $performancesByPosition[$position] = [
-                    'user_id' => (int)$stat->user_id,
-                    'max_speed' => (float)$stat->max_speed,
-                    'total_distance' => (float)$stat->total_distance,
-                    'duration' => (int)$stat->total_duration,
+                    'user_id' => (int) $stat->user_id,
+                    'max_speed' => (float) $stat->max_speed,
+                    'total_distance' => (float) $stat->total_distance,
+                    'duration' => (int) $stat->total_duration,
                     'full_name' => $user
                         ? "{$user->firstName} {$user->lastName}"
                         : "ID {$stat->user_id}",

@@ -98,7 +98,7 @@ class SkinderControllerTest extends TestCase
         $file = UploadedFile::fake()->image('profile.jpg');
 
         $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->postJson('/api/skinder/my-profile/image', [
-            'image' => $file,
+            'media' => $file,
         ]);
 
         $this->assertGreaterThanOrEqual(200, $response->status());
