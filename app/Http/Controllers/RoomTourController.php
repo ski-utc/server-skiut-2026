@@ -20,25 +20,27 @@ class RoomTourController extends Controller
     public function getAllTours()
     {
         try {
-            $tours = RoomTour::with(['binomes' => function ($query) {
-                $query->withCount('visits');
-            }])
-            ->whereDate('tour_date', '>=', now()->toDateString())
-            ->orderBy('tour_date', 'asc')
-            ->get()
-            ->map(function ($tour) {
-                $stats = $tour->getProgressStats();
-                return [
-                    'id' => $tour->id,
-                    'tour_date' => $tour->tour_date->format('Y-m-d'),
-                    'is_active' => $tour->is_active,
-                    'binomes_count' => $stats['binomes_count'],
-                    'total_rooms' => $stats['total_rooms'],
-                    'visited_rooms' => $stats['visited_rooms'],
-                    'progress_percentage' => $stats['progress_percentage'],
-                    'created_at' => $tour->created_at
-                ];
-            });
+            $tours = RoomTour::with([
+                'binomes' => function ($query) {
+                    $query->withCount('visits');
+                }
+            ])
+                ->whereDate('tour_date', '>=', now()->toDateString())
+                ->orderBy('tour_date', 'asc')
+                ->get()
+                ->map(function ($tour) {
+                    $stats = $tour->getProgressStats();
+                    return [
+                        'id' => $tour->id,
+                        'tour_date' => $tour->tour_date->format('Y-m-d'),
+                        'is_active' => $tour->is_active,
+                        'binomes_count' => $stats['binomes_count'],
+                        'total_rooms' => $stats['total_rooms'],
+                        'visited_rooms' => $stats['visited_rooms'],
+                        'progress_percentage' => $stats['progress_percentage'],
+                        'created_at' => $tour->created_at
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
@@ -218,9 +220,9 @@ class RoomTourController extends Controller
             }
 
             $userBinome = $todayTour->binomes()
-                                    ->forUser($user_id)
-                                    ->with('visits')
-                                    ->first();
+                ->forUser($user_id)
+                ->with('visits')
+                ->first();
 
             if (!$userBinome) {
                 return response()->json([
@@ -247,19 +249,19 @@ class RoomTourController extends Controller
                     'stats' => $binomeStats
                 ],
                 'visits' => $userBinome->visits()
-                                     ->orderBy('visit_order')
-                                     ->get()
-                                     ->map(function ($visit) {
-                                         return [
-                                             'id' => $visit->id,
-                                             'room_id' => $visit->room_id,
-                                             'room_info' => $visit->room_info,
-                                             'visit_order' => $visit->visit_order,
-                                             'visited' => $visit->visited,
-                                             'visited_at' => $visit->visited_at,
-                                             'notes' => $visit->notes
-                                         ];
-                                     })
+                    ->orderBy('visit_order')
+                    ->get()
+                    ->map(function ($visit) {
+                        return [
+                            'id' => $visit->id,
+                            'room_id' => $visit->room_id,
+                            'room_info' => $visit->room_info,
+                            'visit_order' => $visit->visit_order,
+                            'visited' => $visit->visited,
+                            'visited_at' => $visit->visited_at,
+                            'notes' => $visit->notes
+                        ];
+                    })
             ];
 
             return response()->json([
@@ -331,9 +333,9 @@ class RoomTourController extends Controller
             }
 
             $roomsBefore = $binomeInfo->visits()
-                                     ->where('visit_order', '<', $roomVisit->visit_order)
-                                     ->where('visited', false)
-                                     ->count();
+                ->where('visit_order', '<', $roomVisit->visit_order)
+                ->where('visited', false)
+                ->count();
 
             $members = $binomeInfo->getMembers()->map(function ($member) {
                 return [
@@ -497,7 +499,7 @@ class RoomTourController extends Controller
                 ], 403);
             }
 
-            $activeTour = RoomTour::getTodayActiveTour();
+            $activeTour = RoomTour::getTodayTour();
 
             if (!$activeTour) {
                 return response()->json([
@@ -540,27 +542,27 @@ class RoomTourController extends Controller
     {
         try {
             $rooms = User::select('room_id')
-                        ->distinct()
-                        ->whereNotNull('room_id')
-                        ->where('room_id', '!=', '')
-                        ->orderBy('room_id')
-                        ->get()
-                        ->map(function ($user) {
-                            $occupants = User::where('room_id', $user->room_id)
-                                           ->select('id', 'firstName', 'lastName')
-                                           ->get();
+                ->distinct()
+                ->whereNotNull('room_id')
+                ->where('room_id', '!=', '')
+                ->orderBy('room_id')
+                ->get()
+                ->map(function ($user) {
+                    $occupants = User::where('room_id', $user->room_id)
+                        ->select('id', 'firstName', 'lastName')
+                        ->get();
 
+                    return [
+                        'room_id' => $user->room_id,
+                        'occupants' => $occupants->map(function ($occupant) {
                             return [
-                                'room_id' => $user->room_id,
-                                'occupants' => $occupants->map(function ($occupant) {
-                                    return [
-                                        'id' => $occupant->id,
-                                        'name' => $occupant->firstName . ' ' . $occupant->lastName
-                                    ];
-                                })->toArray(),
-                                'occupants_count' => $occupants->count()
+                                'id' => $occupant->id,
+                                'name' => $occupant->firstName . ' ' . $occupant->lastName
                             ];
-                        });
+                        })->toArray(),
+                        'occupants_count' => $occupants->count()
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
