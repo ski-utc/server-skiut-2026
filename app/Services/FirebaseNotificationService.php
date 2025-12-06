@@ -9,8 +9,19 @@ use Illuminate\Support\Facades\Log;
 
 class FirebaseNotificationService
 {
+    private $fcmServerKey;
+
+    public function __construct()
+    {
+        $this->fcmServerKey = env('FIREBASE_SERVER_KEY');
+
+        if (empty($this->fcmServerKey)) {
+            Log::warning('FCM Server Key not configured in .env');
+        }
+    }
+
     /**
-     * Send a notification to a list of users.
+     * Send a notification to a list of users using FCM.
      *
      * @param array $userIds List of user IDs
      * @param string $title Notification title
@@ -22,60 +33,66 @@ class FirebaseNotificationService
     {
         try {
             $tokens = PushToken::whereIn('user_id', $userIds)
-                              ->where('active', true)
-                              ->whereNotNull('token')
-                              ->pluck('token')
-                              ->unique()
-                              ->values()
-                              ->toArray();
+                ->where('active', true)
+                ->whereNotNull('token')
+                ->pluck('token')
+                ->unique()
+                ->values()
+                ->toArray();
 
             if (empty($tokens)) {
                 return ['success' => false, 'message' => 'Aucun token trouvé'];
             }
 
             $results = [];
-            $chunks = array_chunk($tokens, 100); // Expo limite à 100 tokens par requête
+            $chunks = array_chunk($tokens, 500);
 
             foreach ($chunks as $tokenChunk) {
-                $payload = [
-                    'to' => $tokenChunk,
-                    'title' => $title,
-                    'body' => $message,
+                $payload = [ // FCM Format
+                    'registration_ids' => $tokenChunk,
+                    'notification' => [
+                        'title' => $title,
+                        'body' => $message,
+                        'sound' => 'default',
+                        'priority' => 'high',
+                    ],
                     'data' => $data,
-                    'sound' => 'default',
                     'priority' => 'high',
-                    'channelId' => 'default'
                 ];
 
                 $response = Http::withHeaders([
-                    'Accept' => 'application/json',
-                    'Accept-Encoding' => 'gzip, deflate',
+                    'Authorization' => 'key=' . $this->fcmServerKey,
                     'Content-Type' => 'application/json',
-                ])->post('https://exp.host/--/api/v2/push/send', $payload);
+                ])->post('https://fcm.googleapis.com/fcm/send', $payload);
+
+                $responseData = $response->json();
 
                 $results[] = [
                     'tokens' => count($tokenChunk),
-                    'response' => $response->json(),
-                    'status' => $response->status()
+                    'response' => $responseData,
+                    'status' => $response->status(),
+                    'success_count' => $responseData['success'] ?? 0,
+                    'failure_count' => $responseData['failure'] ?? 0,
                 ];
 
-                Log::info('Firebase notification sent', [
+                Log::info('FCM notification sent', [
                     'tokens_count' => count($tokenChunk),
                     'title' => $title,
                     'response_status' => $response->status(),
-                    'response_body' => $response->json()
+                    'success' => $responseData['success'] ?? 0,
+                    'failure' => $responseData['failure'] ?? 0,
                 ]);
             }
 
             return [
                 'success' => true,
-                'message' => 'Notifications envoyées',
+                'message' => 'Notifications envoyées via FCM',
                 'results' => $results,
                 'total_tokens' => count($tokens)
             ];
 
         } catch (\Exception $e) {
-            Log::error('Erreur envoi notification Firebase', [
+            Log::error('Erreur envoi notification FCM', [
                 'error' => $e->getMessage(),
                 'userIds' => $userIds,
                 'title' => $title
