@@ -11,7 +11,7 @@ RUN npm run build
 FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
-    nginx supervisor git zip unzip curl \
+    nginx supervisor git zip unzip curl nano \
     libzip libpng oniguruma libxml2 \
     libjpeg-turbo freetype icu-libs \
     && apk add --no-cache --virtual .build-deps \

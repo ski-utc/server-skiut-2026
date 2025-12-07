@@ -18,20 +18,37 @@ class FirebaseNotificationService
     public function __construct()
     {
         try {
-            $credentialsPath = storage_path(env('FIREBASE_CREDENTIALS_PATH', 'app/private/firebase-service-account.json'));
-
-            if (!file_exists($credentialsPath)) {
-                Log::warning('Firebase credentials file not found at: ' . $credentialsPath);
+            $envPath = env('FIREBASE_CREDENTIALS_PATH', 'app/private/firebase-service-account.json');
+            if (file_exists($envPath)) {
+                $credentialsPath = $envPath;
+            } elseif (file_exists(storage_path($envPath))) {
+                $credentialsPath = storage_path($envPath);
+            } elseif (file_exists(base_path('storage/' . $envPath))) {
+                $credentialsPath = base_path('storage/' . $envPath);
+            } else {
+                Log::error('Firebase credentials file not found', [
+                    'env_path' => $envPath,
+                    'tried_paths' => [
+                        $envPath,
+                        storage_path($envPath),
+                        base_path('storage/' . $envPath),
+                    ]
+                ]);
                 $this->messaging = null;
                 return;
             }
+
+            Log::info('Attempting to load Firebase credentials from: ' . $credentialsPath);
 
             $factory = (new Factory())->withServiceAccount($credentialsPath);
             $this->messaging = $factory->createMessaging();
 
             Log::info('Firebase Messaging initialized successfully');
         } catch (\Exception $e) {
-            Log::error('Failed to initialize Firebase Messaging: ' . $e->getMessage());
+            Log::error('Failed to initialize Firebase Messaging: ' . $e->getMessage(), [
+                'exception_class' => get_class($e),
+                'trace' => $e->getTraceAsString()
+            ]);
             $this->messaging = null;
         }
     }
@@ -57,14 +74,12 @@ class FirebaseNotificationService
                 return ['success' => false, 'message' => 'Aucun token trouvé'];
             }
 
-            // Separate Expo tokens from native FCM tokens
             $expoTokens = [];
             $fcmTokens = [];
 
             foreach ($tokens as $tokenModel) {
                 $token = $tokenModel->token;
 
-                // Expo tokens start with "ExponentPushToken[" or "ExpoPushToken["
                 if (str_starts_with($token, 'ExponentPushToken[') || str_starts_with($token, 'ExpoPushToken[')) {
                     $expoTokens[] = $token;
                 } else {
@@ -74,13 +89,11 @@ class FirebaseNotificationService
 
             $results = [];
 
-            // Send to Expo tokens using Expo Push Service
             if (!empty($expoTokens)) {
                 $expoResult = $this->sendViaExpo($expoTokens, $title, $message, $data);
                 $results['expo'] = $expoResult;
             }
 
-            // Send to FCM tokens using FCM v1 API
             if (!empty($fcmTokens) && $this->messaging) {
                 $fcmResult = $this->sendViaFCM($fcmTokens, $title, $message, $data);
                 $results['fcm'] = $fcmResult;
@@ -224,8 +237,6 @@ class FirebaseNotificationService
             $failureCount = 0;
             $errors = [];
 
-            // Send to each token individually for better error tracking
-            // For production with many tokens, consider using sendMulticast
             foreach ($tokens as $token) {
                 try {
                     $fcmMessage = CloudMessage::withTarget('token', $token)
