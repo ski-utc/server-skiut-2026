@@ -11,6 +11,7 @@
         "filament/spatie-laravel-settings-plugin": "^3.3",
         "guzzlehttp/guzzle": "^7.9",
         "illuminate/support": "*",
+        "kreait/firebase-php": "^7.24",
         "laravel/framework": "^11.9",
         "laravel/passport": "^12.3",
         "laravel/sanctum": "^4.0",

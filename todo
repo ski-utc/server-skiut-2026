@@ -1,33 +1,26 @@
-### Avant de continuer 
-- Verifier le mode hors ligne 
-- Modifier les écrans de login pour détailler d'avantage les features
+### Verification à la main
 
+-   [ ] Verifier le mode hors ligne
+-   [ ] Verifier le vitesseDeGlisse en background
+-   [ ] Verifier les notifications
+    -   [ ] save des token
+    -   [ ] classique (push)
+    -   [ ] skinder
+    -   [ ] monoprut
+    -   [ ] perms
+-   [ ] vérifier schedule de notification des permanences
 
+### TODO fast
 
-##### Verification finales à la main
-- verifer le vitesseDeGlisse en background 
-- [ ] Vérifier que le problème de vidéo noire en plein écran (uniquement pour celles qu'on récupère du serveur) est résolu
-- [ ] vérifier les notifications 
-  - [ ] save des token
-  - [ ] classique (push)
-  - [ ] skinder
-  - [ ] monoprut
-  - [ ] perms
-  - [ ] lue / non lue
-- [ ] vérifier schedule de notification des permanences
+-   Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
+    -   Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
 
+### Pas de deadline
 
-
-##### TODO fast
-- Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
-  - Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
-
-
-
-########### Pas de deadline ##########
-- [~] Update la charte RGPD, l'export, anonymisation et suppression des données
-  - updater / verifier les fonctions du RGPD controller
-- [~] Vérifier que l'uml est correct
-- [ ] mise en prod 
-- [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
-- [ ] réactiver tous les healthcheck laravel
+-   [ ] Probleme d'infra/cloudflare sur les photos
+-   [ ] mise en prod
+-   [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
+-   [ ] réactiver tous les healthcheck laravel
+-   [~] Update la charte RGPD, l'export, anonymisation et suppression des données
+    -   updater / verifier les fonctions du RGPD controller
+-   [~] Vérifier que l'uml est correct

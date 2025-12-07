@@ -6,22 +6,38 @@ use App\Models\PushToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class FirebaseNotificationService
 {
-    private $fcmServerKey;
+    private $messaging;
+    private $expoApiUrl = 'https://exp.host/--/api/v2/push/send';
 
     public function __construct()
     {
-        $this->fcmServerKey = env('FIREBASE_SERVER_KEY');
+        try {
+            $credentialsPath = storage_path(env('FIREBASE_CREDENTIALS_PATH', 'app/private/firebase-service-account.json'));
 
-        if (empty($this->fcmServerKey)) {
-            Log::warning('FCM Server Key not configured in .env');
+            if (!file_exists($credentialsPath)) {
+                Log::warning('Firebase credentials file not found at: ' . $credentialsPath);
+                $this->messaging = null;
+                return;
+            }
+
+            $factory = (new Factory())->withServiceAccount($credentialsPath);
+            $this->messaging = $factory->createMessaging();
+
+            Log::info('Firebase Messaging initialized successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to initialize Firebase Messaging: ' . $e->getMessage());
+            $this->messaging = null;
         }
     }
 
     /**
-     * Send a notification to a list of users using FCM.
+     * Send a notification to a list of users using FCM v1 API or Expo Push Service.
      *
      * @param array $userIds List of user IDs
      * @param string $title Notification title
@@ -35,64 +51,63 @@ class FirebaseNotificationService
             $tokens = PushToken::whereIn('user_id', $userIds)
                 ->where('active', true)
                 ->whereNotNull('token')
-                ->pluck('token')
-                ->unique()
-                ->values()
-                ->toArray();
+                ->get();
 
-            if (empty($tokens)) {
+            if ($tokens->isEmpty()) {
                 return ['success' => false, 'message' => 'Aucun token trouvé'];
             }
 
-            $results = [];
-            $chunks = array_chunk($tokens, 500);
+            // Separate Expo tokens from native FCM tokens
+            $expoTokens = [];
+            $fcmTokens = [];
 
-            foreach ($chunks as $tokenChunk) {
-                $payload = [ // FCM Format
-                    'registration_ids' => $tokenChunk,
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $message,
-                        'sound' => 'default',
-                        'priority' => 'high',
-                    ],
-                    'data' => $data,
-                    'priority' => 'high',
-                ];
+            foreach ($tokens as $tokenModel) {
+                $token = $tokenModel->token;
 
-                $response = Http::withHeaders([
-                    'Authorization' => 'key=' . $this->fcmServerKey,
-                    'Content-Type' => 'application/json',
-                ])->post('https://fcm.googleapis.com/fcm/send', $payload);
-
-                $responseData = $response->json();
-
-                $results[] = [
-                    'tokens' => count($tokenChunk),
-                    'response' => $responseData,
-                    'status' => $response->status(),
-                    'success_count' => $responseData['success'] ?? 0,
-                    'failure_count' => $responseData['failure'] ?? 0,
-                ];
-
-                Log::info('FCM notification sent', [
-                    'tokens_count' => count($tokenChunk),
-                    'title' => $title,
-                    'response_status' => $response->status(),
-                    'success' => $responseData['success'] ?? 0,
-                    'failure' => $responseData['failure'] ?? 0,
-                ]);
+                // Expo tokens start with "ExponentPushToken[" or "ExpoPushToken["
+                if (str_starts_with($token, 'ExponentPushToken[') || str_starts_with($token, 'ExpoPushToken[')) {
+                    $expoTokens[] = $token;
+                } else {
+                    $fcmTokens[] = $token;
+                }
             }
+
+            $results = [];
+
+            // Send to Expo tokens using Expo Push Service
+            if (!empty($expoTokens)) {
+                $expoResult = $this->sendViaExpo($expoTokens, $title, $message, $data);
+                $results['expo'] = $expoResult;
+            }
+
+            // Send to FCM tokens using FCM v1 API
+            if (!empty($fcmTokens) && $this->messaging) {
+                $fcmResult = $this->sendViaFCM($fcmTokens, $title, $message, $data);
+                $results['fcm'] = $fcmResult;
+            }
+
+            $totalTokens = count($expoTokens) + count($fcmTokens);
+            $totalSuccess = ($results['expo']['success_count'] ?? 0) + ($results['fcm']['success_count'] ?? 0);
+            $totalFailure = ($results['expo']['failure_count'] ?? 0) + ($results['fcm']['failure_count'] ?? 0);
+
+            Log::info('Notifications sent', [
+                'expo_tokens' => count($expoTokens),
+                'fcm_tokens' => count($fcmTokens),
+                'total_success' => $totalSuccess,
+                'total_failure' => $totalFailure,
+            ]);
 
             return [
                 'success' => true,
-                'message' => 'Notifications envoyées via FCM',
+                'message' => 'Notifications envoyées',
                 'results' => $results,
-                'total_tokens' => count($tokens)
+                'total_tokens' => $totalTokens,
+                'success_count' => $totalSuccess,
+                'failure_count' => $totalFailure,
             ];
 
         } catch (\Exception $e) {
-            Log::error('Erreur envoi notification FCM', [
+            Log::error('Erreur envoi notification', [
                 'error' => $e->getMessage(),
                 'userIds' => $userIds,
                 'title' => $title
@@ -101,6 +116,159 @@ class FirebaseNotificationService
             return [
                 'success' => false,
                 'message' => 'Erreur: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Send notifications via Expo Push Service
+     *
+     * @param array $tokens
+     * @param string $title
+     * @param string $message
+     * @param array $data
+     * @return array
+     */
+    private function sendViaExpo($tokens, $title, $message, $data = [])
+    {
+        try {
+            $messages = [];
+
+            foreach ($tokens as $token) {
+                $messages[] = [
+                    'to' => $token,
+                    'title' => $title,
+                    'body' => $message,
+                    'data' => $data,
+                    'sound' => 'default',
+                    'priority' => 'high',
+                ];
+            }
+
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'Accept-Encoding' => 'gzip, deflate',
+                'Content-Type' => 'application/json',
+            ])->post($this->expoApiUrl, $messages);
+
+            $responseData = $response->json();
+
+            $successCount = 0;
+            $failureCount = 0;
+
+            if (isset($responseData['data'])) {
+                foreach ($responseData['data'] as $result) {
+                    if ($result['status'] === 'ok') {
+                        $successCount++;
+                    } else {
+                        $failureCount++;
+                        if (isset($result['details']['error'])) {
+                            Log::warning('Expo push error: ' . $result['details']['error']);
+                        }
+                    }
+                }
+            }
+
+            Log::info('Expo notifications sent', [
+                'tokens_count' => count($tokens),
+                'success' => $successCount,
+                'failure' => $failureCount,
+            ]);
+
+            return [
+                'success' => true,
+                'tokens_count' => count($tokens),
+                'success_count' => $successCount,
+                'failure_count' => $failureCount,
+                'response' => $responseData,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Expo push error', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'tokens_count' => count($tokens),
+                'success_count' => 0,
+                'failure_count' => count($tokens),
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Send notifications via FCM v1 API
+     *
+     * @param array $tokens
+     * @param string $title
+     * @param string $message
+     * @param array $data
+     * @return array
+     */
+    private function sendViaFCM($tokens, $title, $message, $data = [])
+    {
+        if (!$this->messaging) {
+            Log::error('FCM Messaging not initialized');
+            return [
+                'success' => false,
+                'tokens_count' => count($tokens),
+                'success_count' => 0,
+                'failure_count' => count($tokens),
+                'error' => 'FCM not initialized',
+            ];
+        }
+
+        try {
+            $notification = Notification::create($title, $message);
+
+            $successCount = 0;
+            $failureCount = 0;
+            $errors = [];
+
+            // Send to each token individually for better error tracking
+            // For production with many tokens, consider using sendMulticast
+            foreach ($tokens as $token) {
+                try {
+                    $fcmMessage = CloudMessage::withTarget('token', $token)
+                        ->withNotification($notification)
+                        ->withData($data);
+
+                    $this->messaging->send($fcmMessage);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $failureCount++;
+                    $errors[] = [
+                        'token' => substr($token, 0, 20) . '...',
+                        'error' => $e->getMessage()
+                    ];
+                    Log::warning('FCM send error for token', [
+                        'token' => substr($token, 0, 20) . '...',
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            Log::info('FCM notifications sent', [
+                'tokens_count' => count($tokens),
+                'success' => $successCount,
+                'failure' => $failureCount,
+            ]);
+
+            return [
+                'success' => true,
+                'tokens_count' => count($tokens),
+                'success_count' => $successCount,
+                'failure_count' => $failureCount,
+                'errors' => $errors,
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('FCM batch error', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'tokens_count' => count($tokens),
+                'success_count' => 0,
+                'failure_count' => count($tokens),
+                'error' => $e->getMessage(),
             ];
         }
     }
