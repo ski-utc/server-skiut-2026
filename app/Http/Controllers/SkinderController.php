@@ -6,7 +6,7 @@ use App\Models\Notification;
 use App\Models\Room;
 use App\Models\SkinderLike;
 use App\Models\User;
-use App\Services\FirebaseNotificationService;
+use App\Notifications\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -387,20 +387,26 @@ class SkinderController extends Controller
                 'push_sent' => true
             ], $allOccupants->pluck('id')->toArray());
 
-            $firebaseService = app(FirebaseNotificationService::class);
-            $userIds = $allOccupants->pluck('id')->toArray();
-
-            $firebaseService->sendNotification(
-                $userIds,
-                '🎉 Nouveau match Skinder ! 🎉',
-                "Les chambres {$room1->roomNumber} et {$room2->roomNumber} ont matché ! Venez vous rencontrer !",
-                [
-                    'type' => 'skinder_match',
-                    'room1_number' => $room1->roomNumber,
-                    'room2_number' => $room2->roomNumber,
-                    'notification_id' => $notification->id
-                ]
-            );
+            foreach ($allOccupants as $user) {
+                try {
+                    $user->notify(new NewNotification([
+                        'id' => $notification->id,
+                        'title' => '🎉 Nouveau match Skinder ! 🎉',
+                        'content' => "Les chambres {$room1->roomNumber} et {$room2->roomNumber} ont matché ! Venez vous rencontrer !",
+                        'data' => [
+                            'type' => 'skinder_match',
+                            'room1_number' => $room1->roomNumber,
+                            'room2_number' => $room2->roomNumber,
+                            'notification_id' => $notification->id
+                        ]
+                    ]));
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send Skinder match notification', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'envoi des notifications de match Skinder: ' . $e->getMessage());
         }

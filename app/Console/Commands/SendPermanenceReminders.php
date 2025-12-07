@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\PermanenceController;
-use App\Services\FirebaseNotificationService;
 use Illuminate\Console\Command;
 
 class SendPermanenceReminders extends Command
@@ -26,8 +25,7 @@ class SendPermanenceReminders extends Command
         $this->info('Envoi des rappels de permanences...');
 
         try {
-            $firebaseService = app(FirebaseNotificationService::class);
-            $controller = new PermanenceController($firebaseService);
+            $controller = new PermanenceController();
 
             $result = $controller->sendReminders();
 

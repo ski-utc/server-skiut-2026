@@ -4,19 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Permanence;
 use App\Models\User;
-use App\Services\FirebaseNotificationService;
+use App\Notifications\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PermanenceController extends Controller
 {
-    protected $firebaseService;
-
-    public function __construct(FirebaseNotificationService $firebaseService)
-    {
-        $this->firebaseService = $firebaseService;
-    }
-
     /**
      * Get all the permanences for a user (member)
      * @param Request $request
@@ -224,15 +217,24 @@ class PermanenceController extends Controller
                 'status' => 'scheduled'
             ]);
 
-            $this->firebaseService->sendNotification(
-                [$permanence->responsible_user_id],
-                'Nouvelle permanence assignée',
-                "Permanence '{$permanence->name}' le " . $permanence->start_datetime->format('d/m à H:i'),
-                [
-                    'type' => 'permanence_assigned',
-                    'permanence_id' => $permanence->id
-                ]
-            );
+            try {
+                $responsibleUser = User::find($permanence->responsible_user_id);
+                if ($responsibleUser) {
+                    $responsibleUser->notify(new NewNotification([
+                        'title' => 'Nouvelle permanence assignée',
+                        'content' => "Permanence '{$permanence->name}' le " . $permanence->start_datetime->format('d/m à H:i'),
+                        'data' => [
+                            'type' => 'permanence_assigned',
+                            'permanence_id' => $permanence->id
+                        ]
+                    ]));
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send permanence assignment notification', [
+                    'user_id' => $permanence->responsible_user_id,
+                    'error' => $e->getMessage()
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -392,19 +394,26 @@ class PermanenceController extends Controller
             $notificationsSent = 0;
 
             foreach ($upcomingPermanences as $permanence) {
-                $result = $this->firebaseService->sendNotification(
-                    [$permanence->responsible_user_id],
-                    'Rappel de permanence',
-                    "Votre permanence '{$permanence->name}' commence dans " . $this->formatTimeDifferenceInFrench($permanence->start_datetime),
-                    [
-                        'type' => 'permanence_reminder',
-                        'permanence_id' => $permanence->id
-                    ]
-                );
-
-                if ($result['success']) {
-                    $permanence->update(['notification_sent' => true]);
-                    $notificationsSent++;
+                try {
+                    $responsibleUser = User::find($permanence->responsible_user_id);
+                    if ($responsibleUser) {
+                        $responsibleUser->notify(new NewNotification([
+                            'title' => 'Rappel de permanence',
+                            'content' => "Votre permanence '{$permanence->name}' commence dans " . $this->formatTimeDifferenceInFrench($permanence->start_datetime),
+                            'data' => [
+                                'type' => 'permanence_reminder',
+                                'permanence_id' => $permanence->id
+                            ]
+                        ]));
+                        $permanence->update(['notification_sent' => true]);
+                        $notificationsSent++;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send permanence reminder', [
+                        'permanence_id' => $permanence->id,
+                        'user_id' => $permanence->responsible_user_id,
+                        'error' => $e->getMessage()
+                    ]);
                 }
             }
 

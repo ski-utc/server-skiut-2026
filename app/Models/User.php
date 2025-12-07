@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use NotificationChannels\Expo\ExpoPushToken;
 
 class User extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'users';
     protected $fillable = [
@@ -157,6 +159,23 @@ class User extends Authenticatable
     public function scopeAdminsOnly($query)
     {
         return $query->where('admin', true);
+    }
+
+    /**
+     * Get the Expo push tokens for notification routing.
+     *
+     * @return array
+     */
+    public function routeNotificationForExpo()
+    {
+        return $this->pushTokens()
+            ->where('active', true)
+            ->whereNotNull('token')
+            ->pluck('token')
+            ->map(function ($token) {
+                return ExpoPushToken::make($token);
+            })
+            ->toArray();
     }
 
     /**

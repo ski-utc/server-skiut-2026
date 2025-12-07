@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Monoprut;
 use App\Models\Room;
 use App\Models\User;
+use App\Notifications\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -117,22 +118,31 @@ class MonoprutController extends Controller
             $room = $receiverUser->room;
             $article->shotgunBy($room->id);
 
+
             try {
                 $giverRoom = $article->giverRoom;
                 if ($giverRoom) {
-                    $giverUsers = $giverRoom->getUserIds();
-                    if (!empty($giverUsers)) {
-                        $firebaseService = app(\App\Services\FirebaseNotificationService::class);
-                        $firebaseService->sendNotification(
-                            $giverUsers,
-                            'Monoprut shotgun !',
-                            "Votre article '{$article->product}' a été shotgun par la chambre {$room->roomNumber} !",
-                            [
-                                'type' => 'monoprut_shotgun',
-                                'article_id' => $article->id,
-                                'receiver_room' => $room->roomNumber
-                            ]
-                        );
+                    $giverUsers = User::whereIn('id', $giverRoom->getUserIds())->get();
+
+                    if ($giverUsers->isNotEmpty()) {
+                        foreach ($giverUsers as $giverUser) {
+                            try {
+                                $giverUser->notify(new NewNotification([
+                                    'title' => 'Monoprut shotgun !',
+                                    'content' => "Votre article '{$article->product}' a été shotgun par la chambre {$room->roomNumber} !",
+                                    'data' => [
+                                        'type' => 'monoprut_shotgun',
+                                        'article_id' => $article->id,
+                                        'receiver_room' => $room->roomNumber
+                                    ]
+                                ]));
+                            } catch (\Exception $e) {
+                                Log::warning('Failed to send Monoprut notification', [
+                                    'user_id' => $giverUser->id,
+                                    'error' => $e->getMessage()
+                                ]);
+                            }
+                        }
                     }
                 }
             } catch (\Exception $e) {

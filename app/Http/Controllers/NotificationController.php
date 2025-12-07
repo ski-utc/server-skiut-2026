@@ -6,19 +6,12 @@ use App\Models\Notification;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\UserNotification;
-use App\Services\FirebaseNotificationService;
+use App\Notifications\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
-    protected $firebaseService;
-
-    public function __construct(FirebaseNotificationService $firebaseService)
-    {
-        $this->firebaseService = $firebaseService;
-    }
-
     /**
      * Get the notifications for the connected user
      * @param Request $request
@@ -180,16 +173,41 @@ class NotificationController extends Controller
             ], $recipientIds);
 
             if ($validated['send_push'] ?? true) {
-                $pushResult = $this->firebaseService->sendNotification(
-                    $recipientIds,
-                    $validated['title'],
-                    $validated['description'],
-                    ['notificationId' => $notification->id]
-                );
+                $users = User::whereIn('id', $recipientIds)->get();
+                $successCount = 0;
+                $failureCount = 0;
+
+                foreach ($users as $user) {
+                    try {
+                        $user->notify(new NewNotification([
+                            'id' => $notification->id,
+                            'title' => $validated['title'],
+                            'content' => $validated['description'],
+                        ]));
+                        $successCount++;
+                    } catch (\Exception $e) {
+                        $failureCount++;
+                        Log::warning('Failed to send notification to user', [
+                            'user_id' => $user->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
 
                 $notification->update([
-                    'push_sent' => $pushResult['success'],
-                    'firebase_response' => $pushResult
+                    'push_sent' => $successCount > 0,
+                    'firebase_response' => [
+                        'success' => $successCount > 0,
+                        'success_count' => $successCount,
+                        'failure_count' => $failureCount,
+                        'total_recipients' => count($recipientIds),
+                    ]
+                ]);
+
+                Log::info('Push notifications sent', [
+                    'notification_id' => $notification->id,
+                    'success' => $successCount,
+                    'failure' => $failureCount,
                 ]);
             }
 
@@ -205,6 +223,7 @@ class NotificationController extends Controller
             return response()->json(['success' => false, 'message' => 'Erreur: ' . $e->getMessage()], 500);
         }
     }
+
 
     /**
      * Mark a notification as read
