@@ -3,7 +3,6 @@
 -   [ ] Verifier le mode hors ligne
 -   [ ] Verifier le vitesseDeGlisse en background
 -   [ ] Verifier les notifications
-    -   [ ] save des token
     -   [ ] classique (push)
     -   [ ] skinder
     -   [ ] monoprut
@@ -14,6 +13,7 @@
 
 -   Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
     -   Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
+-   Verifier que le refresh des access token fonctionne bien
 
 ### Pas de deadline
 
