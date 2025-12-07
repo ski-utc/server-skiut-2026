@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class RoomTour extends Model
 {
@@ -59,8 +60,8 @@ class RoomTour extends Model
     public static function getTodayTour()
     {
         return self::today()
-                  ->with(['binomes.member1', 'binomes.member2', 'binomes.visits'])
-                  ->first();
+            ->with(['binomes.member1', 'binomes.member2', 'binomes.visits'])
+            ->first();
     }
 
     /**
@@ -71,9 +72,9 @@ class RoomTour extends Model
     public static function getTodayActiveTour()
     {
         return self::today()
-                  ->active()
-                  ->with(['binomes.member1', 'binomes.member2', 'binomes.visits'])
-                  ->first();
+            ->active()
+            ->with(['binomes.member1', 'binomes.member2', 'binomes.visits'])
+            ->first();
     }
 
     /**
@@ -115,6 +116,7 @@ class RoomTour extends Model
     {
         $totalRooms = 0;
         $visitedRooms = 0;
+
         $binomesCount = $this->binomes->count();
 
         foreach ($this->binomes as $binome) {

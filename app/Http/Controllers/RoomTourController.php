@@ -221,7 +221,7 @@ class RoomTourController extends Controller
 
             $userBinome = $todayTour->binomes()
                 ->forUser($user_id)
-                ->with('visits')
+                ->with(['visits', 'member1', 'member2'])
                 ->first();
 
             if (!$userBinome) {
@@ -235,7 +235,6 @@ class RoomTourController extends Controller
             $binomeStats = $userBinome->getVisitStats();
 
             $teammate = $userBinome->getTeammate($user_id);
-
             $data = [
                 'tour_id' => $todayTour->id,
                 'tour_date' => $todayTour->tour_date->format('Y-m-d'),

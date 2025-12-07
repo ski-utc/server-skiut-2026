@@ -96,8 +96,10 @@ class TourBinome extends Model
      */
     public function scopeForUser($query, $user_id)
     {
-        return $query->where('member_1_id', $user_id)
-                    ->orWhere('member_2_id', $user_id);
+        return $query->where(function ($q) use ($user_id) {
+            $q->where('member_1_id', $user_id)
+                ->orWhere('member_2_id', $user_id);
+        });
     }
 
     /**
@@ -137,9 +139,9 @@ class TourBinome extends Model
     public function getNextRoom()
     {
         return $this->visits()
-                   ->where('visited', false)
-                   ->orderBy('visit_order')
-                   ->first();
+            ->where('visited', false)
+            ->orderBy('visit_order')
+            ->first();
     }
 
     /**
@@ -175,8 +177,8 @@ class TourBinome extends Model
     {
         foreach ($newOrder as $roomId => $order) {
             $this->visits()
-                 ->where('room_id', $roomId)
-                 ->update(['visit_order' => $order]);
+                ->where('room_id', $roomId)
+                ->update(['visit_order' => $order]);
         }
     }
 }
