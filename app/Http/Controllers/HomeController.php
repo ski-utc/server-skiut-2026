@@ -11,20 +11,32 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
     /**
-     * Obtenir l'activité la plus proche, un défi au hasard, et les contacts "Team Info".
+     * Get the closest activity, a random challenge, and the "Team Info" contacts.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getRandomData(Request $request)
     {
         try {
             $currentDate = Carbon::today();
+            $currentDateTime = Carbon::now();
 
-            $closestActivity = Activity::whereDate('date', '>=', $currentDate)
-                ->whereNotNull('startTime')
+            $closestActivity = Activity::where(function ($query) use ($currentDate, $currentDateTime) {
+                $query->where('date', '>', $currentDate) // First activity of tomorrow
+                    ->orWhere(function ($q) use ($currentDate, $currentDateTime) { // Next activity of the day
+                        $q->whereDate('date', '=', $currentDate)
+                            ->whereNotNull('startTime')
+                            ->whereRaw('TIME(startTime) >= ?', [$currentDateTime->format('H:i:s')]);
+                    });
+            })
+                ->whereNotNull('startTime') // And take the first one
                 ->orderBy('date', 'ASC')
                 ->orderBy('startTime', 'ASC')
                 ->first();
@@ -43,14 +55,15 @@ class HomeController extends Controller
                 }
             }
 
-            $userId = $request->user['id'];
-            $roomId = User::where('id', $userId)->first()->roomID;
+            $user_id = $request->user['id'];
+            $user = User::findOrFail($user_id);
+            $roomId = $user->getRoomId();
 
-            $doneChallenges = ChallengeProof::where('room_id', '!=', $roomId)->inRandomOrder()->get();
+            $doneChallenges = ChallengeProof::byRoom($roomId)->get();
             $randomChallenge = Challenge::whereNotIn('id', $doneChallenges->pluck('challenge_id'))->inRandomOrder()->first();
 
             $bestAnecdote = Anecdote::withCount('likes')
-                ->where('valid', true)
+                ->valid()
                 ->orderBy('likes_count', 'desc')
                 ->first();
 
@@ -63,10 +76,16 @@ class HomeController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => "L'application n'est pas tout à fait finie... " . $e->getMessage()]);
+            Log::error('Erreur lors de la récupération des données de la page d\'accueil: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => "L'application n'est pas tout à fait finie... " . $e->getMessage()], 500);
         }
     }
 
+    /**
+     * Get the weather for the connected user
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function getWeather(): JsonResponse
     {
         $cachePath = storage_path('app/' . 'weather.json');
@@ -100,7 +119,6 @@ class HomeController extends Controller
 
             $fullData = $response->json();
 
-            // Extraction des données utilisées par l'application
             $optimizedData = $this->extractWeatherData($fullData);
 
             $cacheData = [
@@ -114,7 +132,6 @@ class HomeController extends Controller
                 'success' => true,
                 'data' => $optimizedData
             ]);
-
         } catch (\Exception $e) {
             if (isset($content['data'])) {
                 return response()->json([
@@ -123,6 +140,7 @@ class HomeController extends Controller
                 ]);
             }
 
+            Log::error('Erreur lors de la récupération de la météo: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -132,12 +150,13 @@ class HomeController extends Controller
 
     /**
      * Extrait uniquement les données météo utilisées par l'application React Native
+     * @param array $fullData
+     * @return array
      */
     private function extractWeatherData(array $fullData): array
     {
         $hourlyData = [];
 
-        // Extraction des données horaires (seulement les champs utilisés)
         if (isset($fullData['forecast']['forecastday'][0]['hour'])) {
             foreach ($fullData['forecast']['forecastday'][0]['hour'] as $hour) {
                 $hourlyData[] = [

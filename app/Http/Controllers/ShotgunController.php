@@ -11,7 +11,11 @@ use Illuminate\Validation\ValidationException;
 
 class ShotgunController extends Controller
 {
-    // Route GET /game
+    /**
+     * Show the game page.
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function showGame()
     {
         $token = Str::uuid()->toString();
@@ -21,29 +25,35 @@ class ShotgunController extends Controller
         return view('shotgun.game', ['token' => $token]);
     }
 
-    // Route POST /submit
+    /**
+     * Submit the game.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function submit(Request $request)
     {
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+                'regex:/^[a-zA-Z0-9._%+-]+@etu\.utc\.fr$/',
+            ],
+            'token' => 'required|string',
+        ]);
+
         try {
             $availablePlaces = 316;
 
-            $request->validate([
-                'email' => [
-                    'required',
-                    'email',
-                    'regex:/^[a-zA-Z0-9._%+-]+@etu\.utc\.fr$/',    # /^[a-zA-Z0-9._%+-]+@(etu\.)?utc\.fr$' | /^[a-zA-Z0-9._%+-]+@([a-z0-9-]+\.)?utc\.fr$
-                ],
-                'token' => 'required|string',
-            ]);
-
-            $token = $request->input('token');
+            $token = $validated['token'];
             $shotgunToken = ShotgunToken::where('token', $token)->where('expires_at', '>', now())->first();
             if (!$shotgunToken) {
                 return response()->json(['error' => 'Invalid or expired token'], 400);
             }
             $shotgunToken->delete();
 
-            $exists = Shotguns::where('email', $request->input('email'));
+            $email = $validated['email'];
+            $exists = Shotguns::where('email', $email);
             if ($exists->exists()) {
                 $position = $exists->first()->position;
                 $win = $position <= $availablePlaces ? true : false;
@@ -53,7 +63,7 @@ class ShotgunController extends Controller
 
             $lastPosition = Shotguns::max('position') ?? 0;
             $position = $lastPosition + 1;
-            Shotguns::create(['email' => $request->input('email'), 'position' => $position]);
+            Shotguns::create(['email' => $email, 'position' => $position]);
 
             $win = $position <= $availablePlaces ? true : false;
 

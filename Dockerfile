@@ -1,59 +1,78 @@
 # Stage 1 — Frontend build
-FROM node:18 AS frontend
+FROM node:18-alpine AS frontend
 WORKDIR /app
-COPY package*.json ./
-COPY vite.config.js ./
-COPY tailwind.config.js ./
-COPY postcss.config.cjs ./
-RUN npm ci
+COPY package*.json vite.config.js tailwind.config.js postcss.config.cjs ./
+RUN npm ci --prefer-offline --no-audit
 COPY resources/ ./resources/
 COPY public/ ./public/
 RUN npm run build
 
 # Stage 2 — PHP-FPM backend
-FROM php:8.3-fpm
+FROM php:8.3-fpm-alpine
 
-RUN apt-get update && apt-get install -y \
-    git zip unzip curl nginx supervisor \
-    libzip-dev libpng-dev libonig-dev libxml2-dev libjpeg-dev libfreetype6-dev libssl-dev \
+RUN apk add --no-cache \
+    nginx supervisor git zip unzip curl nano \
+    libzip libpng oniguruma libxml2 \
+    libjpeg-turbo freetype icu-libs \
+    && apk add --no-cache --virtual .build-deps \
+    autoconf g++ make \
+    libzip-dev libpng-dev oniguruma-dev libxml2-dev \
+    libjpeg-turbo-dev freetype-dev icu-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo_mysql mbstring zip exif pcntl bcmath intl gd opcache \
     && pecl install apcu \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath \
-    && docker-php-ext-enable apcu opcache \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-enable apcu \
+    && apk del .build-deps \
+    && rm -rf /tmp/* /var/cache/apk/*
 
-RUN echo "opcache.enable=1\n\
-opcache.memory_consumption=256\n\
-opcache.interned_strings_buffer=16\n\
-opcache.max_accelerated_files=20000\n\
-opcache.validate_timestamps=0\n\
-opcache.revalidate_freq=0\n" > /usr/local/etc/php/conf.d/opcache.ini
+RUN cat <<'EOF' > /usr/local/etc/php/conf.d/opcache.ini
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0
+opcache.revalidate_freq=0
+EOF
 
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-RUN sed -i 's/pm = dynamic/pm = dynamic/' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i 's/;pm.max_children = 5/pm.max_children = 20/' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i 's/;pm.start_servers = 2/pm.start_servers = 5/' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i 's/;pm.min_spare_servers = 1/pm.min_spare_servers = 3/' /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i 's/;pm.max_spare_servers = 3/pm.max_spare_servers = 10/' /usr/local/etc/php-fpm.d/www.conf && \
-    echo "pm.max_requests = 500" >> /usr/local/etc/php-fpm.d/www.conf
+RUN cat <<'EOF' > /usr/local/etc/php-fpm.d/www.conf
+pm = dynamic
+pm.max_children = 20
+pm.start_servers = 5
+pm.min_spare_servers = 3
+pm.max_spare_servers = 10
+pm.max_requests = 500
+catch_workers_output = yes
+decorate_workers_output = no
+php_admin_flag[log_errors] = on
+php_admin_value[error_log] = /proc/self/fd/2
+EOF
+
+RUN cat <<'EOF' > /usr/local/etc/php/conf.d/uploads.ini
+post_max_size=32M
+upload_max_filesize=32M
+EOF
 
 WORKDIR /var/www/html
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --optimize-autoloader
+
 COPY . .
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 COPY --from=frontend /app/public/build ./public/build
 
-RUN cp .env.ci .env && php artisan key:generate
+RUN cp .env.ci .env \
+    && php artisan key:generate \
+    && mkdir -p storage/{logs,framework,app/public} bootstrap/cache \
+    && touch storage/logs/laravel.log \
+    && chown -R www-data:www-data /var/www/html \
+    && chown -R www-data:www-data /var/www/html/storage \
+    && chmod -R 775 storage bootstrap/cache
 
-RUN mkdir -p storage/logs storage/framework bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html && \
-    chown -R www-data:www-data /var/www/html/storage && \
-    chmod -R 775 storage bootstrap/cache
-
-# ---- Nginx configuration ----
 COPY docker/nginx.conf /etc/nginx/nginx.conf
-
-# ---- Supervisor configuration (launch both nginx + php-fpm) ----
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
+
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

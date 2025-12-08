@@ -311,8 +311,8 @@ S'il y a peut-être un point important à mentionner c'est que grâce au middlew
 
 ---
 
-### **11. Vitesse de glisse (UserPerformanceController)**  
-- `/update-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
+### **11. Vitesse de glisse (PerformanceController)**  
+- `/create-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
 - `/classement-performances` : Renvoie le classement des perfomances user-vitesse
 
 ---
@@ -338,7 +338,6 @@ Elle s'occupe de :
 - Tester l'intégration du serveur dans le container docker sur le registry gitlab.utc.fr sur chaque push sur la branche main
 
 Pour plus d'informations, tu peux voir le fichier .gitlab-ci.yml
-
 
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.

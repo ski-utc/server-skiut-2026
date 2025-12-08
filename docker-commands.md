@@ -24,3 +24,9 @@ Lancer une commande php dans un container (exemple avec `php artisan db:seed`)
 ```bash
 docker exec -it laravel-app php artisan db:seed
 ```
+
+Relancer le seed de la DB
+```bash
+d exec -it laravel-app composer require fakerphp/faker --no-interaction
+d exec -it laravel-app php artisan db:seed
+```

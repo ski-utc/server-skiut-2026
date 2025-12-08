@@ -29,9 +29,10 @@ return [
     ],
 
     'oauth' => [
-        'client_id' => env('OAUTH_CLIENT_ID_'),
+        'client_id' => env('OAUTH_CLIENT_ID'),
         'client_secret' => env('OAUTH_CLIENT_SECRET'),
         'redirect_uri' => env('OAUTH_REDIRECT_URI', env('BASE_URL').'skiutc/auth/callback'),
+        'backoffice_redirect_uri' => env('OAUTH_BACKOFFICE_REDIRECT_URI', env('BASE_URL').'skiutc/auth/back-office/callback'),
         'scopes' => env('OAUTH_SCOPES', 'users-infos read-memberships'),
         'authorize_url' => env('OAUTH_AUTHORIZE_URL', 'https://auth.assos.utc.fr/oauth/authorize'),
         'access_token_url' => env('OAUTH_ACCESS_TOKEN_URL', 'https://auth.assos.utc.fr/oauth/token'),

@@ -4,14 +4,8 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
     /**
@@ -26,9 +20,9 @@ class UserFactory extends Factory
             'firstName' => fake()->firstName(),
             'lastName' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
-            'roomID' => fake()->numberBetween(1, 15),
-            'location' => fake()->optional()->city(),
+            'room_id' => fake()->numberBetween(1, 15),
             'admin' => fake()->boolean(10),
+            'member' => fake()->boolean(30),
             'alumniOrExte' => fake()->boolean(20),
         ];
     }

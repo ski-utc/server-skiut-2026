@@ -126,7 +126,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
@@ -140,7 +139,9 @@ return [
 
     'providers' => ServiceProvider::defaultProviders()->merge([
         App\Providers\RouteServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
         PrometheusServiceProvider::class,
+        App\Providers\HealthServiceProvider::class,
     ])->toArray(),
 
 ];

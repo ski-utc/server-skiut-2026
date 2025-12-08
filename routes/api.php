@@ -2,107 +2,153 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AnecdoteController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassementController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DefisController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MonoprutController;
+use App\Http\Controllers\NavetteController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PerformanceController;
+use App\Http\Controllers\PermanenceController;
+use App\Http\Controllers\PlanningController;
+use App\Http\Controllers\PushTokenController;
+use App\Http\Controllers\RoomTourController;
 use App\Http\Controllers\SkinderController;
-use App\Http\Controllers\UserPerformanceController;
-use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\EnsureAdminTokenIsValid;
 use App\Http\Middleware\EnsureTokenIsValid;
 use Illuminate\Support\Facades\Route;
 
-/*
-Lors de la création d'une nouvelle route, si cette dernière ne fonctionne pas :
-    php artisan route:clear
-    php artisan route:list
-*/
+/* Auth */
+Route::get('/connected', function () {
+    return view('api-connected');
+})->name('api-connected');
+Route::get('/notConnected', function () {
+    return view('api-not-connected');
+})->name('api-not-connected');
 
-/************************************************************** Login *************************************************************/
-Route::get('/connected', function () { return view('api-connected');})->name('api-connected');
-Route::get('/notConnected', function () { return view('api-not-connected');})->name('api-not-connected');
-Route::get('/getUserData', [\App\Http\Controllers\AuthController::class, 'getUserData'])->middleware(EnsureTokenIsValid::class);
-/**********************************************************************************************************************************/
+Route::middleware([EnsureTokenIsValid::class])->group(function () {
+    /* Auth */
+    Route::get('/auth/me', [AuthController::class, 'getUserData']);
 
-/************************************************************** Home *************************************************************/
-Route::get('/getRandomData', [\App\Http\Controllers\HomeController::class, 'getRandomData'])->middleware(EnsureTokenIsValid::class);
-Route::get('/getWeather', [\App\Http\Controllers\HomeController::class, 'getWeather'])->middleware(EnsureTokenIsValid::class);
-/**********************************************************************************************************************************/
+    /* Home */
+    Route::get('/home/random-data', [HomeController::class, 'getRandomData']);
+    Route::get('/home/weather', [HomeController::class, 'getWeather']);
 
-/************************************************************** Notifications *************************************************************/
-Route::get('/getNotifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications'])->middleware(EnsureTokenIsValid::class);
-/**************************************************************************************************************************************/
+    /* Planning */
+    Route::get('/planning', [PlanningController::class, 'getPlanning']);
 
-/************************************************************** Planning *************************************************************/
-Route::get('/getPlanning', [\App\Http\Controllers\PlanningController::class, 'getPlanning'])->middleware(EnsureTokenIsValid::class);
-/**************************************************************************************************************************************/
+    /* Challenges */
+    Route::get('/challenges', [DefisController::class, 'getChallenges']);
+    Route::get('/challenges/proof-media/{challengeId}', [DefisController::class, 'getProofMedia']);
+    Route::get('/challenges/max-file-size', [DefisController::class, 'getMaxFileSize']);
+    Route::post('/challenges/proof-media', [DefisController::class, 'uploadProofMedia']);
+    Route::delete('/challenges/proof-media/{mediaId}', [DefisController::class, 'deleteProofMedia']);
+    Route::get('/classement-chambres', [ClassementController::class, 'classementChambres']);
 
-/************************************************************** Défis *************************************************************/
-Route::get('/challenges', [DefisController::class, 'getChallenges'])->middleware(EnsureTokenIsValid::class);
-Route::post('/challenges/getProofImage', [DefisController::class, 'getProofImage'])->middleware(EnsureTokenIsValid::class);
-Route::post('/challenges/uploadProofImage', [DefisController::class, 'uploadProofImage'])->middleware(EnsureTokenIsValid::class);
-Route::post('/challenges/deleteproofImage', [DefisController::class, 'deleteproofImage'])->middleware(EnsureTokenIsValid::class);
-Route::get('/classement-chambres', [ClassementController::class, 'classementChambres'])->middleware(EnsureTokenIsValid::class);
-;
-/**************************************************************************************************************************************/
+    /* Anecdotes */
+    Route::get('/anecdotes', [AnecdoteController::class, 'getAnecdotes']);
+    Route::post('/anecdotes', [AnecdoteController::class, 'sendAnecdote']);
+    Route::post('/anecdotes/{anecdoteId}/like', [AnecdoteController::class, 'likeAnecdote']);
+    Route::post('/anecdotes/{anecdoteId}/warn', [AnecdoteController::class, 'warnAnecdote']);
+    Route::delete('/anecdotes/{anecdoteId}', [AnecdoteController::class, 'deleteAnecdote']);
 
-/************************************************************** Anecdotes *************************************************************/
-Route::post('/getAnecdotes', [AnecdoteController::class, 'getAnecdotes'])->middleware(EnsureTokenIsValid::class);
-Route::post('/likeAnecdote', [AnecdoteController::class, 'likeAnecdote'])->middleware(EnsureTokenIsValid::class);
-Route::post('/warnAnecdote', [AnecdoteController::class, 'warnAnecdote'])->middleware(EnsureTokenIsValid::class);
-Route::post('/sendAnecdote', [AnecdoteController::class, 'sendAnecdote'])->middleware(EnsureTokenIsValid::class);
-Route::post('/deleteAnecdote', [AnecdoteController::class, 'deleteAnecdote'])->middleware(EnsureTokenIsValid::class);
-/**************************************************************************************************************************************/
+    /* Contacts */
+    Route::get('/contacts', [ContactController::class, 'getContacts']);
 
-/************************************************************** Contacts *************************************************************/
-Route::get('/getContacts', [ContactController::class, 'getContacts'])->middleware(EnsureTokenIsValid::class);
-/**************************************************************************************************************************************/
+    /* Navettes */
+    Route::get('/navettes', [NavetteController::class, 'getNavettes']);
 
-/************************************************************** Navettes *************************************************************/
-Route::get('/getNavettes', [\App\Http\Controllers\NavetteController::class, 'getNavettes'])->middleware(EnsureTokenIsValid::class);
-/**************************************************************************************************************************************/
+    /* Skinder */
+    Route::get('/skinder/profiles', [SkinderController::class, 'getProfilSkinder']);
+    Route::get('/skinder/my-profile', [SkinderController::class, 'getMyProfilSkinder']);
+    Route::put('/skinder/my-profile', [SkinderController::class, 'modifyProfil']);
+    Route::post('/skinder/profiles/{profileId}/like', [SkinderController::class, 'likeSkinder']);
+    Route::get('/skinder/matches', [SkinderController::class, 'getMySkinderMatches']);
+    Route::post('/skinder/my-profile/image', [SkinderController::class, 'uploadRoomImage']);
+    Route::get('/skinder/rooms/{roomId}', [SkinderController::class, 'getRoomDetails']);
 
-/*************************************************************** Skinder **************************************************************/
-Route::get('/getProfilSkinder', [SkinderController::class, 'getProfilSkinder'])->middleware(EnsureTokenIsValid::class);
-Route::post('/likeSkinder', [SkinderController::class, 'likeSkinder'])->middleware(EnsureTokenIsValid::class);
-Route::get('/getMySkinderMatches', [SkinderController::class, 'getMySkinderMatches'])->middleware(EnsureTokenIsValid::class);
-Route::get('/getMyProfilSkinder', [SkinderController::class, 'getMyProfilSkinder'])->middleware(EnsureTokenIsValid::class);
-Route::post('/modifyProfilSkinder', [SkinderController::class, 'modifyProfil'])->middleware(EnsureTokenIsValid::class);
-Route::post('/uploadRoomImage', [SkinderController::class, 'uploadRoomImage'])->middleware(EnsureTokenIsValid::class);
-Route::get('/getRoomDetails/{roomId}', [SkinderController::class, 'getRoomDetails'])->middleware(EnsureTokenIsValid::class);
-/**************************************************************************************************************************************/
+    /* Vitesse de glisse */
+    Route::post('/create-performance', [PerformanceController::class, 'createPerformance']);
+    Route::get('/user-performances', [PerformanceController::class, 'getUserPerformances']);
+    Route::delete('/user-performances/{sessionId}', [PerformanceController::class, 'deletePerformanceSession']);
+    Route::get('/classement-performances', [ClassementController::class, 'classementPerformances']);
 
-/************************************************************** Administration *************************************************************/
-Route::get('/admin', [AdminController::class, 'getAdmin'])->middleware([EnsureTokenIsValid::class]);
+    /* Monoprut */
+    Route::get('/articles', [MonoprutController::class, 'getArticles']);
+    Route::post('/articles', [MonoprutController::class, 'createArticle']);
+    Route::post('/articles/{articleId}/shotgun', [MonoprutController::class, 'shotgunArticle']);
+    Route::get('/articles/given', [MonoprutController::class, 'myGivenArticles']);
+    Route::get('/articles/received', [MonoprutController::class, 'myReceivedArticles']);
+    Route::put('/articles/{articleId}/retrieve', [MonoprutController::class, 'markAsRetrieved']);
+    Route::post('/articles/{articleId}/cancel-reservation', [MonoprutController::class, 'cancelReservation']);
+    Route::delete('/articles/{articleId}', [MonoprutController::class, 'deleteArticle']);
 
-Route::get('/getAdminChallenges', [AdminController::class, 'getAdminChallenges'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::get('/getChallengeDetails/{challengeId}', [AdminController::class, 'getChallengeDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/updateChallengeStatus/{challengeId}/{isValid}/{isDelete}', [AdminController::class, 'updateChallengeStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+    /* Permanences */
+    Route::get('/permanences/my', [PermanenceController::class, 'getUserPermanences']);
+    Route::get('/permanences/{id}', [PermanenceController::class, 'getPermanenceById']);
 
-Route::get('/getAdminAnecdotes', [AdminController::class, 'getAdminAnecdotes'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::get('/getAnecdoteDetails/{anecdoteId}', [AdminController::class, 'getAnecdoteDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/updateAnecdoteStatus/{anecdoteId}/{isValid}', [AdminController::class, 'updateAnecdoteStatus'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+    /* Tournée des chambres */
+    Route::get('/room-tours/my-tour', [RoomTourController::class, 'getUserTour']);
+    Route::get('/room-tours/status', [RoomTourController::class, 'getTourStatusForTraveler']);
+    Route::post('/room-tours/visits/{visitId}/mark-visited', [RoomTourController::class, 'markRoomVisited']);
+    Route::post('/room-tours/visits/{visitId}/unmark-visited', [RoomTourController::class, 'unmarkVisited']);
+    Route::post('/room-tours/my-tour/reorder', [RoomTourController::class, 'reorderRooms']);
 
-Route::get('/getAdminNotifications', [AdminController::class, 'getAdminNotifications'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::get('/getNotificationDetails/{notificationId}', [AdminController::class, 'getNotificationDetails'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/displayNotification/{notificationId}/{display}', [AdminController::class, 'displayNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/sendNotification', [AdminController::class, 'sendNotificationToAll'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
-Route::post('/sendIndividualNotification/{userId}', [AdminController::class, 'sendIndividualNotification'])->middleware([EnsureTokenIsValid::class, AdminMiddleware::class]);
+    /* Push Tokens */
+    Route::post('/push-tokens', [PushTokenController::class, 'store']);
+    Route::get('/push-tokens', [PushTokenController::class, 'index']);
+    Route::post('/push-tokens/deactivate', [PushTokenController::class, 'deactivate']);
+    Route::delete('/push-tokens', [PushTokenController::class, 'destroy']);
 
-Route::get('/getMaxFileSize', [\App\Http\Controllers\UserController::class, 'getMaxFileSize'])->middleware([EnsureTokenIsValid::class]);
-Route::post('/save-token', [\App\Http\Controllers\UserController::class, 'saveToken'])->middleware([EnsureTokenIsValid::class]);
-/*********************************************************************************************************************************************/
+    /* Notifications */
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'getNotifications']);
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
 
-/************************************************************** Vitesse de glisse *************************************************************/
-Route::post('/update-performance', [UserPerformanceController::class, 'updatePerformance'])->middleware(EnsureTokenIsValid::class);
-Route::get('/classement-performances', [ClassementController::class, 'classementPerformances'])->middleware(EnsureTokenIsValid::class);
-/**********************************************************************************************************************************************/
+    /* RGPD */
+    Route::post('/rgpd/anonymize-my-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeMyData']);
+    Route::delete('/rgpd/delete-my-data', [\App\Http\Controllers\RgpdController::class, 'deleteMyData']);
+    Route::get('/rgpd/export-my-data', [\App\Http\Controllers\RgpdController::class, 'exportMyData']);
+    Route::post('/rgpd/anonymize-all-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeAllData']);
+    Route::delete('/rgpd/delete-all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
+});
 
-/************************************************************** RGPD *************************************************************/
-Route::post('/rgpd/anonymize-my-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeMyData'])->middleware(EnsureTokenIsValid::class);
-Route::post('/rgpd/delete-my-data', [\App\Http\Controllers\RgpdController::class, 'deleteMyData'])->middleware(EnsureTokenIsValid::class);
-Route::get('/rgpd/export-my-data', [\App\Http\Controllers\RgpdController::class, 'exportMyData'])->middleware(EnsureTokenIsValid::class);
-Route::post('/rgpd/anonymize-all-data', [\App\Http\Controllers\RgpdController::class, 'anonymizeAllData']);
-Route::post('/rgpd/delete-all-data', [\App\Http\Controllers\RgpdController::class, 'deleteAllData']);
-/**********************************************************************************************************************************************/
+Route::middleware([EnsureAdminTokenIsValid::class])->group(function () {
+    /* Auth */
+    Route::get('/admin', [AdminController::class, 'getAdmin']);
 
-// require __DIR__.'/auth.php';
+    /* Anecdotes */
+    Route::get('/admin/anecdotes', [AdminController::class, 'getAdminAnecdotes']);
+    Route::get('/admin/anecdotes/{anecdoteId}', [AdminController::class, 'getAnecdoteDetails']);
+    Route::put('/admin/anecdotes/{anecdoteId}/status', [AdminController::class, 'updateAnecdoteStatus']);
+    Route::delete('/admin/anecdotes/{anecdoteId}', [AdminController::class, 'deleteAnecdote']);
+
+    /* Challenges */
+    Route::get('/admin/challenges', [AdminController::class, 'getAdminChallenges']);
+    Route::get('/admin/challenges/{challengeId}', [AdminController::class, 'getChallengeDetails']);
+    Route::put('/admin/challenges/{challengeId}/status', [AdminController::class, 'updateChallengeStatus']);
+
+    /* Permanences */
+    Route::get('/admin/permanences/members', [PermanenceController::class, 'getAssociationMembers']);
+    Route::post('/admin/permanences/send-reminders', [PermanenceController::class, 'sendReminders']);
+    Route::get('/admin/permanences', [PermanenceController::class, 'getAllPermanences']);
+    Route::post('/admin/permanences', [PermanenceController::class, 'createPermanence']);
+    Route::put('/admin/permanences/{id}', [PermanenceController::class, 'updatePermanence']);
+    Route::delete('/admin/permanences/{id}', [PermanenceController::class, 'deletePermanence']);
+
+    /* Tournée des chambres */
+    Route::get('/admin/room-tours', [RoomTourController::class, 'getAllTours']);
+    Route::post('/admin/room-tours', [RoomTourController::class, 'createTour']);
+    Route::post('/admin/room-tours/{tourId}/toggle', [RoomTourController::class, 'toggleTour']);
+    Route::delete('/admin/room-tours/{tourId}', [RoomTourController::class, 'deleteTour']);
+    Route::get('/admin/room-tours/available-rooms', [RoomTourController::class, 'getAvailableRooms']);
+
+    /* Notifications */
+    Route::get('/admin/notifications/recipients', [NotificationController::class, 'getRecipientsData']);
+    Route::get('/admin/notifications', [NotificationController::class, 'getAdminNotifications']);
+    Route::get('/admin/notifications/{notificationId}', [NotificationController::class, 'getNotificationDetails']);
+    Route::post('/admin/notifications', [NotificationController::class, 'createNotification']);
+    Route::put('/admin/notifications/{id}/display', [NotificationController::class, 'toggleDisplay']);
+    Route::delete('/admin/notifications/{id}', [NotificationController::class, 'deleteNotification']);
+});
