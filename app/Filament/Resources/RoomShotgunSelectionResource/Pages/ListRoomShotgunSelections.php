@@ -197,7 +197,8 @@ class ListRoomShotgunSelections extends ListRecords
             DB::commit();
 
             Notification::make()
-                ->title('Chambre créée avec succès')
+                ->title('Réservation confirmée')
+                ->body('Nous reviendrons bientôt vers vous pour confirmer la réservation, et ferons de notre mieux pour respecter vos souhaits.')
                 ->success()
                 ->send();
         } catch (\Exception $e) {
