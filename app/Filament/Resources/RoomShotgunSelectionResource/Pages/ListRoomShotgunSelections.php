@@ -169,6 +169,27 @@ class ListRoomShotgunSelections extends ListRecords
                 return;
             }
 
+            $conflictingParticipants = [];
+            foreach ($emails as $email) {
+                $existingRoom = UserRoomShotgun::where('email', $email)->first();
+                if ($existingRoom) {
+                    $conflictingParticipants[] = $email;
+                }
+            }
+
+            if (!empty($conflictingParticipants)) {
+                DB::rollBack();
+                foreach ($conflictingParticipants as $conflictEmail) {
+                    Notification::make()
+                        ->title('Participant.e déjà dans une chambre')
+                        ->body("{$conflictEmail} a déjà été placé.e dans une autre chambre. Veuillez sélectionner une autre personne.")
+                        ->warning()
+                        ->duration(8000)
+                        ->send();
+                }
+                return;
+            }
+
             $partialRoom = PartialRoomShotgun::create([
                 'nb_personas' => $emails->count(),
                 'name' => $data['name'] ?? null,
@@ -200,6 +221,7 @@ class ListRoomShotgunSelections extends ListRecords
                 ->title('Réservation confirmée')
                 ->body('Nous reviendrons bientôt vers vous pour confirmer la réservation, et ferons de notre mieux pour respecter vos souhaits.')
                 ->success()
+                ->duration(10000)
                 ->send();
         } catch (\Exception $e) {
             DB::rollBack();

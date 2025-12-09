@@ -471,14 +471,10 @@ class RoomShotgunSelectionResource extends Resource
                         ->schema([
                             TextInput::make('firstNeighbourChoice')
                                 ->label('Nom de chambre de mon premier choix')
-                                ->default(fn() => $record->firstNeighbourChoice)
-                                ->dehydrated(false)
-                                ->disabled(),
+                                ->default(fn() => $record->firstNeighbourChoice),
                             TextInput::make('secondNeighbourChoice')
                                 ->label('Nom de chambre de mon deuxième choix')
-                                ->default(fn() => $record->secondNeighbourChoice)
-                                ->dehydrated(false)
-                                ->disabled(),
+                                ->default(fn() => $record->secondNeighbourChoice),
                         ]),
                 ]),
         ];
@@ -548,6 +544,27 @@ class RoomShotgunSelectionResource extends Resource
                 return;
             }
 
+            $conflictingParticipants = [];
+            foreach ($emails as $email) {
+                $existingRoom = UserRoomShotgun::where('email', $email)->first();
+                if ($existingRoom) {
+                    $conflictingParticipants[] = $email;
+                }
+            }
+
+            if (!empty($conflictingParticipants)) {
+                DB::rollBack();
+                foreach ($conflictingParticipants as $conflictEmail) {
+                    Notification::make()
+                        ->title('Participant.e déjà dans une chambre')
+                        ->body("{$conflictEmail} a déjà été placé.e dans une autre chambre. Veuillez sélectionner une autre personne.")
+                        ->warning()
+                        ->duration(8000)
+                        ->send();
+                }
+                return;
+            }
+
             foreach ($participantsData as $index => $participant) {
                 if (empty($participant['email'])) {
                     Log::warning('Participant email is empty at index ' . $index);
@@ -583,6 +600,7 @@ class RoomShotgunSelectionResource extends Resource
                 ->title('Réservation confirmée')
                 ->body('Nous reviendrons bientôt vers vous pour confirmer la réservation, et ferons de notre mieux pour respecter vos souhaits.')
                 ->success()
+                ->duration(10000)
                 ->send();
         } catch (\Exception $e) {
             DB::rollBack();
