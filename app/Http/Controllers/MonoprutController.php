@@ -21,7 +21,10 @@ class MonoprutController extends Controller
     {
         try {
             $room_id = $request->user['room_id'];
-            $articles = Monoprut::where('giver_room_id', '!=', $room_id)->where('receiver_room_id', null)->get();
+            $articles = Monoprut::where('giver_room_id', '!=', $room_id)
+                ->where('receiver_room_id', null)
+                ->orderByDesc('created_at')
+                ->get();
 
             $data = $articles->map(function ($article) {
                 return [
@@ -182,7 +185,9 @@ class MonoprutController extends Controller
             }
 
             $room = $user->room;
-            $articles = Monoprut::givenBy($room->id)->get();
+            $articles = Monoprut::givenBy($room->id)
+                ->orderByDesc('created_at')
+                ->get();
 
             $articles = $articles->map(function ($article) {
                 if ($article->receiver_room_id) {
@@ -237,6 +242,7 @@ class MonoprutController extends Controller
             $room = $user->room;
             $articles = Monoprut::receivedBy($room->id)
                 ->notRetrieved()
+                ->orderByDesc('created_at')
                 ->get();
 
             $articles = $articles->map(function ($article) {

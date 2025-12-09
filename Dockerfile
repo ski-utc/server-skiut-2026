@@ -13,7 +13,7 @@ FROM php:8.3-fpm-alpine
 RUN apk add --no-cache \
     nginx supervisor git zip unzip curl nano \
     libzip libpng oniguruma libxml2 \
-    libjpeg-turbo freetype icu-libs \
+    libjpeg-turbo freetype icu-libs ffmpeg \
     && apk add --no-cache --virtual .build-deps \
     autoconf g++ make \
     libzip-dev libpng-dev oniguruma-dev libxml2-dev \
