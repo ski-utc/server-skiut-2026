@@ -15,13 +15,13 @@ class AuthBackOfficeController extends Controller
     public function __construct()
     {
         $this->provider = new GenericProvider([
-            'clientId'                => config('services.oauth.client_id'),
-            'clientSecret'            => config('services.oauth.client_secret'),
-            'redirectUri'             => config('services.oauth.backoffice_redirect_uri', config('app.url') . '/skiutc/auth/back-office/callback'),
-            'urlAuthorize'            => config('services.oauth.authorize_url'),
-            'urlAccessToken'          => config('services.oauth.access_token_url'),
+            'clientId' => config('services.oauth.client_id'),
+            'clientSecret' => config('services.oauth.client_secret'),
+            'redirectUri' => config('services.oauth.backoffice_redirect_uri', config('app.url') . '/skiutc/auth/back-office/callback'),
+            'urlAuthorize' => config('services.oauth.authorize_url'),
+            'urlAccessToken' => config('services.oauth.access_token_url'),
             'urlResourceOwnerDetails' => config('services.oauth.owner_details_url'),
-            'scopes'                  => config('services.oauth.scopes'),
+            'scopes' => config('services.oauth.scopes'),
         ]);
     }
 
@@ -78,7 +78,8 @@ class AuthBackOfficeController extends Controller
             session(['admin' => $isAdmin]);
             session(['email' => $userDetails['email']]);
 
-            return redirect('/skiutc/back-office');
+            // return redirect('/skiutc/back-office');
+            return redirect('/skiutc/back-office/room-shotgun-selections');
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'authentification: ' . $e->getMessage());
             abort(401, 'Erreur d\'authentification : ' . $e->getMessage());
