@@ -1,22 +1,20 @@
 ### Verification à la main
 
--   [x] Verifier le mode hors ligne
--   [x] Verifier le vitesseDeGlisse en background
--   [x] Verifier les notifications
-    -   [x] classique (push)
-    -   [x] skinder
-    -   [x] monoprut
-    -   [x] perms
--   [x] Verifier que le refresh des access token fonctionne bien
--   [ ] Verifier les events à cheval sur 2 jours
+-   [ ] Verifier le mode hors ligne (POST)
+-   [ ] Verifier le vitesseDeGlisse en background
+-   Verifier les notifications
+    -   [ ] skinder
+    -   [ ] monoprut
+-   [ ] Verifier que le refresh des access token fonctionne bien
+-   [ ] Vérifier l'icone sur les notifications
+-   [ ] Setup les notifications sur l'app store
 
 ### Pas de deadline
 
 -   [ ] Probleme d'infra/cloudflare sur les photos
 -   [ ] mise en prod
--   [ ] Cronjob de notification pour les perms
 -   [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
--   [ ] réactiver tous les healthcheck laravel
+-   [ ] Secrets complexes pour pma, db ...
 -   [~] Update la charte RGPD, l'export, anonymisation et suppression des données
-    -   [ ] updater / verifier les fonctions du RGPD controller
+    -   [~] updater / verifier les fonctions du RGPD controller
 -   [~] Vérifier que l'uml est correct
