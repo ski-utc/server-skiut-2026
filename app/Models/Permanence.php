@@ -17,13 +17,13 @@ class Permanence extends Model
         'responsible_user_id',
         'location',
         'status',
-        'notified',
+        'notification_sent',
         'notes'
     ];
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',
-        'notified' => 'boolean'
+        'notification_sent' => 'boolean'
     ];
 
     /**
@@ -65,8 +65,8 @@ class Permanence extends Model
     public function shouldNotify()
     {
         return !$this->notified &&
-               $this->status === 'scheduled' &&
-               $this->start_datetime->subHour()->isPast();
+            $this->status === 'scheduled' &&
+            $this->start_datetime->subHour()->isPast();
     }
 
     /**

@@ -406,7 +406,7 @@ class PermanenceController extends Controller
                             ]
                         ]));
                         $permanence->update(['notification_sent' => true]);
-                        $permanence->save();
+
                         $notificationsSent++;
                     }
                 } catch (\Exception $e) {
