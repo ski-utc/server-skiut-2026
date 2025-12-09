@@ -46,8 +46,9 @@ class PlanningController extends Controller
 
                 $permanences = Permanence::forUser($user_id)
                     ->inPeriod($startDate, $endDate)
+                    ->with('responsibleUser')
                     ->get()
-                    ->map(function ($permanence) {
+                    ->map(function ($permanence) use ($user_id) {
                         return [
                             'id' => 'permanence_' . $permanence->id,
                             'activity' => $permanence->name,
@@ -62,9 +63,18 @@ class PlanningController extends Controller
                             'permanence_data' => [
                                 'id' => $permanence->id,
                                 'name' => $permanence->name,
-                                'description' => $permanence->description,
+                                'start_datetime' => $permanence->start_datetime->toISOString(),
+                                'end_datetime' => $permanence->end_datetime->toISOString(),
                                 'location' => $permanence->location,
-                                'status' => $permanence->status
+                                'status' => $permanence->status,
+                                'is_responsible' => $permanence->responsible_user_id === $user_id,
+                                'responsible' => [
+                                    'id' => $permanence->responsibleUser->id,
+                                    'name' => $permanence->responsibleUser->firstName . ' ' . $permanence->responsibleUser->lastName,
+                                    'email' => $permanence->responsibleUser->email
+                                ],
+                                'duration_minutes' => $permanence->getDurationInMinutes(),
+                                'notes' => $permanence->notes
                             ]
                         ];
                     });
@@ -73,11 +83,11 @@ class PlanningController extends Controller
             }
 
             $data = $allEvents->groupBy('date')
-                             ->map(function ($dayEvents) {
-                                 return $dayEvents->sortBy(function ($event) {
-                                     return $event['time']['start'];
-                                 })->values();
-                             });
+                ->map(function ($dayEvents) {
+                    return $dayEvents->sortBy(function ($event) {
+                        return $event['time']['start'];
+                    })->values();
+                });
 
             return response()->json([
                 'success' => true,

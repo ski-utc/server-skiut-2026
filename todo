@@ -1,26 +1,22 @@
 ### Verification à la main
 
--   [ ] Verifier le mode hors ligne
--   [ ] Verifier le vitesseDeGlisse en background
--   [ ] Verifier les notifications
-    -   [ ] classique (push)
-    -   [ ] skinder
-    -   [ ] monoprut
-    -   [ ] perms
--   [ ] vérifier schedule de notification des permanences
-
-### TODO fast
-
--   Modifier activities et planning pour n'avoir que 2 champs start et end en dateTime au cas où un évent dure jusqu'au lendemain
-    -   Adapter migration, models, controllers, seeder, factory, test, back-office et utilisation côté app
--   Verifier que le refresh des access token fonctionne bien
+-   [x] Verifier le mode hors ligne
+-   [x] Verifier le vitesseDeGlisse en background
+-   [x] Verifier les notifications
+    -   [x] classique (push)
+    -   [x] skinder
+    -   [x] monoprut
+    -   [x] perms
+-   [x] Verifier que le refresh des access token fonctionne bien
+-   [ ] Verifier les events à cheval sur 2 jours
 
 ### Pas de deadline
 
 -   [ ] Probleme d'infra/cloudflare sur les photos
 -   [ ] mise en prod
+-   [ ] Cronjob de notification pour les perms
 -   [ ] weathrAPI Key en secret (et autres config idem, vérifier que les .env sont clean)
 -   [ ] réactiver tous les healthcheck laravel
 -   [~] Update la charte RGPD, l'export, anonymisation et suppression des données
-    -   updater / verifier les fonctions du RGPD controller
+    -   [ ] updater / verifier les fonctions du RGPD controller
 -   [~] Vérifier que l'uml est correct
