@@ -1,12 +1,5 @@
 ### Verification à la main
 
--   [ ] Verifier le mode hors ligne (POST)
--   [ ] Verifier le vitesseDeGlisse en background
--   Verifier les notifications
-    -   [ ] skinder
-    -   [ ] monoprut
--   [ ] Verifier que le refresh des access token fonctionne bien
--   [ ] Vérifier l'icone sur les notifications
 -   [ ] Setup les notifications sur l'app store
 
 ### Pas de deadline
