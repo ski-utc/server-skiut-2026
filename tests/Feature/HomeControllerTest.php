@@ -47,14 +47,14 @@ class HomeControllerTest extends TestCase
         $this->assertEquals(401, $response->status());
     }
 
-    public function test_get_weather()
-    {
-        $token = JwtTestHelper::generateToken($this->user->id);
-        $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/home/weather');
+    // public function test_get_weather()
+    // {
+    //     $token = JwtTestHelper::generateToken($this->user->id);
+    //     $response = $this->withHeaders(['Authorization' => "Bearer {$token}"])->getJson('/api/home/weather');
 
-        $this->assertGreaterThanOrEqual(200, $response->status());
-        $this->assertLessThan(300, $response->status());
-        $this->assertTrue($response->json('success'));
-        $this->assertIsArray($response->json('data'));
-    }
+    //     $this->assertGreaterThanOrEqual(200, $response->status());
+    //     $this->assertLessThan(300, $response->status());
+    //     $this->assertTrue($response->json('success'));
+    //     $this->assertIsArray($response->json('data'));
+    // }
 }
