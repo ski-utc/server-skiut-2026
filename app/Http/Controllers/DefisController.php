@@ -324,8 +324,7 @@ class DefisController extends Controller
 
             Storage::disk('public')->delete($relativePath);
 
-            $proof->delete = true;
-            $proof->save();
+            $proof->delete();
 
             return response()->json([
                 'success' => true,
