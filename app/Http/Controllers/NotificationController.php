@@ -140,13 +140,13 @@ class NotificationController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function createNotification(Request $request)
+    public function createNotification(Request $request) // TODO : must optimize this request, looks tike it timeout easily
     {
         try {
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'type' => 'required|in:global,targeted,room_based',
+                'type' => 'required|in:global,targeted,room_based,asso,admin',
                 'target_users' => 'nullable|array',
                 'target_users.*' => 'exists:users,id',
                 'target_rooms' => 'nullable|array',
@@ -313,7 +313,7 @@ class NotificationController extends Controller
     public function getRecipientsData()
     {
         try {
-            $users = User::select('id', 'firstName', 'lastName', 'room_id', 'admin')
+            $users = User::select('id', 'firstName', 'lastName', 'room_id', 'admin', 'member')
                 ->orderBy('firstName')
                 ->get()
                 ->map(function ($user) {
@@ -321,7 +321,8 @@ class NotificationController extends Controller
                         'id' => $user->id,
                         'name' => $user->firstName . ' ' . $user->lastName,
                         'room_id' => $user->room_id,
-                        'admin' => $user->admin
+                        'admin' => $user->admin,
+                        'member' => $user->member
                     ];
                 });
 
@@ -356,6 +357,12 @@ class NotificationController extends Controller
 
             case 'room_based':
                 return User::whereIn('room_id', $notification->target_rooms ?? [])->pluck('id')->toArray();
+
+            case 'asso':
+                return User::where('member', true)->pluck('id')->toArray();
+
+            case 'admin':
+                return User::where('admin', true)->pluck('id')->toArray();
 
             default:
                 return [];
