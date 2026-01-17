@@ -27,18 +27,18 @@ class AuthController extends Controller
     public function __construct()
     {
         $this->provider = new GenericProvider([
-            'clientId'                => config('services.oauth.client_id'),
-            'clientSecret'            => config('services.oauth.client_secret'),
-            'redirectUri'             => config('services.oauth.redirect_uri'),
-            'urlAuthorize'            => config('services.oauth.authorize_url'),
-            'urlAccessToken'          => config('services.oauth.access_token_url'),
+            'clientId' => config('services.oauth.client_id'),
+            'clientSecret' => config('services.oauth.client_secret'),
+            'redirectUri' => config('services.oauth.redirect_uri'),
+            'urlAuthorize' => config('services.oauth.authorize_url'),
+            'urlAccessToken' => config('services.oauth.access_token_url'),
             'urlResourceOwnerDetails' => config('services.oauth.owner_details_url'),
-            'scopes'                  => config('services.oauth.scopes'),
+            'scopes' => config('services.oauth.scopes'),
         ]);
     }
 
     /**
-        * Handle the login of a user via OAuth2 (generate a session token and redirect to the SiMDE OAuth)
+     * Handle the login of a user via OAuth2 (generate a session token and redirect to the SiMDE OAuth)
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
@@ -49,7 +49,7 @@ class AuthController extends Controller
             $user_id = env('USER_ID');
             $user = User::find($user_id);
             if (!$user) {
-                return response()->json(['message' => 'Il faut au moins créer le user '.$user_id.' dans la base de données'], 400);
+                return response()->json(['message' => 'Il faut au moins créer le user ' . $user_id . ' dans la base de données'], 400);
             }
             try {
                 $accessTokenPayload = [
@@ -70,7 +70,7 @@ class AuthController extends Controller
                     'refresh_token' => $refreshToken,
                 ]);
             } catch (\Exception $e) {
-                return response()->json(['message' => 'Login error :'. $e->getMessage()], 400);
+                return response()->json(['message' => 'Login error :' . $e->getMessage()], 400);
             }
         }
 
@@ -95,7 +95,7 @@ class AuthController extends Controller
         $storedState = $request->session()->pull('oauth2state');
 
         if (!$request->has('state') || $request->get('state') !== $storedState) {
-            abort(400, 'Invalid state: '. $request->get('state') . ' VS ' . $storedState);
+            abort(400, 'Invalid state: ' . $request->get('state') . ' VS ' . $storedState);
         }
 
         if (!$request->has('code')) {
@@ -119,7 +119,8 @@ class AuthController extends Controller
             }
 
             if ($userDetails['provider'] != 'cas') {
-                $user::update('alumniOrExte', true);
+                $user->alumniOrExte = true;
+                $user->save();
             }
 
             $accessTokenPayload = [
@@ -159,14 +160,14 @@ class AuthController extends Controller
             $publicKey = config('services.crypt.public');
             $token = $request->bearerToken();
             if (!$token) {
-                return response()->json(['message' => "Refresh JWT absent pour l'authentification",'JWT_ERROR' => true], 400);
+                return response()->json(['message' => "Refresh JWT absent pour l'authentification", 'JWT_ERROR' => true], 400);
             }
             try {
                 $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
             } catch (ExpiredException) {
-                return response()->json(['message' => 'Refresh JWT expiré','JWT_ERROR' => true], 401);
+                return response()->json(['message' => 'Refresh JWT expiré', 'JWT_ERROR' => true], 401);
             } catch (SignatureInvalidException) {
-                return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé','JWT_ERROR' => true], 401);
+                return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé', 'JWT_ERROR' => true], 401);
             } catch (LogicException $e) {
                 return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
             } catch (UnexpectedValueException $e) {
@@ -232,7 +233,7 @@ class AuthController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des users infos: ' . $e->getMessage());
-            return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : '.$e], 401);
+            return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : ' . $e], 401);
         }
     }
 
