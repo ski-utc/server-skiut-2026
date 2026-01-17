@@ -59,15 +59,26 @@ class PrometheusMiddleware
 
         $duration = microtime(true) - $start;
 
+        $route = $request->route() ? $request->route()->uri() : $request->path();
+        // Normalize route: replace {param} with :param
+        $route = preg_replace('/\{[^}]+\}/', ':param', $route);
+
+        // Fallback for when route is not matched (e.g. 404)
+        if (!$request->route()) {
+            $route = 'other';
+        }
+
         $this->counter->inc([
             'status' => $response->getStatusCode(),
-            'path' => $request->path(),
+            'path' => $route, // Keeping label name 'path' for now but filling with route, or should I change label to 'route'? 
+            // The existing code defined labels as ['status', 'path', 'method']. 
+            // I should probably stick to the defined labels in the constructor or update the constructor too.
             'method' => $request->method()
         ]);
 
         $this->histogram->observe($duration, [
             'status' => $response->getStatusCode(),
-            'path' => $request->path(),
+            'path' => $route,
             'method' => $request->method()
         ]);
 

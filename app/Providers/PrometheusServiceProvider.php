@@ -21,4 +21,37 @@ class PrometheusServiceProvider extends ServiceProvider
             return new CollectorRegistry(new APC());
         });
     }
+    /**
+     * Bootstrap services.
+     */
+    public function boot()
+    {
+        $registry = $this->app->make(CollectorRegistry::class);
+
+        \Illuminate\Support\Facades\DB::listen(function (\Illuminate\Database\Events\QueryExecuted $query) use ($registry) {
+            $operation = 'other';
+            if (preg_match('/^(\w+)/', $query->sql, $matches)) {
+                $operation = strtolower($matches[1]);
+            }
+
+            $histogram = $registry->getOrRegisterHistogram(
+                'app',
+                'db_query_duration_seconds',
+                'Database query duration in seconds',
+                ['operation'],
+                [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5]
+            );
+
+            $histogram->observe($query->time / 1000, [$operation]);
+
+            $counter = $registry->getOrRegisterCounter(
+                'app',
+                'db_queries_total',
+                'Total database queries',
+                ['operation']
+            );
+
+            $counter->inc([$operation]);
+        });
+    }
 }
