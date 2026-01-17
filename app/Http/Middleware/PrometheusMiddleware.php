@@ -21,14 +21,14 @@ class PrometheusMiddleware
             'app',
             'http_requests_total',
             'Total number of HTTP requests',
-            ['status', 'path', 'method']
+            ['status', 'route', 'method']
         );
 
         $this->histogram = $registry->getOrRegisterHistogram(
             'app',
             'http_request_duration_seconds',
             'Duration of HTTP requests in seconds',
-            ['status', 'path', 'method'],
+            ['status', 'route', 'method'],
             [0.1, 0.3, 1.5, 10.0]
         );
 
@@ -70,15 +70,13 @@ class PrometheusMiddleware
 
         $this->counter->inc([
             'status' => $response->getStatusCode(),
-            'path' => $route, // Keeping label name 'path' for now but filling with route, or should I change label to 'route'? 
-            // The existing code defined labels as ['status', 'path', 'method']. 
-            // I should probably stick to the defined labels in the constructor or update the constructor too.
+            'route' => $route,
             'method' => $request->method()
         ]);
 
         $this->histogram->observe($duration, [
             'status' => $response->getStatusCode(),
-            'path' => $route,
+            'route' => $route,
             'method' => $request->method()
         ]);
 

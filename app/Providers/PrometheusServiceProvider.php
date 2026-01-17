@@ -6,7 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use Prometheus\CollectorRegistry;
 use Prometheus\Storage\APC;
 use Prometheus\Storage\InMemory;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Events\QueryExecuted;
 class PrometheusServiceProvider extends ServiceProvider
 {
     /**
@@ -28,7 +29,7 @@ class PrometheusServiceProvider extends ServiceProvider
     {
         $registry = $this->app->make(CollectorRegistry::class);
 
-        \Illuminate\Support\Facades\DB::listen(function (\Illuminate\Database\Events\QueryExecuted $query) use ($registry) {
+        DB::listen(function (QueryExecuted $query) use ($registry) {
             $operation = 'other';
             if (preg_match('/^(\w+)/', $query->sql, $matches)) {
                 $operation = strtolower($matches[1]);
