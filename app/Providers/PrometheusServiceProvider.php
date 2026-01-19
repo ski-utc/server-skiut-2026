@@ -2,12 +2,13 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Prometheus\CollectorRegistry;
 use Prometheus\Storage\APC;
 use Prometheus\Storage\InMemory;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Events\QueryExecuted;
+
 class PrometheusServiceProvider extends ServiceProvider
 {
     /**

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\RoomTour;
 use App\Models\RoomTourVisit;
 use App\Models\TourBinome;
 use App\Models\User;
-use App\Models\Notification;
 use App\Notifications\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
