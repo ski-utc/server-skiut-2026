@@ -6,6 +6,8 @@ use App\Models\RoomTour;
 use App\Models\RoomTourVisit;
 use App\Models\TourBinome;
 use App\Models\User;
+use App\Models\Notification;
+use App\Notifications\NewNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -144,6 +146,33 @@ class RoomTourController extends Controller
 
             if ($validated['activate'] ?? false) {
                 $tour->start();
+
+                $participants = User::where('member', false)->get();
+
+                $notification = Notification::createWithRecipients([
+                    'title' => 'La tournée des chambres commence !',
+                    'description' => "Préparez les animations ou l'apéro, les membres de Ski'UT vont passer dans votre chambre !\nVous pouvez suivre l'avancée de la tournée des chambres depuis la page d'accueil.",
+                    'sender_id' => null,
+                    'type' => 'targeted',
+                    'target_users' => $participants->pluck('id')->toArray(),
+                    'target_rooms' => [],
+                    'general' => true,
+                    'display' => true,
+                    'push_sent' => true
+                ], $participants->pluck('id')->toArray());
+
+                foreach ($participants as $user) {
+                    try {
+                        $user->notify(new NewNotification([
+                            'id' => $notification->id,
+                            'title' => 'La tournée des chambres commence !',
+                            'content' => "Préparez les animations ou l'apéro, les membres de Ski'UT vont passer dans votre chambre !\nVous pouvez suivre l'avancée de la tournée des chambres depuis la page d'accueil.",
+                        ]));
+                    } catch (\Exception $e) {
+                        Log::error('Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
+                    }
+                }
+
                 $message = 'Tournée activée avec succès';
             } else {
                 $tour->stop();

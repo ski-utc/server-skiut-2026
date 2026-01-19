@@ -43,7 +43,7 @@ class NewNotification extends Notification
         $customData = [];
 
         if ($this->notificationId) {
-            $customData['url'] = 'appInteg://notifications/' . $this->notificationId; // TODO : fix this
+            $customData['url'] = 'app-skiut-2026://notifications/' . $this->notificationId; // TODO : fix this
             $customData['notificationId'] = $this->notificationId;
             $customData['type'] = 'notification';
         }
