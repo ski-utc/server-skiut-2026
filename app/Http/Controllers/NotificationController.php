@@ -322,7 +322,7 @@ class NotificationController extends Controller
                         'name' => $user->firstName . ' ' . $user->lastName,
                         'room_id' => $user->room_id,
                         'admin' => $user->admin,
-                        'member' => $user->member
+                        'asso' => $user->member
                     ];
                 });
 
