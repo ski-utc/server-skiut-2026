@@ -35,6 +35,8 @@ opcache.validate_timestamps=0
 opcache.revalidate_freq=0
 EOF
 
+RUN echo "apc.enable_cli=1" > /usr/local/etc/php/conf.d/00-apcu-cli.ini
+
 RUN cat <<'EOF' > /usr/local/etc/php-fpm.d/www.conf
 pm = dynamic
 pm.max_children = 20
