@@ -43,7 +43,7 @@ class NewNotification extends Notification
         $customData = [];
 
         if ($this->notificationId) {
-            $customData['url'] = 'app-skiut-2026://notifications/' . $this->notificationId; // TODO : fix this
+            $customData['url'] = 'app-skiut-2026://notifications/' . $this->notificationId; // TODO : fix this, define an url in application so that a click on notification opens the notification pop-up
             $customData['notificationId'] = $this->notificationId;
             $customData['type'] = 'notification';
         }
