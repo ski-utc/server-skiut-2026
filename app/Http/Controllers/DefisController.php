@@ -212,7 +212,7 @@ class DefisController extends Controller
         $actualMediaType = in_array($file->getMimeType(), $allowedVideoTypes) ? 'video' : 'image';
 
         $isVideo = ($actualMediaType === 'video');
-        $extension = $isVideo ? '.mp4' : '.jpg';
+        $extension = $isVideo ? '.' . $file->guessExtension() : '.jpg';
         $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
 
         $maxSize = $isVideo ? (self::MAX_VIDEO_SIZE * $clientMultiplier) : self::MAX_IMAGE_SIZE;
@@ -245,6 +245,12 @@ class DefisController extends Controller
 
                 if ($result['success'] && $result['meetsRequirement']) {
                     Log::info("Compression vidéo défi {$defiId}: {$result['message']}");
+
+                    if (isset($result['finalPath'])) {
+                        $finalPath = $result['finalPath'];
+                        $storagePublicPath = storage_path('app/public/');
+                        $filePath = str_replace($storagePublicPath, '', $finalPath);
+                    }
                 } elseif (!$result['meetsRequirement']) {
                     Storage::disk('public')->delete($filePath);
 

@@ -77,4 +77,6 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+RUN chmod +x laravel-start.sh
+
+CMD ["/var/www/html/laravel-start.sh"]

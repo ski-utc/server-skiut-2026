@@ -52,7 +52,8 @@ class VideoCompressionService
                 'originalSize' => filesize($videoPath),
                 'compressedSize' => null,
                 'message' => 'FFmpeg non disponible sur le serveur',
-                'meetsRequirement' => filesize($videoPath) <= $targetSize
+                'meetsRequirement' => filesize($videoPath) <= $targetSize,
+                'finalPath' => $videoPath
             ];
         }
 
@@ -62,20 +63,22 @@ class VideoCompressionService
                 'originalSize' => 0,
                 'compressedSize' => null,
                 'message' => 'Fichier vidéo introuvable',
-                'meetsRequirement' => false
+                'meetsRequirement' => false,
+                'finalPath' => $videoPath
             ];
         }
 
         $originalSize = filesize($videoPath);
+        $isMp4 = strtolower(pathinfo($videoPath, PATHINFO_EXTENSION)) === 'mp4';
 
-        // Check if already meets requirement
-        if ($originalSize <= $targetSize) {
+        if ($originalSize <= $targetSize && $isMp4) {
             return [
                 'success' => true,
                 'originalSize' => $originalSize,
                 'compressedSize' => $originalSize,
-                'message' => 'Vidéo déjà conforme, compression non nécessaire',
-                'meetsRequirement' => true
+                'message' => 'Vidéo déjà conforme et au format MP4, compression non nécessaire',
+                'meetsRequirement' => true,
+                'finalPath' => $videoPath
             ];
         }
 
@@ -96,7 +99,8 @@ class VideoCompressionService
                 'originalSize' => $originalSize,
                 'compressedSize' => null,
                 'message' => 'Exception: ' . $e->getMessage(),
-                'meetsRequirement' => false
+                'meetsRequirement' => false,
+                'finalPath' => $videoPath
             ];
         }
     }
@@ -143,8 +147,13 @@ class VideoCompressionService
 
             // Check if we met the target size
             if ($compressedSize <= $targetSize && $compressedSize > 0) {
-                unlink($videoPath);
-                rename($tempPath, $videoPath);
+                $pathInfo = pathinfo($videoPath);
+                $finalPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . '.mp4';
+
+                if (file_exists($videoPath) && $videoPath !== $finalPath) {
+                    unlink($videoPath);
+                }
+                rename($tempPath, $finalPath);
 
                 $reduction = round(($originalSize - $compressedSize) / $originalSize * 100, 2);
 
@@ -153,7 +162,8 @@ class VideoCompressionService
                     'compressed_size' => $compressedSize,
                     'reduction_percent' => $reduction,
                     'attempt' => $index + 1,
-                    'quality_level' => $level
+                    'quality_level' => $level,
+                    'final_path' => $finalPath
                 ]);
 
                 return [
@@ -161,7 +171,8 @@ class VideoCompressionService
                     'originalSize' => $originalSize,
                     'compressedSize' => $compressedSize,
                     'message' => "Vidéo compressée: {$originalSize} → {$compressedSize} bytes (-{$reduction}%)",
-                    'meetsRequirement' => true
+                    'meetsRequirement' => true,
+                    'finalPath' => $finalPath
                 ];
             }
 

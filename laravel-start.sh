@@ -21,5 +21,7 @@ if [ ! -f "database/database.sqlite" ]; then
 fi
 php artisan migrate --force
 
-#php artisan serve           # Local (permet le hot-reload)
-exec apache2-foreground      # Production
+# php artisan serve            # Local (permet le hot-reload)
+# exec apache2-foreground      # Production sur Apache
+
+exec /usr/bin/supervisord -c /etc/supervisord.conf # Production Nginx + PHP-FPM
