@@ -5,40 +5,66 @@ namespace App\Http\Controllers;
 use App\Models\Challenge;
 use App\Models\ChallengeProof;
 use App\Models\User;
+use App\Services\VideoCompressionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class DefisController extends Controller
 {
     /**
-     * Récupère les défis (et le status selon le user)
+     * Maximum file size for images in bytes (5MB)
+     */
+    private const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+    /**
+     * Maximum file size for videos in bytes (15MB)
+     */
+    private const MAX_VIDEO_SIZE = 15 * 1024 * 1024;
+
+    /**
+     * Video compression service
+     */
+    protected VideoCompressionService $videoCompression;
+
+    /**
+     * Constructor
+     */
+    public function __construct(VideoCompressionService $videoCompression)
+    {
+        $this->videoCompression = $videoCompression;
+    }
+
+    /**
+     * Get the challenges for the connected user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getChallenges(Request $request)
     {
         try {
             $id = $request->user['id'];
-            $user = User::with('room')->where('id', $id)->first();
+            $user = User::with('room')->findOrFail($id);
 
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-            }
+            $userRoomId = $user->getRoomId();
 
-            $userRoomId = $user->roomID;
-
-            $challenges = Challenge::with(['challengeProofs' => function ($query) use ($userRoomId) {
-                $query->where('room_id', $userRoomId);
-            }])->get();
+            $challenges = Challenge::with([
+                'challengeProofs' => function ($query) use ($userRoomId) {
+                    $query->where('room_id', $userRoomId);
+                }
+            ])->get();
 
             $challengeData = $challenges->map(function ($challenge) use ($userRoomId) {
                 $proof = $challenge->challengeProofs->first();
 
                 $status = 'empty';
                 if ($proof) {
-                    if ($proof->valid && !$proof->delete) { // validé par admin
+                    if ($proof->valid && !$proof->delete) {
                         $status = 'done';
-                    } elseif ($proof->valid && $proof->delete) { // refusé par admin
+                    } elseif ($proof->valid && $proof->delete) {
                         $status = 'refused';
-                    } else { // en attente de validation
+                    } else {
                         $status = 'pending';
                     }
 
@@ -57,26 +83,27 @@ class DefisController extends Controller
                 'data' => $challengeData,
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : '.$e]);
+            Log::error('Erreur lors de la récupération des défis: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération des défis : ' . $e], 500);
         }
     }
 
     /**
-     * Récupère l'image de preuve d'un défi
+     * Get the media of a challenge proof (image or video)
+     * @param Request $request
+     * @param int $challengeId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
-    public function getProofImage(Request $request)
+    public function getProofMedia(Request $request, $challengeId)
     {
         try {
             $id = $request->user['id'];
-            $user = User::with('room')->where('id', $id)->first();
+            $user = User::with('room')->findOrFail($id);
 
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-            }
-            $userRoomId = $user->roomID;
+            $userRoomId = $user->getRoomId();
 
-            $defiId = $request->input('defiId');
-            $proof = ChallengeProof::where('challenge_id', $defiId)->where('room_id', $userRoomId)->first();
+            $proof = ChallengeProof::byChallenge($challengeId)->byRoom($userRoomId)->first();
 
             if (!$proof) {
                 return response()->json([
@@ -87,73 +114,193 @@ class DefisController extends Controller
 
             return response()->json([
                 'success' => true,
-                'image' => asset($proof->file),
+                'data' => [
+                    'media' => asset($proof->file),
+                    'mediaType' => $proof->media_type ?? 'image',
+                ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : '.$e]);
+            Log::error('Erreur lors de la récupération de la preuve de défi: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de la récupération de la preuve de défi : ' . $e], 500);
         }
     }
 
     /**
-     * Envoie une preuve d'un défi
+     * Helper to get the max upload size from php.ini in bytes
      */
-    public function uploadProofImage(Request $request)
+    private function getUploadMaxFilesize()
     {
+        $uploadMax = $this->parseSize(ini_get('upload_max_filesize'));
+        $postMax = $this->parseSize(ini_get('post_max_size'));
+        return min($uploadMax, $postMax);
+    }
+
+    private function parseSize($size)
+    {
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size);
+        $size = preg_replace('/[^0-9\.]/', '', $size);
+        if ($unit) {
+            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+        } else {
+            return round($size);
+        }
+    }
+
+    /**
+     * Get the max file size for a challenge proof
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function getMaxFileSize()
+    {
+        $clientMultiplier = config('video.client_upload_multiplier', 2.0);
+        $maxVideoSizeForClient = (int) (self::MAX_VIDEO_SIZE * $clientMultiplier); // Define a  factor of 2 because the server will compress the video
+
+        $phpLimit = $this->getUploadMaxFilesize();
+        $maxVideoSizeForClient = min($maxVideoSizeForClient, $phpLimit);
+        $maxImageSize = min(self::MAX_IMAGE_SIZE, $phpLimit);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'maxImageSize' => $maxImageSize,
+                'maxVideoSize' => $maxVideoSizeForClient
+            ]
+        ]);
+    }
+
+    /**
+     * Upload a challenge proof (image or video)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function uploadProofMedia(Request $request)
+    {
+        $clientMultiplier = config('video.client_upload_multiplier', 2.0);
+        $maxVideoKb = (int) ((self::MAX_VIDEO_SIZE * $clientMultiplier) / 1024);
+
+        $messages = [
+            'media.uploaded' => "Le fichier n'a pas pu être téléversé. Il dépasse probablement la taille maximale autorisée par le serveur (" . ini_get('upload_max_filesize') . ').',
+            'media.max' => 'Le fichier est trop volumineux.',
+            'media.mimes' => 'Format de fichier non supporté.',
+        ];
+
+        $validated = $request->validate([
+            'defiId' => 'required|integer|exists:challenges,id',
+            'media' => 'required|file|mimes:jpeg,png,gif,mp4,mov,avi|max:' . $maxVideoKb,
+            'mediaType' => 'nullable|string|in:image,video',
+        ], $messages);
+
         $id = $request->user['id'];
-        $user = User::with('room')->where('id', $id)->first();
+        $user = User::with('room')->findOrFail($id);
 
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-        }
-        $userRoomId = $user->roomID;
+        $userRoomId = $user->getRoomId();
 
-        $defiId = $request->input('defiId');
+        $defiId = $validated['defiId'];
+        $file = $request->file('media');
+        $mediaType = $validated['mediaType'] ?? 'image';
 
-        if (!$request->hasFile('image')) {
-            return response()->json(['success' => false, 'message' => 'Aucune image fournie'], 400);
-        }
+        $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $allowedVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+        $allowedTypes = array_merge($allowedImageTypes, $allowedVideoTypes);
 
-        $file = $request->file('image');
-
-        if (!$file->isValid() || !in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/gif'])) {
+        if (!$file->isValid() || !in_array($file->getMimeType(), $allowedTypes)) {
             return response()->json(['success' => false, 'message' => 'Fichier invalide ou non pris en charge'], 400);
         }
 
+        $actualMediaType = in_array($file->getMimeType(), $allowedVideoTypes) ? 'video' : 'image';
+
+        $isVideo = ($actualMediaType === 'video');
+        $extension = $isVideo ? '.' . $file->guessExtension() : '.jpg';
+        $folder = $isVideo ? 'defiProofVideos' : 'defiProofImages';
+
+        $maxSize = $isVideo ? (self::MAX_VIDEO_SIZE * $clientMultiplier) : self::MAX_IMAGE_SIZE;
+        if ($file->getSize() > $maxSize) {
+            $maxSizeText = $isVideo ? '15MB' : '5MB';
+            return response()->json(['success' => false, 'message' => "Fichier trop volumineux (max: {$maxSizeText})"], 400);
+        }
+
         try {
-            $filePath = $file->storeAs('defiProofImages', "challenge_{$defiId}_room_{$userRoomId}.jpg", 'public');
-            ChallengeProof::create(
-                [
-                    'file' => 'storage/' . $filePath,
-                    'challenge_id' => $defiId,
-                    'room_id' => $userRoomId,
-                    'user_id' => $id
-                ]
-            );
+
+            $existingProof = ChallengeProof::byChallenge($defiId)
+                ->byRoom($userRoomId)
+                ->first();
+
+            if ($existingProof) {
+                $oldPath = str_replace('storage/', '', $existingProof->file);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $existingProof->delete();
+            }
+
+            $filename = "challenge_{$defiId}_room_{$userRoomId}_" . time() . $extension;
+            $filePath = $file->storeAs($folder, $filename, 'public');
+
+            if ($isVideo) {
+                $fullPath = storage_path('app/public/' . $filePath);
+                $targetSize = config('video.compression.target_size_mb', 10) * 1024 * 1024;
+                $result = $this->videoCompression->compress($fullPath, $targetSize);
+
+                if ($result['success'] && $result['meetsRequirement']) {
+                    Log::info("Compression vidéo défi {$defiId}: {$result['message']}");
+
+                    if (isset($result['finalPath'])) {
+                        $finalPath = $result['finalPath'];
+                        $storagePublicPath = storage_path('app/public/');
+                        $filePath = str_replace($storagePublicPath, '', $finalPath);
+                    }
+                } elseif (!$result['meetsRequirement']) {
+                    Storage::disk('public')->delete($filePath);
+
+                    Log::warning("Vidéo défi {$defiId} trop volumineuse après compression", [
+                        'original_size' => $result['originalSize'],
+                        'message' => $result['message']
+                    ]);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vidéo trop volumineuse. Veuillez utiliser une vidéo plus courte ou de plus faible qualité.'
+                    ], 413);
+                } else {
+                    Log::warning("Compression vidéo défi {$defiId} échouée: {$result['message']}");
+                }
+            }
+
+            ChallengeProof::create([
+                'file' => 'storage/' . $filePath,
+                'media_type' => $actualMediaType,
+                'challenge_id' => $defiId,
+                'room_id' => $userRoomId,
+                'user_id' => $id
+            ]);
 
             return response()->json(['success' => true, 'message' => 'Défi envoyé avec succès !']);
         } catch (\Exception $e) {
+            Log::error('Erreur lors du téléversement du défi: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Erreur lors du téléversement du défi : ' . $e->getMessage()], 500);
         }
     }
 
     /**
-     * Supprime une preuve d'un défi
+     * Delete a challenge proof (image or video)
+     * @param Request $request
+     * @param int $challengeId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
-    public function deleteProofImage(Request $request)
+    public function deleteProofMedia(Request $request, $challengeId)
     {
+
         try {
             $id = $request->user['id'];
-            $user = User::with('room')->where('id', $id)->first();
+            $user = User::with('room')->findOrFail($id);
 
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
-            }
+            $userRoomId = $user->getRoomId();
 
-            $userRoomId = $user->roomID;
-
-            $defiId = $request->input('defiId');
-            $proof = ChallengeProof::where('challenge_id', $defiId)
-                ->where('room_id', $userRoomId)
+            $proof = ChallengeProof::byChallenge($challengeId)
+                ->byRoom($userRoomId)
                 ->first();
 
             if (!$proof) {
@@ -163,34 +310,34 @@ class DefisController extends Controller
                 ]);
             }
 
-            $photoPath = $proof->file;
+            $mediaPath = $proof->file;
 
-            if (!$photoPath) {
+            if (!$mediaPath) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pas de photo associée à ce défi',
+                    'message' => 'Pas de média associé à ce défi',
                 ]);
             }
 
-            $relativePath = str_replace('storage/', '', $photoPath);
+            $relativePath = str_replace('storage/', '', $mediaPath);
 
             if (!Storage::disk('public')->exists($relativePath)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Photo introuvable dans le stockage',
+                    'message' => 'Média introuvable dans le stockage',
                 ]);
             }
 
             Storage::disk('public')->delete($relativePath);
 
-            $proof->delete = true;
             $proof->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Défi supprimée avec succès',
+                'message' => 'Défi supprimé avec succès',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la suppression de la preuve de défi: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue : ' . $e->getMessage(),

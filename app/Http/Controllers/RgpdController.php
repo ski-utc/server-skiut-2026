@@ -6,27 +6,37 @@ use App\Models\Anecdote;
 use App\Models\AnecdotesLike;
 use App\Models\AnecdotesWarn;
 use App\Models\ChallengeProof;
+use App\Models\PerformanceSession;
+use App\Models\Permanence;
 use App\Models\PushToken;
 use App\Models\Room;
 use App\Models\SkinderLike;
+use App\Models\TourBinome;
+use App\Models\TransportUser;
 use App\Models\User;
-use App\Models\UserPerformance;
+use App\Models\UserNotification;
+use App\Models\UserRoomShotgun;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
 class RgpdController extends Controller
 {
     /**
-     * Anonymise les données d'un.e utilisateur.ice spécifique
+     * Anonymize the data of a specific user.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function anonymizeMyData(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
@@ -34,28 +44,21 @@ class RgpdController extends Controller
 
             DB::beginTransaction();
 
-            // Anonymiser l'utilisateur
-            $user->update([
-                'firstName' => 'Utilisateur',
-                'lastName' => 'Anonymisé',
-                'email' => 'anonyme_' . $userId . '@etu.utc.fr',
-                'cas' => 'anonyme_' . $userId,
-                'location' => null
-            ]);
+            $user->anonymize();
 
-            // Anonymiser les anecdotes
-            Anecdote::where('userId', $userId)->update([
+            Anecdote::where('user_id', $user_id)->update([
                 'text' => 'Contenu anonymisé'
             ]);
 
-            // Anonymiser les performances
-            UserPerformance::where('user_id', $userId)->delete();
+            PerformanceSession::where('user_id', $user_id)->delete();
+            PushToken::where('user_id', $user_id)->delete();
+            UserNotification::where('user_id', $user_id)->delete();
+            UserRoomShotgun::where('email', $user->email)->delete();
+            TransportUser::where('user_id', $user_id)->delete();
+            TourBinome::where('member_1_id', $user_id)->orWhere('member_2_id', $user_id)->delete();
+            Permanence::where('responsible_user_id', $user_id)->delete();
 
-            // Supprimer les tokens push
-            PushToken::where('user_id', $userId)->delete();
-
-            // Anonymiser les preuves de défis
-            $proofs = ChallengeProof::where('user_id', $userId)->get();
+            $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
                     $relativePath = str_replace('storage/', '', $proof->file);
@@ -66,8 +69,7 @@ class RgpdController extends Controller
                 $proof->delete();
             }
 
-            // Anonymiser la chambre si l'utilisateur en est responsable
-            $room = Room::where('userID', $userId)->first();
+            $room = Room::where('user_id', $user_id)->first();
             if ($room) {
                 $room->update([
                     'name' => 'Chambre anonymisée',
@@ -75,7 +77,6 @@ class RgpdController extends Controller
                     'passions' => json_encode([])
                 ]);
 
-                // Supprimer la photo de la chambre
                 if ($room->photoPath) {
                     $relativePath = str_replace('storage/', '', $room->photoPath);
                     if (Storage::disk('public')->exists($relativePath)) {
@@ -85,15 +86,10 @@ class RgpdController extends Controller
                 }
             }
 
-            // Supprimer les likes Skinder
-            SkinderLike::where('room_likeur', $user->roomID)->delete();
-            SkinderLike::where('room_liked', $user->roomID)->delete();
-
-            // Supprimer les likes d'anecdotes
-            AnecdotesLike::where('user_id', $userId)->delete();
-
-            // Supprimer les avertissements d'anecdotes
-            AnecdotesWarn::where('user_id', $userId)->delete();
+            SkinderLike::where('room_liker_id', $user->room_id)->delete();
+            SkinderLike::where('room_liked_id', $user->room_id)->delete();
+            AnecdotesLike::where('user_id', $user_id)->delete();
+            AnecdotesWarn::where('user_id', $user_id)->delete();
 
             DB::commit();
 
@@ -101,9 +97,9 @@ class RgpdController extends Controller
                 'success' => true,
                 'message' => 'Vos données ont été anonymisées avec succès'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de l\'anonymisation: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'anonymisation : ' . $e->getMessage()
@@ -112,13 +108,16 @@ class RgpdController extends Controller
     }
 
     /**
-     * Supprime toutes les données d'un.e utilisateur.ice spécifique
+     * Delete all the data of a specific user.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteMyData(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::find($userId);
+            $user_id = $request->user['id'];
+            $user = User::find($user_id);
 
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
@@ -126,8 +125,7 @@ class RgpdController extends Controller
 
             DB::beginTransaction();
 
-            // Supprimer les preuves de défis et leurs fichiers
-            $proofs = ChallengeProof::where('user_id', $userId)->get();
+            $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
                     $relativePath = str_replace('storage/', '', $proof->file);
@@ -136,10 +134,9 @@ class RgpdController extends Controller
                     }
                 }
             }
-            ChallengeProof::where('user_id', $userId)->delete();
+            ChallengeProof::where('user_id', $user_id)->delete();
 
-            // Supprimer la chambre et sa photo si l'utilisateur en est responsable
-            $room = Room::where('userID', $userId)->first();
+            $room = Room::where('user_id', $user_id)->first();
             if ($room) {
                 if ($room->photoPath) {
                     $relativePath = str_replace('storage/', '', $room->photoPath);
@@ -150,16 +147,22 @@ class RgpdController extends Controller
                 $room->delete();
             }
 
-            // Supprimer toutes les données liées
-            Anecdote::where('userId', $userId)->delete();
-            UserPerformance::where('user_id', $userId)->delete();
-            PushToken::where('user_id', $userId)->delete();
-            SkinderLike::where('room_likeur', $user->roomID)->delete();
-            SkinderLike::where('room_liked', $user->roomID)->delete();
-            AnecdotesLike::where('user_id', $userId)->delete();
-            AnecdotesWarn::where('user_id', $userId)->delete();
+            Anecdote::where('user_id', $user_id)->delete();
+            PerformanceSession::where('user_id', $user_id)->delete();
+            PushToken::where('user_id', $user_id)->delete();
+            AnecdotesLike::where('user_id', $user_id)->delete();
+            AnecdotesWarn::where('user_id', $user_id)->delete();
+            UserNotification::where('user_id', $user_id)->delete();
+            UserRoomShotgun::where('email', $user->email)->delete();
+            TransportUser::where('user_id', $user_id)->delete();
+            TourBinome::where('member_1_id', $user_id)->orWhere('member_2_id', $user_id)->delete();
+            Permanence::where('responsible_user_id', $user_id)->delete();
 
-            // Supprimer l'utilisateur
+            if ($user->room_id) {
+                SkinderLike::where('room_liker_id', $user->room_id)->delete();
+                SkinderLike::where('room_liked_id', $user->room_id)->delete();
+            }
+
             $user->delete();
 
             DB::commit();
@@ -168,9 +171,9 @@ class RgpdController extends Controller
                 'success' => true,
                 'message' => 'Vos données ont été supprimées avec succès'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de la suppression: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
@@ -179,35 +182,34 @@ class RgpdController extends Controller
     }
 
     /**
-     * Récupère un zip avec toutes les données d'un.e utilisateur.ice
+     * Get a zip with all the data of a user.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function exportMyData(Request $request)
     {
         try {
-            $userId = $request->user['id'];
-            $user = User::with(['anecdotes', 'performances', 'room'])->find($userId);
+            $user_id = $request->user['id'];
+            $user = User::with(['anecdotes', 'room'])->find($user_id);
 
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'Utilisateur non trouvé'], 404);
             }
 
-            // Créer un dossier temporaire pour les données
-            $tempDir = storage_path('app/temp/user_' . $userId . '_' . time());
+            $tempDir = storage_path('app/temp/user_' . $user_id . '_' . time());
             if (!file_exists($tempDir)) {
                 mkdir($tempDir, 0755, true);
             }
 
-            // Créer le fichier texte avec les données
             $dataContent = $this->formatUserData($user);
             file_put_contents($tempDir . '/mes_donnees.txt', $dataContent);
 
-            // Copier les photos
             $photosDir = $tempDir . '/photos';
             if (!file_exists($photosDir)) {
                 mkdir($photosDir, 0755, true);
             }
 
-            // Copier la photo de la chambre
             if ($user->room && $user->room->photoPath) {
                 $relativePath = str_replace('storage/', '', $user->room->photoPath);
                 $roomPhotoPath = storage_path('app/public/' . $relativePath);
@@ -216,8 +218,7 @@ class RgpdController extends Controller
                 }
             }
 
-            // Copier les photos des preuves de défis
-            $proofs = ChallengeProof::where('user_id', $userId)->get();
+            $proofs = ChallengeProof::where('user_id', $user_id)->get();
             foreach ($proofs as $index => $proof) {
                 if ($proof->file) {
                     $relativePath = str_replace('storage/', '', $proof->file);
@@ -229,26 +230,32 @@ class RgpdController extends Controller
                 }
             }
 
-            // Créer le zip
-            $zipPath = storage_path('app/temp/mes_infos_' . Carbon::now()->format('Y-m-d-H-i-s') . '.zip');
+            $this->cleanOldZipFiles();
+
+            $zipFilename = 'mes_infos_' . Carbon::now()->format('Y-m-d-H-i-s') . '.zip';
+            $zipPath = storage_path('app/temp/' . $zipFilename);
             $zip = new ZipArchive();
             if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
                 $this->addFolderToZip($zip, $tempDir, '');
                 $zip->close();
 
-                // Nettoyer le dossier temporaire
                 $this->deleteDirectory($tempDir);
 
-                // Retourner le fichier zip
-                return response()->download($zipPath)->deleteFileAfterSend(true);
+                $response = new BinaryFileResponse($zipPath);
+                $response->headers->set('Content-Type', 'application/zip');
+                $response->headers->set('Content-Disposition', 'attachment; filename="' . $zipFilename . '"');
+
+                $response->deleteFileAfterSend(true);
+
+                return $response;
             } else {
                 return response()->json([
                     'success' => false,
                     'message' => 'Erreur lors de la création du fichier zip'
                 ], 500);
             }
-
         } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'export: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'export : ' . $e->getMessage()
@@ -257,12 +264,14 @@ class RgpdController extends Controller
     }
 
     /**
-     * Anonymise toutes les données de tou.te.s les utilisateur.ice.s (nécessite la clé SiMDE)
+     * Anonymize all the data of all the users (requires the SiMDE key).
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function anonymizeAllData(Request $request)
     {
         try {
-            // Vérifier la clé SiMDE
             $simdeKey = $request->input('simde_key');
             if ($simdeKey !== env('SIMDE_KEY')) {
                 return response()->json([
@@ -273,28 +282,15 @@ class RgpdController extends Controller
 
             DB::beginTransaction();
 
-            // Anonymiser tou.te.s les utilisateur.ice.s
             $users = User::all();
             foreach ($users as $user) {
-                $user->update([
-                    'firstName' => 'Utilisateur',
-                    'lastName' => 'Anonymisé',
-                    'email' => 'anonyme_' . $user->id . '@etu.utc.fr',
-                    'cas' => 'anonyme_' . $user->id,
-                    'location' => null
-                ]);
+                $user->anonymize();
             }
 
-            // Anonymiser toutes les anecdotes
             Anecdote::query()->update(['text' => 'Contenu anonymisé']);
-
-            // Supprimer toutes les performances
-            UserPerformance::query()->delete();
-
-            // Supprimer tous les tokens push
+            PerformanceSession::query()->delete();
             PushToken::query()->delete();
 
-            // Supprimer toutes les preuves de défis et leurs fichiers
             $proofs = ChallengeProof::all();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
@@ -315,7 +311,6 @@ class RgpdController extends Controller
                 ]);
             }
 
-            // Supprimer toutes les photos de chambres
             $rooms = Room::all();
             foreach ($rooms as $room) {
                 if ($room->photoPath) {
@@ -327,7 +322,6 @@ class RgpdController extends Controller
                 }
             }
 
-            // Supprimer tous les likes et avertissements
             SkinderLike::query()->delete();
             AnecdotesLike::query()->delete();
             AnecdotesWarn::query()->delete();
@@ -338,9 +332,9 @@ class RgpdController extends Controller
                 'success' => true,
                 'message' => 'Toutes les données ont été anonymisées avec succès'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de l\'anonymisation globale: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de l\'anonymisation globale : ' . $e->getMessage()
@@ -349,12 +343,14 @@ class RgpdController extends Controller
     }
 
     /**
-     * Supprime toutes les données de tou.te.s les utilisateur.ice.s (nécessite la clé SiMDE)
+     * Delete all the data of all the users (requires the SiMDE key).
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function deleteAllData(Request $request)
     {
         try {
-            // Vérifier la clé SiMDE
             $simdeKey = $request->input('simde_key');
             if ($simdeKey !== env('SIMDE_KEY')) {
                 return response()->json([
@@ -365,7 +361,6 @@ class RgpdController extends Controller
 
             DB::beginTransaction();
 
-            // Supprimer toutes les preuves de défis et leurs fichiers
             $proofs = ChallengeProof::all();
             foreach ($proofs as $proof) {
                 if ($proof->file) {
@@ -376,7 +371,6 @@ class RgpdController extends Controller
                 }
             }
 
-            // Supprimer toutes les photos de chambres
             $rooms = Room::all();
             foreach ($rooms as $room) {
                 if ($room->photoPath) {
@@ -387,10 +381,9 @@ class RgpdController extends Controller
                 }
             }
 
-            // Supprimer toutes les données
             User::query()->delete();
             Anecdote::query()->delete();
-            UserPerformance::query()->delete();
+            PerformanceSession::query()->delete();
             PushToken::query()->delete();
             ChallengeProof::query()->delete();
             Room::query()->delete();
@@ -404,9 +397,9 @@ class RgpdController extends Controller
                 'success' => true,
                 'message' => 'Toutes les données ont été supprimées avec succès'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Erreur lors de la suppression globale: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la suppression globale : ' . $e->getMessage()
@@ -415,7 +408,9 @@ class RgpdController extends Controller
     }
 
     /**
-     * Formate les données utilisateur.ice pour l'export
+     * Format the user data for the export.
+     * @param User $user
+     * @return string
      */
     private function formatUserData($user)
     {
@@ -425,14 +420,12 @@ class RgpdController extends Controller
         $content .= 'Nom: ' . $user->lastName . "\n";
         $content .= 'Email: ' . $user->email . "\n";
         $content .= 'CAS: ' . $user->cas . "\n";
-        $content .= 'Chambre ID: ' . $user->roomID . "\n";
-        $content .= 'Localisation: ' . ($user->location ?? 'Non renseignée') . "\n";
+        $content .= 'Chambre ID: ' . $user->room_id . "\n";
         $content .= 'Admin: ' . ($user->admin ? 'Oui' : 'Non') . "\n";
         $content .= 'Alumni/Externe: ' . ($user->alumniOrExte ? 'Oui' : 'Non') . "\n";
         $content .= 'Date de création: ' . $user->created_at . "\n";
         $content .= 'Dernière modification: ' . $user->updated_at . "\n\n";
 
-        // Données de la chambre
         if ($user->room) {
             $content .= "=== DONNÉES DE LA CHAMBRE ===\n";
             $content .= 'ID Chambre: ' . $user->room->id . "\n";
@@ -444,7 +437,6 @@ class RgpdController extends Controller
             $content .= 'Points totaux: ' . $user->room->totalPoints . "\n\n";
         }
 
-        // Anecdotes
         if ($user->anecdotes->count() > 0) {
             $content .= "=== ANECDOTES ===\n";
             foreach ($user->anecdotes as $anecdote) {
@@ -457,14 +449,25 @@ class RgpdController extends Controller
             }
         }
 
-        // Performances
-        if ($user->performances) {
-            $content .= "=== PERFORMANCES ===\n";
-            $content .= 'Vitesse max: ' . $user->performances->max_speed . "\n";
-            $content .= 'Distance totale: ' . $user->performances->total_distance . "\n\n";
+        $performanceSessions = PerformanceSession::where('user_id', $user->id)->get();
+        if ($performanceSessions->count() > 0) {
+            $content .= "=== SESSIONS DE PERFORMANCE ===\n";
+            $content .= 'Nombre de sessions: ' . $performanceSessions->count() . "\n";
+            $content .= 'Vitesse max globale: ' . $performanceSessions->max('max_speed') . " km/h\n";
+            $content .= 'Distance totale: ' . $performanceSessions->sum('distance') . " m\n";
+            $content .= 'Durée totale: ' . $performanceSessions->sum('duration') . " s\n\n";
+
+            foreach ($performanceSessions as $index => $session) {
+                $content .= '--- Session ' . ($index + 1) . " ---\n";
+                $content .= 'ID Session: ' . $session->session_id . "\n";
+                $content .= 'Vitesse max: ' . $session->max_speed . " km/h\n";
+                $content .= 'Vitesse moyenne: ' . $session->average_speed . " km/h\n";
+                $content .= 'Distance: ' . $session->distance . " m\n";
+                $content .= 'Durée: ' . $session->duration . " s\n";
+                $content .= 'Date: ' . $session->created_at . "\n\n";
+            }
         }
 
-        // Preuves de défis
         $proofs = ChallengeProof::where('user_id', $user->id)->get();
         if ($proofs->count() > 0) {
             $content .= "=== PREUVES DE DÉFIS ===\n";
@@ -482,7 +485,11 @@ class RgpdController extends Controller
     }
 
     /**
-     * Ajoute un dossier au zip
+     * Add a folder to the zip.
+     * @param ZipArchive $zip
+     * @param string $folder
+     * @param string $relativePath
+     * @return void
      */
     private function addFolderToZip($zip, $folder, $relativePath)
     {
@@ -502,7 +509,9 @@ class RgpdController extends Controller
     }
 
     /**
-     * Supprime un dossier et son contenu (récursif)
+     * Delete a folder and its content (recursive).
+     * @param string $dir
+     * @return void
      */
     private function deleteDirectory($dir)
     {
@@ -520,5 +529,26 @@ class RgpdController extends Controller
             }
         }
         rmdir($dir);
+    }
+
+    /**
+     * Clean old zip files (older than 1 hour) from temp directory.
+     * @return void
+     */
+    private function cleanOldZipFiles()
+    {
+        $tempPath = storage_path('app/temp');
+        if (!is_dir($tempPath)) {
+            return;
+        }
+
+        $zipFiles = glob($tempPath . '/mes_infos_*.zip');
+        $oneHourAgo = time() - 3600;
+
+        foreach ($zipFiles as $file) {
+            if (file_exists($file) && filemtime($file) < $oneHourAgo) {
+                @unlink($file);
+            }
+        }
     }
 }

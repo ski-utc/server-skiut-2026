@@ -311,8 +311,8 @@ S'il y a peut-être un point important à mentionner c'est que grâce au middlew
 
 ---
 
-### **11. Vitesse de glisse (UserPerformanceController)**  
-- `/update-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
+### **11. Vitesse de glisse (PerformanceController)**  
+- `/create-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
 - `/classement-performances` : Renvoie le classement des perfomances user-vitesse
 
 ---
@@ -339,7 +339,6 @@ Elle s'occupe de :
 
 Pour plus d'informations, tu peux voir le fichier .gitlab-ci.yml
 
-
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
 
@@ -347,9 +346,9 @@ Dans cette version, veille à bien passer le serveur en production, le bypass du
 
 Ensuite, créé de nouvelles clés de chiffrement (le serveur ne pouvant tourner sans, on en a laissé dans le repo, mais il faut éviter d'utiliser les mêmes sur le serveur (sinon tout le monde peut chiffrer ses requêtes et se faire passer pour qlq d'autre)) : 
 ```sh
-mkdir -p storage/app/public storage/app/private
-openssl genrsa -out storage/app/private/private.pem 2048
-openssl rsa -in storage/app/private/private.pem -pubout -out storage/app/private/public.pem
+mkdir -p storage/app/public storage/app/private/keys
+openssl genrsa -out storage/app/private/keys/private.pem 2048
+openssl rsa -in storage/app/private/keys/private.pem -pubout -out storage/app/private/keys/public.pem
 ```
 
 Une fois ça fait, il va falloir préparer des routes pour éxecuter des commandes. En fait le SIMDE ne donne que des accès SFTP et SSH, mais en SSH on a des droits limités. Du coup pour la plupart des commandes tu auras deux solutions : 

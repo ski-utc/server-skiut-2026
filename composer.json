@@ -6,19 +6,24 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "fakerphp/faker": "^1.24",
+        "filament/filament": "^3.2",
+        "filament/spatie-laravel-settings-plugin": "^3.3",
         "guzzlehttp/guzzle": "^7.9",
         "illuminate/support": "*",
+        "keepsuit/laravel-opentelemetry": "^1.15",
+        "laravel-notification-channels/expo": "^2.1",
         "laravel/framework": "^11.9",
         "laravel/passport": "^12.3",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "league/oauth2-client": "^2.7",
-        "promphp/prometheus_client_php": "^2.14"
+        "promphp/prometheus_client_php": "^2.14",
+        "spatie/laravel-health": "^1.34"
     },
     "require-dev": {
         "enlightn/security-checker": "^2.0",
-        "fakerphp/faker": "^1.23",
         "firebase/php-jwt": "^6.11",
         "friendsofphp/php-cs-fixer": "^3.84",
         "laravel/pint": "^1.13",
@@ -43,7 +48,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -68,7 +74,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     },
     "minimum-stability": "stable",

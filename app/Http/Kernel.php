@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     protected $middleware = [
+        \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PrometheusMiddleware::class,
     ];
@@ -40,6 +41,6 @@ class Kernel extends HttpKernel
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        //'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        //'admin' => \App\Http\Middleware\EnsureAdminTokenIsValid::class,
     ];
 }

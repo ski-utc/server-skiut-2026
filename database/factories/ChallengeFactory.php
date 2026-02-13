@@ -4,9 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Challenge>
- */
 class ChallengeFactory extends Factory
 {
     /**
@@ -23,7 +20,7 @@ class ChallengeFactory extends Factory
             'Photo avec un/une mono ESF' => 10,
             'Faire le plus beau dessin de pipi dans la neige' => 15,
             'Sauter du télésiège' => 20,
-            'Se raser les cheveux' => 5,0,
+            'Se raser les cheveux' => 5,
             "Boire une biere avant l'ouverture des pistes (bière du p'tit dej)" => 25,
             'Faire une chorégraphie en équipe en ski (ski sychronisé)' => 15,
             'Présentation Top Chef du repas à partir du pack bouffe' => 10,
@@ -52,7 +49,7 @@ class ChallengeFactory extends Factory
             'Se prendre un sapin en ski/snow' => 20,
             'Se faire passer pour un mono de ski avec un accent marseillais' => 15,
             'Descendre une piste sur son matelas' => 70,
-            'Dépasser les 10,0,km/h de vitesse max sur Strava' => 30,
+            'Dépasser les 10 km/h de vitesse max sur Strava' => 30,
             'Prendre une photo avec le charlie des pistes' => 25,
             'Faire un petit dej au lit à la team anim et à la team info' => 10,
             'Aller se plaindre que ça bug à la team info' => -5,
@@ -73,21 +70,12 @@ class ChallengeFactory extends Factory
             'Payer la tournée à la team info' => 20,
         ];
 
-        static $index = 0;    // index statique pour éviter les doublons
-        $challengeKeys = array_keys($challenges);
-
-        if ($index >= count($challengeKeys)) {
-            $challenge = 'Défi personnalisé ' . ($index + 1);    // Si on a utilisé tous les défis, on génère des défis uniques
-            $points = fake()->numberBetween(50, 500);
-        } else {
-            $challenge = $challengeKeys[$index];
-            $points = $challenges[$challenge];
-        }
-
-        $index++;
+        $challengeArray = array_rand($challenges);
+        $title = $challengeArray;
+        $points = $challenges[$title];
 
         return [
-            'title' => $challenge,
+            'title' => $title,
             'nbPoints' => $points,
         ];
     }

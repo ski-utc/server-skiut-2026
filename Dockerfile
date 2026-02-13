@@ -1,62 +1,82 @@
 # Stage 1 — Frontend build
-FROM node:18 AS frontend
-
+FROM node:18-alpine AS frontend
 WORKDIR /app
-
-COPY package*.json ./
-COPY vite.config.js ./
-COPY tailwind.config.js ./
-COPY postcss.config.cjs ./
-
-RUN npm ci
-
+COPY package*.json vite.config.js tailwind.config.js postcss.config.cjs ./
+RUN npm ci --prefer-offline --no-audit
 COPY resources/ ./resources/
 COPY public/ ./public/
-
 RUN npm run build
 
-# Stage 2 — PHP + Apache | Switch to php-fpm + nginx on prod    
-FROM php:8.3-apache
+# Stage 2 — PHP-FPM backend
+FROM php:8.3-fpm-alpine
 
-RUN apt-get update && apt-get install -y \
-    git zip unzip curl \
-    libzip-dev libpng-dev libonig-dev libxml2-dev \
+RUN apk add --no-cache \
+    nginx supervisor git zip unzip curl nano \
+    libzip libpng oniguruma libxml2 \
+    libjpeg-turbo freetype icu-libs ffmpeg \
+    && apk add --no-cache --virtual .build-deps \
+    autoconf g++ make \
+    libzip-dev libpng-dev oniguruma-dev libxml2-dev \
+    libjpeg-turbo-dev freetype-dev icu-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo_mysql mbstring zip exif pcntl bcmath intl gd opcache \
     && pecl install apcu \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl \
     && docker-php-ext-enable apcu \
-    && rm -rf /var/lib/apt/lists/*
+    && apk del .build-deps \
+    && rm -rf /tmp/* /var/cache/apk/*
 
-RUN a2enmod rewrite
+RUN cat <<'EOF' > /usr/local/etc/php/conf.d/opcache.ini
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0
+opcache.revalidate_freq=0
+EOF
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN echo "apc.enable_cli=1" > /usr/local/etc/php/conf.d/00-apcu-cli.ini
+
+RUN cat <<'EOF' > /usr/local/etc/php-fpm.d/www.conf
+pm = dynamic
+pm.max_children = 20
+pm.start_servers = 5
+pm.min_spare_servers = 3
+pm.max_spare_servers = 10
+pm.max_requests = 500
+catch_workers_output = yes
+decorate_workers_output = no
+php_admin_flag[log_errors] = on
+php_admin_value[error_log] = /proc/self/fd/2
+EOF
+
+RUN cat <<'EOF' > /usr/local/etc/php/conf.d/uploads.ini
+post_max_size=32M
+upload_max_filesize=32M
+EOF
 
 WORKDIR /var/www/html
 
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --optimize-autoloader
+
 COPY . .
-
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --ignore-platform-req=ext-*
-
 COPY --from=frontend /app/public/build ./public/build
 
 RUN cp .env.ci .env \
-    && php artisan key:generate
+    && php artisan key:generate \
+    && mkdir -p storage/{logs,framework,app/public} bootstrap/cache \
+    && touch storage/logs/laravel.log \
+    && chown -R www-data:www-data /var/www/html \
+    && chown -R www-data:www-data /var/www/html/storage \
+    && chmod -R 775 storage bootstrap/cache
 
-RUN mkdir -p storage/app/private storage/logs \
-    && openssl genrsa -out storage/app/private/private.pem 2048 \
-    && openssl rsa -in storage/app/private/private.pem -outform PEM -pubout -out storage/app/private/public.pem \
-    && touch storage/logs/laravel.log
-
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 storage bootstrap/cache \
-    && chmod 600 storage/app/private/private.pem \
-    && chmod 644 storage/app/private/public.pem
-
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-COPY laravel-start.sh /usr/local/bin/laravel-start.sh
-RUN chmod +x /usr/local/bin/laravel-start.sh
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
-CMD ["/usr/local/bin/laravel-start.sh"]
+
+RUN chmod +x laravel-start.sh
+
+CMD ["/var/www/html/laravel-start.sh"]

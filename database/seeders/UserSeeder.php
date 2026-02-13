@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
 
         for ($i = 0; $i < 30; $i++) {
             User::factory()->create([
-                'roomID' => $rooms->random()->id
+                'room_id' => $rooms->random()->id
             ]);
         }
     }

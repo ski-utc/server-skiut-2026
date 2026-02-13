@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
@@ -20,19 +19,26 @@ class DatabaseSeeder extends Seeder
             ActivitySeeder::class,
             NotificationSeeder::class,
             TransportSeeder::class,
+            ShotgunsSeeder::class,
+            RoomShotgunSeeder::class,
+            BackOfficeAdminSeeder::class,
 
             RoomSeeder::class,
             UserSeeder::class,
             RelationsSeeder::class,
+            PushTokenSeeder::class,
 
             AnecdoteSeeder::class,
-            UserPerformanceSeeder::class,
             ChallengeProofSeeder::class,
-            PushTokenSeeder::class,
 
             SkinderLikeSeeder::class,
             AnecdotesLikeSeeder::class,
             AnecdotesWarnSeeder::class,
+
+            MonoprutSeeder::class,
+            PerformanceSeeder::class,
+            PermanenceSeeder::class,
+            RoomTourSeeder::class,
         ]);
     }
 }

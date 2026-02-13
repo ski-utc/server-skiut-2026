@@ -21,14 +21,14 @@ class PrometheusMiddleware
             'app',
             'http_requests_total',
             'Total number of HTTP requests',
-            ['status', 'path', 'method']
+            ['status', 'route', 'method']
         );
 
         $this->histogram = $registry->getOrRegisterHistogram(
             'app',
             'http_request_duration_seconds',
             'Duration of HTTP requests in seconds',
-            ['status', 'path', 'method'],
+            ['status', 'route', 'method'],
             [0.1, 0.3, 1.5, 10.0]
         );
 
@@ -59,15 +59,24 @@ class PrometheusMiddleware
 
         $duration = microtime(true) - $start;
 
+        $route = $request->route() ? $request->route()->uri() : $request->path();
+        // Normalize route: replace {param} with :param
+        $route = preg_replace('/\{[^}]+\}/', ':param', $route);
+
+        // Fallback for when route is not matched (e.g. 404)
+        if (!$request->route()) {
+            $route = 'other';
+        }
+
         $this->counter->inc([
             'status' => $response->getStatusCode(),
-            'path' => $request->path(),
+            'route' => $route,
             'method' => $request->method()
         ]);
 
         $this->histogram->observe($duration, [
             'status' => $response->getStatusCode(),
-            'path' => $request->path(),
+            'route' => $route,
             'method' => $request->method()
         ]);
 

@@ -4,9 +4,6 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ChallengeProof>
- */
 class ChallengeProofFactory extends Factory
 {
     /**
@@ -17,9 +14,15 @@ class ChallengeProofFactory extends Factory
     public function definition(): array
     {
         $fileExtensions = ['jpg', 'png', 'mp4', 'mov', 'avi'];
+        $mediaType = fake()->randomElement(['image', 'video']);
+
+        $extension = $mediaType === 'image'
+            ? fake()->randomElement(['jpg', 'png'])
+            : fake()->randomElement(['mp4', 'mov', 'avi']);
 
         return [
-            'file' => 'proofs/' . fake()->uuid() . '.' . fake()->randomElement($fileExtensions),
+            'file' => 'proofs/' . fake()->uuid() . '.' . $extension,
+            'media_type' => $mediaType,
             'nb_likes' => fake()->numberBetween(0, 50),
             'valid' => fake()->boolean(75),
             'alert' => fake()->numberBetween(0, 5),

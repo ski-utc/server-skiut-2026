@@ -9,14 +9,19 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Redirect resources to next folder
+    # Serve Next.js static files
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^_next/(.*)$ /next/_next/$1 [L]
     
-    # Redirect logo to next folder
+    # Serve Next.js assets (CSS, JS, images, etc.)
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^logo\.png$ /next/logo.png [L]
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))$ /next/$1 [L]
+    
+    # Serve Next.js pages (404, etc.)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^404\.html$ /next/404.html [L]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d

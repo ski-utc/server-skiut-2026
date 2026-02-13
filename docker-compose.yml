@@ -1,17 +1,19 @@
 services:
-  app:
-    #image: registry.gitlab.utc.fr/skiutc/server-skiut-2026
-    build: .
-    container_name: laravel-app
-    restart: unless-stopped
-    depends_on:
-      - db
-    ports:
-      - "8000:80"
-    env_file:
-      - .env.local
-    networks:
-      - skiut-net
+  # app:
+  #   #image: registry.gitlab.utc.fr/skiutc/server-skiut-2026
+  #   build: .
+  #   container_name: laravel-app
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - "8000:80"
+  #   env_file:
+  #     - .env.local
+  #   volumes:
+  #     - users-data:/var/www/html/storage
+  #   networks:
+  #     - skiut-net
 
   db:
     image: mysql:8.0
@@ -26,6 +28,8 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - skiut-net
+    ports:
+      - "3306:3306"
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -69,6 +73,7 @@ services:
 
 volumes:
   db-data:
+  users-data:
 
 networks:
   skiut-net:

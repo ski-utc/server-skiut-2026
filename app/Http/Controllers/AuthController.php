@@ -9,6 +9,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use League\OAuth2\Client\Provider\GenericProvider;
 use LogicException;
 use UnexpectedValueException;
@@ -16,44 +17,50 @@ use UnexpectedValueException;
 class AuthController extends Controller
 {
     /**
-     * Le fournisseur d'OAuth2.
+     * The OAuth2 provider.
      */
     public GenericProvider $provider;
 
     /**
-     * Crée un nouveau contrôleur AuthController.
+     * Create a new AuthController.
      */
     public function __construct()
     {
-        // Initialisation du fournisseur OAuth2 avec les valeurs de configuration des variables d'environnement
         $this->provider = new GenericProvider([
-            'clientId'                => config('services.oauth.client_id'),
-            'clientSecret'            => config('services.oauth.client_secret'),
-            'redirectUri'             => config('services.oauth.redirect_uri'),
-            'urlAuthorize'            => config('services.oauth.authorize_url'),
-            'urlAccessToken'          => config('services.oauth.access_token_url'),
+            'clientId' => config('services.oauth.client_id'),
+            'clientSecret' => config('services.oauth.client_secret'),
+            'redirectUri' => config('services.oauth.redirect_uri'),
+            'urlAuthorize' => config('services.oauth.authorize_url'),
+            'urlAccessToken' => config('services.oauth.access_token_url'),
             'urlResourceOwnerDetails' => config('services.oauth.owner_details_url'),
-            'scopes'                  => config('services.oauth.scopes'),
+            'scopes' => config('services.oauth.scopes'),
         ]);
     }
 
     /**
-     * Gère le login d'un utilisateur via OAuth2 (génère un token de session et renvoie vers l'OAuth du SiMDE)
+     * Handle the login of a user via OAuth2 (generate a session token and redirect to the SiMDE OAuth)
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function login(Request $request)
     {
         if (config('auth.app_no_login', false)) {
-            $userId = env('USER_ID');
+            $user_id = env('USER_ID');
+            $user = User::find($user_id);
+            if (!$user) {
+                return response()->json(['message' => 'Il faut au moins créer le user ' . $user_id . ' dans la base de données'], 400);
+            }
             try {
                 $accessTokenPayload = [
-                    'key' => $userId,
+                    'key' => $user_id,
                     'exp' => now()->addMinutes(60)->timestamp,
                 ];
                 $privateKey = config('services.crypt.private');
                 $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
                 $refreshTokenPayload = [
-                    'key' => $userId,
+                    'key' => $user_id,
                     'exp' => now()->addDays(30)->timestamp,
                 ];
                 $refreshToken = JWT::encode($refreshTokenPayload, $privateKey, 'RS256');
@@ -63,14 +70,14 @@ class AuthController extends Controller
                     'refresh_token' => $refreshToken,
                 ]);
             } catch (\Exception $e) {
-                return response()->json(['message' => 'Login error :'. $e->getMessage()], 400);
+                return response()->json(['message' => 'Login error :' . $e->getMessage()], 400);
             }
         }
 
-        $state = bin2hex(random_bytes(16));   // génère un token de session aléatoire
+        $state = bin2hex(random_bytes(16));
         $request->session()->put('oauth2state', $state);
 
-        $authorizationUrl = $this->provider->getAuthorizationUrl([    // Redirection vers l'URL d'autorisation de l'OAuth avec le token
+        $authorizationUrl = $this->provider->getAuthorizationUrl([
             'state' => $state
         ]);
 
@@ -78,17 +85,20 @@ class AuthController extends Controller
     }
 
     /**
-     * Gère le callback de l'OAuth du SiMDE
+     * Handle the callback of the SiMDE OAuth
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function callback(Request $request)
     {
         $storedState = $request->session()->pull('oauth2state');
 
-        if (!$request->has('state') || $request->get('state') !== $storedState) {   // Vérifie que le token de session est valide
-            abort(400, 'Invalid state: '. $request->get('state') . ' VS ' . $storedState);
+        if (!$request->has('state') || $request->get('state') !== $storedState) {
+            abort(400, 'Invalid state: ' . $request->get('state') . ' VS ' . $storedState);
         }
 
-        if (!$request->has('code')) {     // Vérifie que le code d'autorisation est présent
+        if (!$request->has('code')) {
             abort(400, 'No authorization code');
         }
         try {
@@ -103,13 +113,13 @@ class AuthController extends Controller
                 abort(401, 'Compte supprimé ou désactivé');
             }
 
-            $user = User::where('email', $userDetails['email'])->first();  // Si le user n'existe pas => ielle n'a pas de pack Ski'Ut
+            $user = User::where('email', $userDetails['email'])->first();
             if (!$user) {
                 abort(401, "Pack Ski'UT non trouvé, ou mauvaise adresse mail utilisée. Veuillez utiliser le mail utilisé lors de votre achat de la place");
             }
 
             if ($userDetails['provider'] != 'cas') {
-                $user::update('alumniOrExte', true);
+                $user->update(['alumniOrExte' => true]);
             }
 
             $accessTokenPayload = [
@@ -130,6 +140,7 @@ class AuthController extends Controller
                 'refresh_token' => $refreshToken,
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la callback: ' . $e->getMessage());
             return redirect()->route('api-not-connected', [
                 'message' => 'Callback error : ' . $e->getMessage()
             ]);
@@ -137,44 +148,55 @@ class AuthController extends Controller
     }
 
     /**
-     * Refresh l'access token du user à partir de son refresh token.
+     * Refresh the access token of the user from his refresh token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function refresh(Request $request)
     {
-        $publicKey = config('services.crypt.public');
-        $token = $request->bearerToken();
-        if (!$token) {
-            return response()->json(['message' => "Refresh JWT absent pour l'authentification",'JWT_ERROR' => true], 400);
-        }
         try {
-            $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
-        } catch (ExpiredException) {
-            return response()->json(['message' => 'Refresh JWT expiré','JWT_ERROR' => true], 401);
-        } catch (SignatureInvalidException) {
-            return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé','JWT_ERROR' => true], 401);
-        } catch (LogicException $e) {
-            return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
-        } catch (UnexpectedValueException $e) {
-            return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
-        }
-        $id = $decoded->key;
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'Utilisateur non trouvé pour le refresh token fourni', 'JWT_ERROR' => true], 404);
-        }
+            $publicKey = config('services.crypt.public');
+            $token = $request->bearerToken();
+            if (!$token) {
+                return response()->json(['message' => "Refresh JWT absent pour l'authentification", 'JWT_ERROR' => true], 400);
+            }
+            try {
+                $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+            } catch (ExpiredException) {
+                return response()->json(['message' => 'Refresh JWT expiré', 'JWT_ERROR' => true], 401);
+            } catch (SignatureInvalidException) {
+                return response()->json(['message' => 'Signature invalide pour le refresh JWT envoyé', 'JWT_ERROR' => true], 401);
+            } catch (LogicException $e) {
+                return response()->json(['message' => 'Erreur dans la configuration ou les clés du JWT de refresh', 'JWT_ERROR' => true], 400);
+            } catch (UnexpectedValueException $e) {
+                return response()->json(['message' => 'Le refresh JWT est mal formé ou contient des données invalides', 'JWT_ERROR' => true], 400);
+            }
+            $id = $decoded->key;
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json(['message' => 'Utilisateur non trouvé pour le refresh token fourni', 'JWT_ERROR' => true], 404);
+            }
 
-        $accessTokenPayload = [
-            'key' => $id,
-            'exp' => now()->addMinutes(60)->timestamp,
-        ];
-        $privateKey = config('services.crypt.private');
-        $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
+            $accessTokenPayload = [
+                'key' => $id,
+                'exp' => now()->addMinutes(60)->timestamp,
+            ];
+            $privateKey = config('services.crypt.private');
+            $accessToken = JWT::encode($accessTokenPayload, $privateKey, 'RS256');
 
-        return response()->json(['access_token' => $accessToken]);
+            return response()->json(['access_token' => $accessToken]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du refresh: ' . $e->getMessage());
+            return response()->json(['message' => 'Erreur lors du refresh: ' . $e->getMessage()], 400);
+        }
     }
 
     /**
-     * Récupère les informations de l'utilisateur à partir d'un token.
+     * Get the user data from a token.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getUserData(Request $request)
     {
@@ -191,27 +213,33 @@ class AuthController extends Controller
                 return response()->json(['success' => 'false', 'message' => 'Utilisateur non trouvé'], 404);
             }
 
-            $room = Room::where('id', $user->roomID)->first();
+            $room = Room::where('id', $user->room_id)->first();
             if (!$room) {
                 return response()->json(['success' => 'false', 'message' => 'Chambre non trouvée'], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'id' => $user->id,
-                'name' => $user->firstName,
-                'lastName' => $user->lastName,
-                'room' => $room->roomNumber,
-                'roomName' => $room->name ? $room->name : null,
-                'admin' => $user->admin
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->firstName,
+                    'lastName' => $user->lastName,
+                    'room' => $room->roomNumber,
+                    'roomName' => $room->name ? $room->name : null,
+                    'admin' => $user->admin,
+                    'member' => $user->member
+                ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : '.$e], 401);
+            Log::error('Erreur lors de la récupération des users infos: ' . $e->getMessage());
+            return response()->json(['success' => 'false', 'message' => 'Erreur lors de la récupération des users infos : ' . $e], 401);
         }
     }
 
     /**
-     * Déconnexion de l'utilisateur
+     * Logout the user
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function logout()
     {

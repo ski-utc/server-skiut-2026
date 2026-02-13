@@ -4,24 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NavetteController extends Controller
 {
     /**
-     * Récupère les navettes d'un utilisateur
+     * Get the transports for a user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function getNavettes(Request $request)
     {
         try {
             $id = $request->user['id'];
-            $user = User::with('transports')->where('id', $id)->first();
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Utilisateur non trouvé'
-                ], 404);
-            }
+            $user = User::with('transports')->findOrFail($id);
 
             $transports = $user->transports;
             $transportsByType = [
@@ -54,6 +51,7 @@ class NavetteController extends Controller
                 'message' => 'Transports fetched successfully.',
             ]);
         } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des navettes: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération des navettes : ' . $e->getMessage(),
