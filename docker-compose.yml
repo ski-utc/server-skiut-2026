@@ -1,19 +1,18 @@
 services:
-  # app:
-  #   #image: registry.gitlab.utc.fr/skiutc/server-skiut-2026
-  #   build: .
-  #   container_name: laravel-app
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - db
-  #   ports:
-  #     - "8000:80"
-  #   env_file:
-  #     - .env.local
-  #   volumes:
-  #     - users-data:/var/www/html/storage
-  #   networks:
-  #     - skiut-net
+  app:
+    build: .
+    container_name: laravel-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8000:80"
+    env_file:
+      - .env.local
+    volumes:
+      - users-data:/var/www/html/storage
+    networks:
+      - skiut-net
 
   db:
     image: mysql:8.0
@@ -43,31 +42,6 @@ services:
       PMA_HOST: db
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: root_pass
-    networks:
-      - skiut-net
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./prometheus:/etc/prometheus/
-    ports:
-      - "9090:9090"
-    networks:
-      - skiut-net
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    depends_on:
-      - prometheus
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
     networks:
       - skiut-net
 

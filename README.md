@@ -1,23 +1,53 @@
 # Bienvenue sur le serveur de Ski'UT 2025 en Laravel
 
-## Petit détour : Shotgun
+## Introduction
+Ce serveur est fait pour tourner avec l'application expo de Ski'UT développée en 2025, puis mise à jour en 2026.
 
-Si tu prévois de travailler sur le shotgun du serveur, tu vas avoir besoin de cloner la view du shotgun qui est gardée secrète jusqu'au jour du shotgun.
-Pour faire ça, elle est gardée secrète dans un repo prive game-view qui est importé en submodule.
+Ce serveur expose à la fois 
+* Une API utilisée par l'application mobile
+* Un back-office (interface admin pour navigateur web) développée avec le framework Filament PHP
 
-Ainsi, pour modifier et tester le mini-jeu, tu dois récupérer le submodule :
+Pour dev sur le backend, tu as deux options : 
+1. Faire tourner le serveur avec Docker [cf. ci-dessous](#pour-commencer--docker)
+2. Faire tourner le serveur avec PHP [cf ci-dessous](#pour-commencer--php-classique)
+
+Personnelement, je te recommande d'utiliser Docker car ça te permet de faire également tourner une base de données MySQL ainsi qu'une interface PHPMyAdmin pour gérer tes données de test plus facilement.
+
+---
+
+## Structure du projet
+
 ```bash
-git submodule update --init --recursive
+├── app
+├── bootstrap
+├── config
+├── database
+├── docker                 # Config utilisée par Docker : il y a une config pour Nginx, et une pour supervisord
+├── public
+├── resources
+├── routes
+├── storage
+├── tests                  # Série de tests Laravel qui permettent de s'assurer que tous les endpoints fonctionnent bien (ex. GET anecdotes renvoie bien les anecdotes)
+├── artisan
+├── composer.json
+├── composer.lock
+├── CONTRIBUTING.md
+├── docker-commands.md     # Un petit mémo des commandes Docker utiles
+├── docker-compose.yml     # Fichier de configuration pour Docker Compose : s'occupe de lancer le serveur, une BDD et PhpMyAdmin
+├── Dockerfile             # Fichier de configuration pour Docker : s'occupe de construire une "image" du serveur
+├── laravel-start.sh       # Script utilisé lorsqu'une image Docker est lancée pour finir de setup le serveur Larave
+├── LICENSE
+├── package.json
+├── package-lock.json
+├── phpunit.xml
+├── postcss.config.cjs
+├── tailwind.config.js
+└── vite.config.js
 ```
 
-Pour enregistrer tes modifications sur le mini-jeu, tu dois bien penser à push sur le repo privé (il y a un monde où ça se fait automatiquement).
+Je n'ai volontairement pas trop parlé des éléments qui font parti de n'importe quel projet Laravel (`app`, `config`, etc.) pour éviter de rendre ça trop lourd. Si jamais tu as des doutes sur qui fait quoi là-dedans, je t'invite à regarder quelques petits tuto sur Laravel en ligne :)
 
-## Introduction
-Ce serveur est fait pour tourner avec l'application expo de Ski'UT développée en 2025.
-
-Le serveur ne possède quasiment aucun endpoint de back-office, ni même de view en général (à l'exception des view pour le login). 
-
-Les endpoints de ce serveur ne servent donc qu'au login et au traitement des données de l'application avec la base de données MySQL fournie par le SIMDE.
+---
 
 ## Pour commener : Docker
 
@@ -75,9 +105,25 @@ Tu trouveras dans docker-commands.md toutes les commandes essentielles avec dock
 Bilan, tu auras maintenant : 
 * http://localhost:8000 pour le serveur
 * http://localhost:8081 pour phpMyAdmin
-* http://localhost:3000 pour Grafana (une interface web pour suivre la charge sur ton serveur)
 
 Pour permettre à l'application de contacter le serveur, il faudra modifier le fichier `constants/api/apiConfig.ts` pour contacter ton adresse ip (celle que tu obtiens faisant `ip address` ou `ifconfig`).
+
+### Quelques mots sur la config Docker
+
+Bon... cette partie va nécessairement être un peu abstraite.
+
+Grosso modo, on a deux moyen de faire tourner du PHP : 
+* Soit on a un serveur Apache, qui compile le code PHP, et le sert
+  * C'est pas hyper puissant, ça plante facilement, bref c'est pas ouf
+* Soit on utilise 3 instances : 
+  * PHP-FPM qui compile le code PHP
+  * Nginx qui sert le code compilé par PHP-FPM
+  * Supervisor qui lance Nginx et PHP-FPM
+  * La bonne nouvelle avec cette deuxième approche, c'est qu'on peut custom les paramètres de PHP-FPM dans `/usr/local/etc/php-fpm.d/www.conf` pour qu'il soit boosté de malade.
+
+Tout ça pour dire que dans notre cas, on utilise Nginx et PHP-FPM, parce que même si c'est un poil plus complexe, ça tourne beaucoup mieux.
+
+---
 
 ## Pour commencer : Php Classique
 ### 1. Installer PHP
@@ -183,18 +229,26 @@ Cette commande permet de lancer tailwind pour qu'il build bien tes views (les de
 ### 5. En théorie le serveur tourne
 
 **Attention** : le serveur est configuré pour tourner sur une base URL /skiutc. Concrètement, le serveur commence à te renvoyer des trucs sur http://tonIP/skiutc/.
-Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api
+Il en est de même pour **auth** sur /skiutc/auth et **api** sur /skiutc/api. 
 
-## Bypass l'OAuth
+La raison pour cela est tout simplement parce que sur le serveur des assos, la base url est `https://assos.utc.fr/skiutc/`.
 
-Pour éviter de constamment rentrer son CAS pour dev, j'ai mis un système de bypass dans le serveur.
-Pour utiliser ça : 
+---
 
-1. Vérifie que APP_NO_LOGIN=true dans ton .env (.env.local si t'es en mode Docker) si tu ne veux pas t'occuper de l'Auth
+## `"Mais je ne vois pas le code du Shotgun dans le serveur"`
 
-2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53). Par défaut j'ai mis '1' partout
+Si tu prévois de travailler sur le shotgun du serveur, tu vas avoir besoin de cloner la view du shotgun qui est gardée secrète jusqu'au jour du shotgun.
+Pour faire ça, elle est gardée secrète dans un repo priv" `game-view` qui est importé en **submodule**.
+Un submodule c'est tout simplement un repo GitHub dans un repo GitHub, c'est ce qui nous permet notamment d'avoir un code backend open-source, sans pour autant se faire cramer par les gens qui voudront tricher sur le shotgun
 
-3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
+Ainsi, pour modifier et tester le mini-jeu, tu dois récupérer le submodule :
+```bash
+git submodule update --init --recursive
+```
+
+Pour enregistrer tes modifications sur le mini-jeu, tu dois donc bien penser à push sur le repo privé.
+
+---
 
 ## Authentification
 ### 1. Authentification avec l'OAuth
@@ -202,7 +256,7 @@ Toute l'authentification est gérée par le Auth Controller.
 
 Globalement, le User requpete une première fois sur /auth/login. Si tu as activé le bypass login, le user recevra alors directement ses tokens d'accès (on y revient soon). Sinon, un Provider est construit à partir du format donné dans la [doc de l'OAuth du SIMDE](https://auth.assos.utc.fr/admin/implement), et un state est crée pour identifier la session qui vient d'essayer de se connecter.
 
-Ensuite, le user est redirigé sur l'OAuth du SIMDE où il peut se connecter avec son CAS, ou par mail. Les champs récupérés sont .................................................................................................. 
+Ensuite, le user est redirigé sur l'OAuth du SIMDE où il peut se connecter avec son CAS, ou par mail.  
 
 Une fois que le user s'est connecté, le serveur récupère la requête avec la fonction callback qui vérifie qu'on est toujours sur la session qui a essayé de se login, et récupères les info sur le user. Il y a ensuite une série de vérification pour vérifier que le compte est existant, actif, mais surtout que l'adresse mail est déjà dans la BDD (qui a été préalablement seed avec les adresses mails des personnes qui ont payé sur Wooch). Grâce à celà, l'app n'est accessible qu'à celleux connecté.e.s.
 
@@ -229,91 +283,16 @@ Les controllers sont normalement assez bien organisés et assez clairs (il me se
 
 S'il y a peut-être un point important à mentionner c'est que grâce au middleware, on peut accéder à toutes les infos du User comme ceci : $user = $request->user;
 
-## EndPoints (précédés par /skiutc)
-### **1. Authentification (AuthController)**  
-- `/auth.login` : Route sur laquelle requêter pour lancer le processus de login (création d'un state, du provider et redirection vers l'OAuth)
-- `/auth.callback` : Route sur laquelle est renvoyée la response de l'OAuth après la connexion. Vérifie le résultat, le state, récupère le user et envoie et accessToken et refreshToken
-- `/auth.refresh` : Route pour refresh son accessToken à partir du refreshToken
-- `/auth.logout` : Route pour se logout. Supprime le cookie auth_session et redirige vers la page login. En pratique sur l'application il était plus simple de réouvrir une webview en incognito pour relancer un processus de login sans cookies.
-
 ---
 
-### **2. Login divers**  
-- `/connected` : View affichée en quand de succès de connexion
-- `/notConnected` : View affichée en cas d'échec de connexion (généralement parce que l'email utilisé pour l'OAuth n'est pas dans la BDD i.e. que cette adresse mail n'est pas dans les ventes Wooch)
-- `/getUserData` : Récupérer les données du user pour l'appli à partir de l'accessToken (id, nom, prénom, chambre, numéro chambre...)
+## Bypass l'OAuth
 
----
+Pour éviter de constamment rentrer son CAS pour dev, j'ai mis un système de bypass dans le serveur.
+Pour utiliser ça : 
 
-### **3. Home (HomeController)**  
-- `/getRandomData` : Retourne un array de la prochaine/actuelle activité, de l'anecdote la plus likée ainsi qu'un défi pas encore réalisé par le user
-
----
-
-### **4. Notifications (NotificationController)**  
-- `/getNotifications` : Récupères toutes les notifcations envoyés dans la BDD (titre, text)
-- `/sendNotification` : Envoie une notification à tout le monde et l'enregistre dans la BDD
-- `/sendIndividualNotification/{userId}` : Envoie une notification ciblée au user userId
-- `/deleteNotification/{notificationId}/{delete}` : Supprime la notification notificationId
-- `/getAdminNotifications` : Récupère toutes les anecdotes de la BDD
-- `/getNotificationDetails/{notificationId}` : Récupère toutes les infos sur la notification notificationId
-
----
-
-### **5. Planning (PlanningController)**  
-- `/getPlanning` : Retourne le planning dans la BDD sous forme de array avec pour clé le jour, et pour valeur : début, fin, état (passé, en cours, plus tard), titre, description.
-
----
-
-### **6. Défis (DefisController)**  
-- `/challenges` : Renvoie tous les défis de la BDD et leur état (pas essayé, en attente, validé ou refusé)
-- `/challenges/getProofImage` : Récupère l'image de preuve qui a été envoyée pour les défis en attente ou validés
-- `/challenges/uploadProofImage` :  Envoie une image de défi au serveur (qui la save au format challange_challengeId_room_roomId
-- `/challenges/deleteProofImage` : Permet de supprimer un défi pas encore validé
-- `/classement-chambres` : Récupère le classement des chambres
-
----
-
-### **7. Anecdotes (AnecdoteController)**  
-- `/getAnecdotes` : Récupère toutes les anecdotes avec leur nombre de likes
-- `/likeAnecdote` : Like une anecdote (créé une relation user-likeAnecdote entre l'anecdote likée et le user qui fait la requête)
-- `/warnAnecdote` : Signale une anecdote (créé une relation user-warnAnecdote entre l'anecdote signalée et le user qui fait la requête)
-- `/sendAnecdote` : Enregistre une nouvelle anecdote dans la BDD pour le user qui fait la requête
-- `/deleteAnecdote` : Supprime une anecdote
-- `/getAdminAnecdotes` : Récupère toutes les anecdotes 
-- `/getAnecdoteDetails/{anecdoteId}` : Récupères toutes les infos sur l'anecdote anecdoteId (nb likes, signalement, date de création, auteurice...)
-- `/updateAnecdoteStatus/{anecdoteId}/{isValid}` : Active ou désactive la visibilité de l'anecdote anecdoteId
-
----
-
-### **8. Navettes (NavetteController)**  
-- `/getNavettes` : Récupère toutes les navettes de la BDD avec leur couleur
-
----
-
-### **9. Skinder (SkinderController)**  
-- `/getProfilSkinder` : Récupère un profil Skinder au hasard parmis les profils pas encore likés
-- `/likeSkinder` : Créé une relation de like entre la chambre qui like et celle likée. En cas de math, renvoie aussi les photos des chambre et le nom de le.a resp de chambre.
-- `/getMySkinderMatches` : Envoie la liste de tous les matchs de la chambre.
-- `/getMyProfilSkinder` : Envoie le profil Skinder de sa chambre pour une modification (url de l'image sur le serveur, nom de chambre, description, passions)
-- `/modifyProfilSkinder` : Enregistre une modification de description ou passions sur la chambre
-- `/uploadRoomImage` : Modifie la photo de profil Skinder pour la chambre qui fait la requête sur le serveur.
-
----
-
-### **10. Administration (AdminController)**  
-- `/admin` : Vérifie que le user est admin
-- `/getAdminChallenges` : Récupère tous les challenges avec leur état (validé ou en attente)
-- `/getChallengeDetails/{challengeId}` : Récupère toutes les infos (url de l'image, chambre, auteurice, date) du challenge challengeId
-- `/updateChallengeStatus/{challengeId}/{isValid}/{isDelete}` : Active ou désactive le challenge challengeId
-- `/getMaxFileSize` : Récupère la taille maximale de photos envoyables sur le serveur (pour réduire en cas de surcharge)
-- `/save-token` : Enregistre le push-token du user dans la BDD pour envoyer des notifications
-
----
-
-### **11. Vitesse de glisse (PerformanceController)**  
-- `/create-performance` : Met à jour la performance de vitesse du user dans la BDD s'il a fait une meilleur performance
-- `/classement-performances` : Renvoie le classement des perfomances user-vitesse
+1. Vérifie que APP_NO_LOGIN=true dans ton .env (.env.local si t'es en mode Docker) si tu ne veux pas t'occuper de l'Auth
+2. Créé un User dans la base de données : c'est le user que te donneras par défaut le AuthController (cf. AuthController ligne 53). Par défaut j'ai mis '1' partout
+3. Défini l'ID que tu viens de mettre dans ta BDD, dans ton .env sur la variable "USER_ID"
 
 ---
 
@@ -338,6 +317,8 @@ Elle s'occupe de :
 - Tester l'intégration du serveur dans le container docker sur le registry gitlab.utc.fr sur chaque push sur la branche main
 
 Pour plus d'informations, tu peux voir le fichier .gitlab-ci.yml
+
+---
 
 ## Déployer le serveur 
 Avant toute chose, push tout ce que tu dois push pour préparer la version de production du serveur à déployer.
@@ -370,6 +351,8 @@ Finalement, tu peux déployer ton serveur en SFTP sur les serveurs du SIMDE (ave
 Ensuite, connectes-toi en SSH et fini le nécessaire pour que ton serveur serve bien (genre migrate la BDD, update les deps composer, ...).
 
 Ici, pas besoin de faire un php artisan serve : les serveurs du SIMDE vont directement récup ton code sur files.mde.utc et le faire tourner sur leur serveur Apache.
+
+---
 
 ## Des petits trucs pratiques
 
