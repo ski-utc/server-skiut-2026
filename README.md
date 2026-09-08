@@ -1,4 +1,4 @@
-# Bienvenue sur le serveur de Ski'UT 2025 en Laravel
+# Bienvenue sur le serveur de Ski'UT 2026 en Laravel
 
 ## Introduction
 Ce serveur est fait pour tourner avec l'application expo de Ski'UT développée en 2025, puis mise à jour en 2026.
@@ -317,6 +317,12 @@ Elle s'occupe de :
 - Tester l'intégration du serveur dans le container docker sur le registry gitlab.utc.fr sur chaque push sur la branche main
 
 Pour plus d'informations, tu peux voir le fichier .gitlab-ci.yml
+
+> En vrai j'ai créé une V2 de cette pipeline adaptée à GitHub
+>
+> Donc en fonction de tes préférences : 
+> - Pour GitLab : .gitlab-ci.yml
+> - Pour GitHub : .github/workflows/verify_test_build_push.yaml
 
 ---
 
